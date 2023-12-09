@@ -24,29 +24,49 @@ interface Wall {
 }
 
 type TShooters = "player" | "alien";
+type GameKeys = "Space" | "ArrowLeft" | "ArrowRight";
+
+type Flags<Keys extends string> = {
+  [Key in Keys]: boolean;
+};
+
+type KeysTracker = Flags<GameKeys>;
+
 type DisplayUnit = `${number}d${"w" | "h"}`;
 
 /* ========================== constants ========================= */
 
 /* 
   the sizes are percentages within the display, from 0 to 100. 
-  `cw` stands for display width, `ch` for display height 
+  `cw` stands for display width, `ch` for display height
 */
 const DIMENSIONS: {
-  readonly alien: DisplayUnit;
-  readonly player: DisplayUnit;
-  readonly bullet: DisplaySize;
-  readonly padding: DisplayUnit;
-  readonly alienSetGap: DisplayUnit;
+  readonly alien: Size;
+  readonly player: Size;
+  readonly bullet: Size;
+  readonly alienSetGap: Size;
 } = {
-  alien: `5dw`, // 5% of the display width
-  player: `5dw`, // 5% of the display width
-  padding: `3dw`,
+  alien: {
+    w: 5, // 5% of the display width
+    h: 7, // 5% of the display height
+  },
+  player: {
+    w: 5, // 5% of the display width
+    h: 7, // 5% of the display height
+  },
   bullet: {
-    w: "2dw",
-    h: "4dw",
-  }, // 3% of the display width
-  alienSetGap: `1dw`,
+    w: 2, // 2% of the display width
+    h: 10, // 4% of the display height
+  },
+  alienSetGap: {
+    w: 1, // 1% of the display width
+    h: 1, // 1% of the display height
+  },
+};
+
+const displayPadding = {
+  hor: 3,
+  ver: 5,
 };
 
 /* ========================== utilities ========================= */
@@ -62,6 +82,10 @@ class Vector {
 
   plus(other: Vector) {
     return new Vector(this.x + other.x, this.y + other.y);
+  }
+
+  minus(other: Vector) {
+    return new Vector(this.x - other.x, this.y - other.y);
   }
 
   times(factor: number) {
@@ -85,23 +109,23 @@ function runAnimation(callback: (timeStep: number) => void) {
   requestAnimationFrame(frame);
 }
 
-function numberFromCanvasUnit(unit: DisplayUnit) {
+function numberFromDisplayUnit(unit: DisplayUnit) {
   return Number(unit.replace(/d(w|h)/, ""));
 }
 
-function canvasObjectPercentageWidth(unit: DisplayUnit | DisplaySize) {
+function displayObjectPercentageWidth(unit: DisplayUnit | DisplaySize) {
   if (typeof unit === "string") {
-    return numberFromCanvasUnit(unit);
+    return numberFromDisplayUnit(unit);
   } else {
-    return numberFromCanvasUnit(unit.w);
+    return numberFromDisplayUnit(unit.w);
   }
 }
 
-function canvasObjectPercentageHeight(unit: DisplayUnit | DisplaySize) {
+function displayObjectPercentageHeight(unit: DisplayUnit | DisplaySize) {
   if (typeof unit === "string") {
-    return numberFromCanvasUnit(unit);
+    return numberFromDisplayUnit(unit);
   } else {
-    return numberFromCanvasUnit(unit.h);
+    return numberFromDisplayUnit(unit.h);
   }
 }
 
@@ -116,11 +140,15 @@ function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
 
 /* ========================== classes ========================= */
 
+const alienSetXSpeed = 5;
+const alienSetYSpeed = 3;
+
 class AlienSet {
   public pos: Vector | null = null;
-  width: number;
-  height: number;
-  aliens: Alien[][];
+  public numColumns: number;
+  public numRows: number;
+  public aliens: (Alien | null)[][];
+  public direction: 1 | -1 = 1;
 
   constructor(plan: string) {
     const rows = plan
@@ -128,8 +156,8 @@ class AlienSet {
       .split("\n")
       .map((l) => [...l]);
 
-    this.width = rows[0].length;
-    this.height = rows.length;
+    this.numColumns = rows[0].length;
+    this.numRows = rows.length;
 
     this.aliens = rows.map((row, y) => {
       return row.map((ch, x) => {
@@ -138,9 +166,39 @@ class AlienSet {
     });
   }
 
+  update(state: GameState, timeStep: number) {
+    let ySpeed = 0;
+
+    if (this.pos!.x >= 100 - displayPadding.hor) {
+      this.direction = -1;
+      ySpeed = alienSetYSpeed;
+    } else if (this.pos!.x <= displayPadding.hor) {
+      this.direction = 1;
+      ySpeed = alienSetYSpeed;
+    }
+
+    let xSpeed = alienSetXSpeed * this.direction;
+
+    this.pos = this.pos!.plus(new Vector(xSpeed * timeStep, ySpeed));
+  }
+
+  removeAlien(x: number, y: number) {
+    this.aliens[y][x] = null;
+  }
+
+  get length() {
+    return this.aliens.reduce((allAliensCount, row) => {
+      const rowCount = row.reduce((count, alien) => {
+        if (alien !== null) return count + 1;
+        else return count;
+      }, 0);
+      return allAliensCount + rowCount;
+    }, 0);
+  }
+
   *[Symbol.iterator]() {
-    for (let y = 0; y < this.height; y++) {
-      for (let x = 0; x < this.width; x++) {
+    for (let y = 0; y < this.numRows; y++) {
+      for (let x = 0; x < this.numColumns; x++) {
         yield { x, y, alien: this.aliens[y][x] };
       }
     }
@@ -148,15 +206,15 @@ class AlienSet {
 }
 
 class Alien {
-  kind: "alien" = "alien";
+  public readonly kind: "alien" = "alien";
 
   constructor(public gridPos: Coords, public score: number, public gun: Gun) {}
 
   fire(from: Coords) {
     /* bullet is fired from the center of the alien */
-    const bulletX = from.x + canvasObjectPercentageWidth(DIMENSIONS.alien) / 2;
+    const bulletX = from.x + DIMENSIONS.alien.w / 2;
 
-    return this.gun.fire(new Vector(bulletX, from.y));
+    return this.gun.fire(new Vector(bulletX, from.y), "down");
   }
 
   canFire() {
@@ -181,23 +239,37 @@ class Alien {
   }
 }
 
+const playerXSpeed = 5;
+
 class Player {
-  public kind: "player" = "player";
+  public readonly kind: "player" = "player";
 
   public pos: Vector = new Vector(50, 95);
   public speed: Vector = new Vector(5, 0);
   public gun: Gun = new Gun("player", 4, 500);
 
   fire() {
-    return new Bullet("player", this.pos, new Vector(0, 4));
+    /* from the center of the player */
+    const bulletPosX = this.pos.x + DIMENSIONS.player.w / 2;
+
+    return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up");
   }
 
   canFire() {
     return this.gun.canFire();
   }
 
-  update(timeStep: number) {
-    this.pos = this.pos.plus(this.speed.times(timeStep));
+  update(timeStep: number, keys: KeysTracker) {
+    const movedX = new Vector(timeStep * playerXSpeed, 0);
+
+    if (keys.ArrowLeft && this.pos.x > displayPadding.hor) {
+      this.pos = this.pos.minus(movedX);
+    } else if (
+      keys.ArrowRight &&
+      this.pos.x + DIMENSIONS.player.w < displayPadding.hor
+    ) {
+      this.pos = this.pos.plus(movedX);
+    }
   }
 }
 
@@ -210,14 +282,18 @@ class Gun {
     public fireInterval: number
   ) {}
 
-  fire(pos: Vector) {
+  fire(pos: Vector, direction: "up" | "down") {
     if (this.canFire()) {
       /* update lastFire prop to track the time of the last shot */
       this.lastFire = performance.now();
-      return new Bullet(this.owner, pos, new Vector(0, this.bulletSpeed));
+      return new Bullet(
+        this.owner,
+        pos,
+        new Vector(0, direction === "up" ? -this.bulletSpeed : this.bulletSpeed)
+      );
     }
 
-    /* it return false if it wasn't able to fire */
+    /* it returns null if it wasn't able to fire */
     return null;
   }
 
@@ -249,87 +325,124 @@ class Bullet {
   }
 }
 
-/* this class is supposed to manage the position
- of the objects and check things like colision */
-class GameEnvironment {
-  bullets: Bullet[] = [];
-  alienPercentageSize: number;
-  alienSetGap: number;
+/* 
+Game Environment
+
+this class is supposed to manage the position and sizes
+of the objects and check things like colision */
+class GameEnv {
+  /* these are all percentages within the display */
+  public alienSize: number;
+  public alienSetWidth: number;
+  public alienSetHeight: number;
+  public alienSetGap: number;
 
   constructor(
     public alienSet: AlienSet,
     public player: Player,
     public walls: Wall[]
   ) {
-    const alientSetWidth = alienSet.width;
+    this.alienSize = DIMENSIONS.alien.w;
+    this.alienSetGap = DIMENSIONS.alienSetGap.w;
 
-    this.alienPercentageSize = canvasObjectPercentageWidth(DIMENSIONS.alien);
-    this.alienSetGap = canvasObjectPercentageWidth(DIMENSIONS.alienSetGap);
+    this.alienSetWidth =
+      this.alienSize * alienSet.numColumns +
+      this.alienSetGap * (alienSet.numColumns - 1);
+    this.alienSetHeight =
+      this.alienSize * alienSet.numRows +
+      this.alienSetGap * (this.alienSet.numRows - 1);
 
-    const alienSetCanvasWidth =
-      this.alienPercentageSize * alientSetWidth +
-      this.alienSetGap * (alientSetWidth - 1);
-
-    alienSet.pos = new Vector(50 - alienSetCanvasWidth / 2, 10);
+    alienSet.pos = new Vector(50 - this.alienSetWidth / 2, 10);
     this.alienSet = alienSet;
   }
 
-  getAlienPos(gridX: number, gridY: number): Vector {
+  getAlienPos({ gridPos: { x, y } }: Alien): Vector {
     return new Vector(
-      /* sizes + gaps */
-      gridX * this.alienPercentageSize + gridX * this.alienSetGap,
-      gridY * this.alienPercentageSize + gridY * this.alienSetGap
+      /* alienSet positions + sizes + gaps */
+      this.alienSet.pos!.x + x * this.alienSize + x * this.alienSetGap,
+      this.alienSet.pos!.y + y * this.alienSize + y * this.alienSetGap
     );
   }
 
-  isActorShot(actor: Alien | Player): boolean {
-    let actorSize: Size;
-
-    if (actor.kind == "alien") {
-      actorSize = {
-        w: canvasObjectPercentageWidth(DIMENSIONS.alien),
-        h: canvasObjectPercentageHeight(DIMENSIONS.alien),
-      };
-    } else {
-      actorSize = {
-        w: canvasObjectPercentageWidth(DIMENSIONS.player),
-        h: canvasObjectPercentageHeight(DIMENSIONS.player),
-      };
-    }
-
-    let bulletSize = {
-      w: canvasObjectPercentageWidth(DIMENSIONS.bullet),
-      h: canvasObjectPercentageHeight(DIMENSIONS.bullet),
-    };
-
-    /* if some bullet overlaps the actor */
-    return this.bullets.some((bullet) => {
-      if (
-        overlap(
-          actor.kind == "alien"
-            ? this.getAlienPos(actor.gridPos.x, actor.gridPos.y)
-            : actor.pos,
-          actorSize,
-          bullet.pos,
-          bulletSize
-        )
-      ) {
-      }
+  isActorShot(bullets: Bullet[], actorPos: Coords, actorSize: Size) {
+    return bullets.some((bullet) => {
+      return overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize);
     });
   }
 }
 
-/*
-  All classes, except for the one responsible for displaying things, 
-  manage positions and size with percentages 
-*/
-class GameState {}
+class GameState {
+  public bullets: Bullet[] = [];
+  public playerLives: number = 3;
+  public status: "lost" | "won" | "running" = "running";
+
+  constructor(
+    public alienSet: AlienSet,
+    public player: Player,
+    public env: GameEnv
+  ) {}
+
+  /*
+    ####################################################################################
+    IMPLEMENT THIS ONE #################################################################
+    ####################################################################################
+  */
+  update(timeStep: number, keys: KeysTracker) {
+    this.alienSet.update(this, timeStep);
+    this.bullets.forEach(bullet => bullet.update(timeStep));
+
+    this.player.update(timeStep, keys);
+    if (keys.Space && this.player.canFire()) {
+      this.bullets.push(this.player.fire()!);
+    }
+
+    const playerBullets = this.bullets.filter(
+      (bullet) => bullet.from === "player"
+    );
+
+    for (const { x, y, alien } of this.alienSet) {
+      if (!alien) continue;
+
+      if (
+        this.env.isActorShot(
+          playerBullets,
+          this.env.getAlienPos(alien),
+          DIMENSIONS.alien
+        )
+      ) {
+        this.alienSet.removeAlien(x, y);
+      }
+
+      if (alien.canFire()) {
+        this.bullets.push(alien.fire(this.env.getAlienPos(alien))!);
+      }
+    }
+
+    const alienBullets = this.bullets.filter(
+      (bullet) => bullet.from === "alien"
+    );
+    
+    if (
+      this.env.isActorShot(alienBullets, this.player.pos, DIMENSIONS.player)
+    ) {
+      this.playerLives--;
+    }
+
+    if (this.alienSet.length === 0) {
+      this.status = "won";
+    } else if (this.playerLives === 0) {
+      this.status = "lost";
+    }
+  }
+}
 
 const basicInvaderPlan = `
 ..xxooooxx..
 ............`;
 
+
 const alienSet = new AlienSet(basicInvaderPlan);
+console.log("AlienSet has", alienSet.length, "length");
 
 const i = Alien.create("x", { x: 0, y: 0 });
 console.log(i);
