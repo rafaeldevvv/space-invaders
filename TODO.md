@@ -1,0 +1,4 @@
+- add comments
+- Finish updating GameEnvironment
+- Clarify the percentage thing
+- commit
