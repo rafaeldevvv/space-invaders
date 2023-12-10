@@ -5,6 +5,12 @@ interface Coords {
   y: number;
 }
 
+/* 
+this is just to make it clear what
+ kind of coords the function expects 
+ */
+interface PixelCoords extends Coords {}
+
 interface DisplaySize {
   w: DisplayUnit;
   h: DisplayUnit;
@@ -15,16 +21,11 @@ interface Size {
   h: number;
 }
 
-interface Wall {
-  pos: Coords;
-  size: {
-    w: DisplayUnit;
-    h: DisplayUnit;
-  };
-}
+interface PixelSize extends Size {}
 
 type TShooters = "player" | "alien";
-type GameKeys = "Space" | "ArrowLeft" | "ArrowRight";
+type GameKeys = " " | "ArrowLeft" | "ArrowRight";
+type TAliens = "." | "x" | "o";
 
 type Flags<Keys extends string> = {
   [Key in Keys]: boolean;
@@ -55,8 +56,8 @@ const DIMENSIONS: {
     h: 7, // 5% of the display height
   },
   bullet: {
-    w: 2, // 2% of the display width
-    h: 10, // 4% of the display height
+    w: 1, // 2% of the display width
+    h: 3, // 4% of the display height
   },
   alienSetGap: {
     w: 1, // 1% of the display width
@@ -93,18 +94,22 @@ class Vector {
   }
 }
 
-function runAnimation(callback: (timeStep: number) => void) {
+function runAnimation(callback: (timeStep: number) => boolean) {
   let lastTime: null | number = null;
   function frame(time: number) {
+    let shouldContinue: boolean;
+
     if (lastTime) {
       const timeStep = Math.min((time - lastTime) / 1000, 0.1);
       lastTime = time;
 
-      callback(timeStep);
+      shouldContinue = callback(timeStep);
     } else {
       lastTime = time;
+      shouldContinue = true;
     }
-    requestAnimationFrame(frame);
+
+    if (shouldContinue) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 }
@@ -140,8 +145,8 @@ function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
 
 /* ========================== classes ========================= */
 
-const alienSetXSpeed = 5;
-const alienSetYSpeed = 3;
+const alienSetXSpeed = 10;
+const alienSetYSpeed = 5;
 
 class AlienSet {
   public pos: Vector | null = null;
@@ -169,7 +174,7 @@ class AlienSet {
   update(state: GameState, timeStep: number) {
     let ySpeed = 0;
 
-    if (this.pos!.x >= 100 - displayPadding.hor) {
+    if (this.pos!.x + state.env.alienSetWidth >= 100 - displayPadding.hor) {
       this.direction = -1;
       ySpeed = alienSetYSpeed;
     } else if (this.pos!.x <= displayPadding.hor) {
@@ -206,13 +211,18 @@ class AlienSet {
 }
 
 class Alien {
-  public readonly kind: "alien" = "alien";
+  public readonly actorType: "alien" = "alien";
 
-  constructor(public gridPos: Coords, public score: number, public gun: Gun) {}
+  constructor(
+    public readonly gridPos: Coords,
+    public readonly score: number,
+    public readonly gun: Gun,
+    public readonly alienType: TAliens
+  ) {}
 
   fire(from: Coords) {
     /* bullet is fired from the center of the alien */
-    const bulletX = from.x + DIMENSIONS.alien.w / 2;
+    const bulletX = from.x + DIMENSIONS.alien.w / 2 - DIMENSIONS.bullet.w / 2;
 
     return this.gun.fire(new Vector(bulletX, from.y), "down");
   }
@@ -224,13 +234,13 @@ class Alien {
   static create(ch: string, gridPos: Coords) {
     switch (ch) {
       case ".": {
-        return new Alien(gridPos, 100, new Gun("alien", 5, 1500));
+        return new Alien(gridPos, 100, new Gun("alien", 50, 2000), ch);
       }
       case "x": {
-        return new Alien(gridPos, 300, new Gun("alien", 10, 2500));
+        return new Alien(gridPos, 300, new Gun("alien", 80, 5500), ch);
       }
       case "o": {
-        return new Alien(gridPos, 500, new Gun("alien", 3, 1000));
+        return new Alien(gridPos, 500, new Gun("alien", 30, 3000), ch);
       }
       default: {
         throw new Error("Unexpected character: " + ch);
@@ -239,14 +249,14 @@ class Alien {
   }
 }
 
-const playerXSpeed = 5;
+const playerXSpeed = 30;
 
 class Player {
-  public readonly kind: "player" = "player";
+  public readonly actorType: "player" = "player";
 
-  public pos: Vector = new Vector(50, 95);
+  public pos: Vector = new Vector(50 - DIMENSIONS.player.w / 2, 90);
   public speed: Vector = new Vector(5, 0);
-  public gun: Gun = new Gun("player", 4, 500);
+  public gun: Gun = new Gun("player", 70, 500);
 
   fire() {
     /* from the center of the player */
@@ -266,7 +276,7 @@ class Player {
       this.pos = this.pos.minus(movedX);
     } else if (
       keys.ArrowRight &&
-      this.pos.x + DIMENSIONS.player.w < displayPadding.hor
+      this.pos.x + DIMENSIONS.player.w < 100 - displayPadding.hor
     ) {
       this.pos = this.pos.plus(movedX);
     }
@@ -274,13 +284,16 @@ class Player {
 }
 
 class Gun {
-  private lastFire?: number;
+  private lastFire: number;
 
   constructor(
     public owner: TShooters,
     public bulletSpeed: number,
     public fireInterval: number
-  ) {}
+  ) {
+    // to give a random initial fireInterval
+    this.lastFire = performance.now() - random(0, fireInterval);
+  }
 
   fire(pos: Vector, direction: "up" | "down") {
     if (this.canFire()) {
@@ -301,16 +314,13 @@ class Gun {
     const lastFire = this.lastFire;
     const now = performance.now();
 
-    if (!lastFire) {
-      // if it hasn't fired yet, assign the current time to lastFire
-      // prop, so that it can fire after the fireInterval has passed
-      this.lastFire = now;
-      return false;
-    }
-
     const timeStep = now - lastFire;
     return timeStep >= this.fireInterval;
   }
+}
+
+function random(min: number, max: number) {
+  return min + Math.random() * (max - min);
 }
 
 class Bullet {
@@ -320,9 +330,39 @@ class Bullet {
     public speed: Vector
   ) {}
 
-  update(timeStep: number) {
+  update(state: GameState, timeStep: number) {
     this.pos = this.pos.plus(this.speed.times(timeStep));
+
+    /* const shotPlayer =
+      this.from === "alien" &&
+      state.env.isActorShot([this], state.player.pos, DIMENSIONS.player);
+    let shotAlien = false;
+
+    for (const { alien } of state.alienSet) {
+      if (!alien) continue;
+
+      shotAlien =
+        state.env.isActorShot(
+          [this],
+          state.env.getAlienPos(alien),
+          DIMENSIONS.alien
+        ) && this.from === "player";
+    }
+
+    if (
+      this.pos.y >= 100 ||
+      this.pos.y + DIMENSIONS.bullet.h <= 0 ||
+      state.env.bulletTouchesWall(this) ||
+      shotPlayer ||
+      shotAlien
+    ) {
+      state.bullets = state.bullets.filter((bullet) => bullet !== this);
+    } */
   }
+}
+
+class Wall {
+  constructor(public pos: Coords, public size: Size) {}
 }
 
 /* 
@@ -364,6 +404,38 @@ class GameEnv {
     );
   }
 
+  bulletTouchesWall(bullet: Bullet) {
+    return this.walls.some((wall) => {
+      return overlap(wall.pos, wall.size, bullet.pos, DIMENSIONS.bullet);
+    });
+  }
+
+  bulletShouldBeRemoved(bullet: Bullet) {
+    let touches = false;
+
+    if (
+      this.isActorShot([bullet], this.player.pos, DIMENSIONS.player) &&
+      bullet.from === "alien"
+    )
+      touches = true;
+
+    if (this.bulletTouchesWall(bullet)) touches = true;
+
+    for (const { alien } of this.alienSet) {
+      if (bullet.from === "alien") break;
+      if (!alien) continue;
+
+      if (
+        this.isActorShot([bullet], this.getAlienPos(alien), DIMENSIONS.alien)
+      ) {
+        touches = true;
+        break;
+      }
+    }
+
+    return touches;
+  }
+
   isActorShot(bullets: Bullet[], actorPos: Coords, actorSize: Size) {
     return bullets.some((bullet) => {
       return overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize);
@@ -389,10 +461,10 @@ class GameState {
   */
   update(timeStep: number, keys: KeysTracker) {
     this.alienSet.update(this, timeStep);
-    this.bullets.forEach(bullet => bullet.update(timeStep));
+    this.bullets.forEach((bullet) => bullet.update(this, timeStep));
 
     this.player.update(timeStep, keys);
-    if (keys.Space && this.player.canFire()) {
+    if (keys[" "] && this.player.canFire()) {
       this.bullets.push(this.player.fire()!);
     }
 
@@ -421,7 +493,7 @@ class GameState {
     const alienBullets = this.bullets.filter(
       (bullet) => bullet.from === "alien"
     );
-    
+
     if (
       this.env.isActorShot(alienBullets, this.player.pos, DIMENSIONS.player)
     ) {
@@ -433,13 +505,210 @@ class GameState {
     } else if (this.playerLives === 0) {
       this.status = "lost";
     }
+
+    this.removeUnnecessaryBullets();
+  }
+
+  removeUnnecessaryBullets() {
+    for (const bullet of this.bullets) {
+      if (
+        bullet.pos.y >= 100 ||
+        bullet.pos.y + DIMENSIONS.bullet.h <= 0 ||
+        this.env.bulletShouldBeRemoved(bullet)
+      ) {
+        this.bullets = this.bullets.filter((b) => b !== bullet);
+      }
+    }
+  }
+
+  static Start(plan: string) {
+    const alienSet = new AlienSet(plan);
+    const player = new Player();
+    const walls: Wall[] = [
+      new Wall({ x: 20, y: 75 }, { w: 20, h: 5 }),
+      new Wall({ x: 60, y: 75 }, { w: 20, h: 5 }),
+    ];
+    const env = new GameEnv(alienSet, player, walls);
+
+    return new GameState(alienSet, player, env);
   }
 }
 
-const basicInvaderPlan = `
-..xxooooxx..
-............`;
+function getElementInnerDimensions(element: HTMLElement): Size {
+  const cs = getComputedStyle(element);
 
+  console.log(cs.paddingInlineStart);
+
+  const paddingY =
+    parseFloat(cs.paddingBlockStart) + parseFloat(cs.paddingBlockEnd);
+  const paddingX =
+    parseFloat(cs.paddingInlineStart) + parseFloat(cs.paddingInlineEnd);
+
+  const marginY =
+    parseFloat(cs.marginBlockStart) + parseFloat(cs.marginBlockEnd);
+  const marginX =
+    parseFloat(cs.marginInlineStart) + parseFloat(cs.marginInlineEnd);
+
+  return {
+    w: element.offsetWidth - paddingX - marginX,
+    h: element.offsetHeight - paddingY - marginY,
+  };
+}
+
+const alienColors: {
+  [Key in TAliens]: string;
+} = {
+  ".": "limegreen",
+  x: "orange",
+  o: "pink",
+};
+
+class CanvasDisplay {
+  canvas: HTMLCanvasElement;
+  canvasContext: CanvasRenderingContext2D;
+
+  constructor(
+    public state: GameState,
+    public controller: GameController,
+    public parent: HTMLElement
+  ) {
+    this.canvas = document.createElement("canvas");
+    this.canvasContext = this.canvas.getContext("2d")!;
+
+    this.canvas.style.display = "block";
+    this.canvas.style.marginInline = "auto";
+
+    this.parent.appendChild(this.canvas);
+
+    this.setCanvasSize();
+    this.syncState(state);
+  }
+
+  get canvasWidth() {
+    return this.canvas.width;
+  }
+
+  get canvasHeight() {
+    return this.canvas.height;
+  }
+
+  horPixels(percentage: number) {
+    return (percentage / 100) * this.canvasWidth;
+  }
+
+  verPixels(percentage: number) {
+    return (percentage / 100) * this.canvasHeight;
+  }
+
+  getPixelPos(percentagePos: Coords): PixelCoords {
+    return {
+      x: this.horPixels(percentagePos.x),
+      y: this.verPixels(percentagePos.y),
+    };
+  }
+
+  getPixelSize(percentageSize: Size): PixelSize {
+    return {
+      w: this.horPixels(percentageSize.w),
+      h: this.verPixels(percentageSize.h),
+    };
+  }
+
+  setCanvasSize() {
+    const canvasWidth = Math.min(
+      720,
+      getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
+    );
+    console.log(canvasWidth);
+
+    this.canvas.setAttribute("width", canvasWidth.toString());
+    this.canvas.setAttribute("height", ((canvasWidth / 4) * 3).toString());
+  }
+
+  syncState(state: CanvasDisplay["state"]) {
+    this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+    this.canvasContext.fillStyle = "black";
+    this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    this.drawAlienSet(state.alienSet);
+    this.drawPlayer(state.player);
+    this.drawBullets(state.bullets);
+    this.drawWalls(state.env.walls);
+  }
+
+  drawAlienSet(alienSet: AlienSet) {
+    for (const { alien, x, y } of alienSet) {
+      if (!alien) continue;
+
+      const xPercentage =
+        alienSet.pos!.x + x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
+
+      const yPercentage =
+        alienSet.pos!.y + y * (DIMENSIONS.alienSetGap.h + DIMENSIONS.alien.h);
+
+      this.drawAlien(alien, {
+        x: xPercentage,
+        y: yPercentage,
+      });
+    }
+  }
+
+  drawAlien(alien: Alien, pos: Coords) {
+    const { w, h } = this.getPixelSize(DIMENSIONS.alien);
+    const { x, y } = this.getPixelPos(pos);
+
+    this.canvasContext.fillStyle = alienColors[alien.alienType];
+    this.canvasContext.fillRect(x, y, w, h);
+  }
+
+  drawBullets(bullets: Bullet[]) {
+    for (const bullet of bullets) {
+      this.drawBullet(bullet);
+    }
+  }
+
+  drawBullet(bullet: Bullet) {
+    const { x, y } = this.getPixelPos(bullet.pos);
+    const { w, h } = this.getPixelSize(DIMENSIONS.bullet);
+
+    this.canvasContext.fillStyle =
+      bullet.from === "alien" ? "limegreen" : "white";
+    this.canvasContext.fillRect(x, y, w, h);
+  }
+
+  drawPlayer(player: Player) {
+    const { x, y } = this.getPixelPos(player.pos);
+    const { w, h } = this.getPixelSize(DIMENSIONS.player);
+
+    this.canvasContext.fillStyle = "white";
+    this.canvasContext.fillRect(x, y, w, h);
+  }
+
+  drawWalls(walls: Wall[]) {
+    for (const wall of walls) {
+      const { x, y } = this.getPixelPos(wall.pos);
+      const { w, h } = this.getPixelSize(wall.size);
+
+      this.canvasContext.fillStyle = "#ffffff";
+      this.canvasContext.fillRect(x, y, w, h);
+    }
+  }
+
+  drawMetadata(state: CanvasDisplay["state"]) {
+    // draw hearts to show player's lives
+    // draw score
+    //
+  }
+
+  drawGameOverScreen() {}
+}
+
+class GameController {}
+
+const basicInvaderPlan = `
+.xxooxx.
+.oo..oo.
+...xx...`;
 
 const alienSet = new AlienSet(basicInvaderPlan);
 console.log("AlienSet has", alienSet.length, "length");
@@ -448,7 +717,8 @@ const i = Alien.create("x", { x: 0, y: 0 });
 console.log(i);
 
 let a: Alien = {
-  kind: "alien",
+  actorType: "alien",
+  alienType: ".",
   gridPos: { x: 8, y: 8 },
   score: 899,
   gun: new Gun("alien", 5, 200),
@@ -459,3 +729,49 @@ let a: Alien = {
     throw "";
   },
 };
+
+let state = GameState.Start(basicInvaderPlan);
+const canvasDisplay = new CanvasDisplay(
+  state,
+  new GameController(),
+  document.body
+);
+
+function keysTracker<Type extends string>(
+  keys: Type[]
+): {
+  [Key in Type]: boolean;
+} {
+  const down = {} as {
+    [Key in Type]: boolean;
+  };
+  keys.forEach((key) => (down[key] = false));
+
+  function onPress(e: KeyboardEvent) {
+    console.log(e.keyCode);
+    //@ts-ignore
+    if (keys.some((key) => key === e.key)) down[e.key] = e.type === "keydown";
+  }
+
+  window.addEventListener("keydown", onPress);
+  window.addEventListener("keyup", onPress);
+
+  return down;
+}
+
+const keys = keysTracker(["ArrowRight", "ArrowLeft", " "]);
+
+runAnimation((timeStep) => {
+  console.log(state.playerLives);
+  if (state.status === "lost") {
+    console.log("lost");
+    return false;
+  } else if (state.status === "won") {
+    console.log("won");
+    return false;
+  } else {
+    state.update(timeStep, keys);
+    canvasDisplay.syncState(state);
+    return true;
+  }
+});
