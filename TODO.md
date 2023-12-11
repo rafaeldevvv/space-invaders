@@ -1,9 +1,3 @@
-- reset player position when it is hit by a bullet
-- commit & update README
-
-- Change how alien set is drawn by making it move by a bigger step
-- commit & update README
-
 - show metadata
 - commit & update README
 

@@ -91,12 +91,14 @@ function keysTracker(keys) {
     window.addEventListener("keyup", onPressKey);
     return down;
 }
-const alienSetXSpeed = 10;
-const alienSetYSpeed = 5;
+const alienSetXStep = (100 - displayPadding.hor * 2) / 20;
+const alienSetYStep = 5;
+const alienSetMoveTime = 1;
 class AlienSet {
     constructor(plan) {
         this.pos = null;
         this.direction = 1;
+        this.timeStepSum = 0;
         const rows = plan
             .trim()
             .split("\n")
@@ -110,17 +112,34 @@ class AlienSet {
         });
     }
     update(state, timeStep) {
-        let ySpeed = 0;
-        if (this.pos.x + state.env.alienSetWidth >= 100 - displayPadding.hor) {
+        this.timeStepSum += timeStep;
+        let movedY = 0;
+        if (this.pos.x + state.env.alienSetWidth >= 100 - displayPadding.hor &&
+            this.timeStepSum >= alienSetMoveTime &&
+            this.direction === 1) {
             this.direction = -1;
-            ySpeed = alienSetYSpeed;
+            movedY = alienSetYStep;
         }
-        else if (this.pos.x <= displayPadding.hor) {
+        else if (this.pos.x <= displayPadding.hor &&
+            this.timeStepSum >= alienSetMoveTime &&
+            this.direction === -1) {
             this.direction = 1;
-            ySpeed = alienSetYSpeed;
+            movedY = alienSetYStep;
         }
-        let xSpeed = alienSetXSpeed * this.direction;
-        this.pos = this.pos.plus(new Vector(xSpeed * timeStep, ySpeed));
+        let movedX = 0;
+        if (this.timeStepSum >= alienSetMoveTime && movedY === 0) {
+            if (this.direction === 1) {
+                movedX = Math.min(alienSetXStep, 100 - this.pos.x - displayPadding.hor - state.env.alienSetWidth);
+            }
+            else {
+                movedX = Math.min(alienSetXStep, this.pos.x - displayPadding.hor);
+            }
+            movedX *= this.direction;
+        }
+        if (this.timeStepSum >= alienSetMoveTime) {
+            this.timeStepSum = 0;
+        }
+        this.pos = this.pos.plus(new Vector(movedX, movedY));
     }
     removeAlien(x, y) {
         this.aliens[y][x] = null;
@@ -410,10 +429,11 @@ class CanvasDisplay {
         this.drawWalls(state.env.walls);
     }
     drawAlienSet(alienSet) {
+        const alienSetXPos = alienSet.pos.x;
         for (const { alien, x, y } of alienSet) {
             if (!alien)
                 continue;
-            const xPercentage = alienSet.pos.x + x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
+            const xPercentage = alienSetXPos + x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
             const yPercentage = alienSet.pos.y + y * (DIMENSIONS.alienSetGap.h + DIMENSIONS.alien.h);
             this.drawAlien(alien, {
                 x: xPercentage,

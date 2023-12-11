@@ -1,14 +1,20 @@
 /* ========================= Interfaces and Types ======================= */
 
+/**
+ * @interface Coords - A two-dimensional position.
+ */
 interface Coords {
   x: number;
   y: number;
 }
 
-/* 
-this is just to make it clear what
- kind of coords the function expects 
- */
+/**
+ * This interface is meant to be used by the CanvasDisplay just 
+ * to make it clear what the method expects.
+ * 
+ * @interface PixelCoords - A two-dimensional position in pixels.
+ * @extends {Coords} - Another interface representing coordinates.
+*/ 
 interface PixelCoords extends Coords {}
 
 interface Display {
@@ -35,10 +41,10 @@ type KeysTracker = FlagsFromUnion<GameKeys>;
 
 /* ========================== constants ========================= */
 
-/* 
-  the sizes are percentages within the display, from 0 to 100. 
-  `cw` stands for display width, `ch` for display height
-*/
+/**
+ * The dimensions of all objects in the game.
+ * The sizes are percentages within the display, from 0 to 100.
+ */
 const DIMENSIONS: {
   readonly alien: Size;
   readonly player: Size;
@@ -63,6 +69,9 @@ const DIMENSIONS: {
   },
 };
 
+/**
+ * the padding within the display.
+ */
 const displayPadding = {
   hor: 3,
   ver: 5,
@@ -74,30 +83,68 @@ const spaceKey = " ";
 
 /* ========================== utilities ========================= */
 
+/**
+ * Class representing a vector
+ */
 class Vector {
   x: number;
   y: number;
 
+  /**
+   * Create a Vector.
+   * 
+   * @param x - The position along the horizontal axis.
+   * @param y - The position along the vertical axis.
+   */
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
   }
 
+  /**
+   * Add two Vector objects' axes' values.
+   * 
+   * @param {Vector} other - Another Vector to add to the current one.
+   * @returns {Vector} - A Vector with the added axes of both previous vectors.
+   */
   plus(other: Vector) {
     return new Vector(this.x + other.x, this.y + other.y);
   }
 
+  /**
+   * Subtract one Vector's axes' values from another Vector.
+   * 
+   * @param {Vector} other - Another Vector to subtract from the current one.
+   * @returns {Vector} - A Vector with subtracted axes.
+   */
   minus(other: Vector) {
     return new Vector(this.x - other.x, this.y - other.y);
   }
 
+  /**
+   * Mulitply a Vector's axes' values by a number.
+   * 
+   * @param {number} factor - A number by which the method will multiply the Vector's axes.
+   * @returns {Vector} - A Vector with multiplied axes.
+   */
   times(factor: number) {
     return new Vector(this.x * factor, this.y * factor);
   }
 }
 
+/**
+ * Run an animation.
+ * 
+ * @param {function(timeStep: number): boolean} callback - A function to be called everytime a frame can be painted to the screen.
+ */
 function runAnimation(callback: (timeStep: number) => boolean) {
   let lastTime: null | number = null;
+
+  /**
+   * A function that manages each frame of the animation.
+   * 
+   * @param {number} time - The current time since the application started.
+   */
   function frame(time: number) {
     let shouldContinue: boolean;
 
@@ -116,10 +163,26 @@ function runAnimation(callback: (timeStep: number) => boolean) {
   requestAnimationFrame(frame);
 }
 
+/**
+ * Generate a random number between two numbers.
+ * 
+ * @param {number} min - The minimum value.
+ * @param {number} max - The maximum value.
+ * @returns {number} - The random number between min and max value.
+ */
 function random(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
 
+/**
+ * Check whether two objects overlap.
+ * 
+ * @param {Coords} pos1 - The position of the first object.
+ * @param {Size} size1 - The size of the first objet.
+ * @param {Coords} pos2 - The position of the second object.
+ * @param {Size} size2 - The size of the second objet.
+ * @returns {boolean} - A boolean stating whether the two objects overlap.
+ */
 function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
   return (
     pos1.x + size1.w > pos2.x &&
@@ -129,6 +192,12 @@ function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
   );
 }
 
+/**
+ * Calculate the size of the element excluding padding, border and margin
+ * 
+ * @param element - An HTML Element
+ * @returns - The size of the element excluding padding, border and margin
+ */
 function getElementInnerDimensions(element: HTMLElement): Size {
   /* ############################################################################################################################################ */
   /* ############################################################################################################################################ */
@@ -158,6 +227,12 @@ function getElementInnerDimensions(element: HTMLElement): Size {
   };
 }
 
+/**
+ * 
+ * 
+ * @param keys - An array of strings
+ * @returns - An object whose property names are the strings withing `keys`
+ */
 function keysTracker<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
   const down = {} as FlagsFromUnion<Type>;
   keys.forEach((key) => (down[key] = false));
@@ -180,9 +255,17 @@ function keysTracker<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
 /* ===================== Game Components ============================== */
 /* ==================================================================== */
 
-const alienSetXSpeed = 10;
-const alienSetYSpeed = 5;
+/*
+  `(100 - displayPadding.hor * 2)` is the area within the padding edges
+  divide it by twenty so that we have 20 steps along the display
+*/
+const alienSetXStep = (100 - displayPadding.hor * 2) / 20;
+const alienSetYStep = 5;
+const alienSetMoveTime = 1;
 
+/**
+ * A class represeting a set of {@link Alien}s
+ */
 class AlienSet {
   public pos: Vector | null = null;
   public numColumns: number;
@@ -190,6 +273,17 @@ class AlienSet {
   public aliens: (Alien | null)[][];
   public direction: 1 | -1 = 1;
 
+ /**
+  * A variable that manages when the AlienSet's position can update.
+  * When it is greater than or equal to alienSetMoveTime, then the alien set can move.
+  */
+  private timeStepSum = 0;
+
+  /**
+   * Create an AlienSet.
+   * 
+   * @param plan - A string represeting an arranged set of aliens.
+   */
   constructor(plan: string) {
     const rows = plan
       .trim()
@@ -206,26 +300,80 @@ class AlienSet {
     });
   }
 
-  update(state: GameState, timeStep: number) {
-    let ySpeed = 0;
+  /** 
+   * Update the AlienSet instance.
+   * 
+   * @param {number} timeStep - The time that has passed since the last update.
+  */
+  update(timeStep: number) {
+    this.timeStepSum += timeStep;
 
-    if (this.pos!.x + state.env.alienSetWidth >= 100 - displayPadding.hor) {
+    let movedY = 0;
+
+    /* 
+      if it is going right and it has touched 
+      the padding area and it can update its position
+    */
+    if (
+      this.pos!.x + state.env.alienSetWidth >= 100 - displayPadding.hor &&
+      this.timeStepSum >= alienSetMoveTime &&
+      this.direction === 1
+    ) {
       this.direction = -1;
-      ySpeed = alienSetYSpeed;
-    } else if (this.pos!.x <= displayPadding.hor) {
+      movedY = alienSetYStep;
+    } else if (
+      /* if it is going left and has touched the padding area and can update */
+      this.pos!.x <= displayPadding.hor &&
+      this.timeStepSum >= alienSetMoveTime &&
+      this.direction === -1
+    ) {
       this.direction = 1;
-      ySpeed = alienSetYSpeed;
+      movedY = alienSetYStep;
     }
 
-    let xSpeed = alienSetXSpeed * this.direction;
+    let movedX = 0;
+    /* if can update and has not moved down */
+    if (this.timeStepSum >= alienSetMoveTime && movedY === 0) {
+      if (this.direction === 1) {
+        /*
+          here we get either the distance left to reach the inner right padding edge
+          or the normal step to move
+        */
+       movedX = Math.min(
+         alienSetXStep,
+         100 - this.pos!.x - displayPadding.hor - state.env.alienSetWidth
+         );
+        } else {
+        /*
+          here we get either the distance left to reach the inner left padding edge
+          or the normal step to move
+        */
+        movedX = Math.min(alienSetXStep, this.pos!.x - displayPadding.hor);
+      }
+      movedX *= this.direction;
+    }
 
-    this.pos = this.pos!.plus(new Vector(xSpeed * timeStep, ySpeed));
+    /* reset */
+    if (this.timeStepSum >= alienSetMoveTime) {
+      this.timeStepSum = 0;
+    }
+
+    this.pos = this.pos!.plus(new Vector(movedX, movedY));
   }
 
+  /**
+   * Remove an alien from the set.
+   * 
+   * @param {number} x - The X position of the alien within the grid.
+   * @param {number} y - The Y position of the alien within the grid.
+   */
   removeAlien(x: number, y: number) {
     this.aliens[y][x] = null;
   }
 
+  /**
+   * The current number of aliens that are alive.
+   */
   get length() {
     return this.aliens.reduce((allAliensCount, row) => {
       const rowCount = row.reduce((rowCount, alien) => {
@@ -237,6 +385,9 @@ class AlienSet {
     }, 0);
   }
 
+  /**
+   * Iterate through the AlienSet, yielding an alien as well as its position within the grid.
+   */
   *[Symbol.iterator]() {
     for (let y = 0; y < this.numRows; y++) {
       for (let x = 0; x < this.numColumns; x++) {
@@ -246,9 +397,20 @@ class AlienSet {
   }
 }
 
+/**
+ * Class representing an alien.
+ */
 class Alien {
   public readonly actorType: "alien" = "alien";
 
+  /**
+   * Create an Alien.
+   * 
+   * @param {Coords} gridPos - The position of the alien within the alien set.
+   * @param {number} score - The score the player gets when it kills this alien.
+   * @param {Gun} gun - The gun of the alien.
+   * @param {TAliens} alienType - The type of the alien.
+   */
   constructor(
     public readonly gridPos: Coords,
     public readonly score: number,
@@ -256,6 +418,12 @@ class Alien {
     public readonly alienType: TAliens
   ) {}
 
+  /**
+   * Fire an alien bullet.
+   * 
+   * @param {Coords} from - The position from where the alien fires.
+   * @returns {Bullet | null} - The fired bullet or null if the gun wasn't able to fire.
+   */
   fire(from: Coords) {
     /* bullet is fired from the center of the alien */
     const bulletX = from.x + DIMENSIONS.alien.w / 2 - DIMENSIONS.bullet.w / 2;
@@ -263,10 +431,22 @@ class Alien {
     return this.gun.fire(new Vector(bulletX, from.y), "down");
   }
 
+  /**
+   * Check whether the gun can be fired.
+   * 
+   * @returns {boolean} - Whether the alien's gun can be fired.
+   */
   canFire() {
     return this.gun.canFire();
   }
 
+  /**
+   * Create an alien based on a character.
+   * 
+   * @param {string} ch - The type of the alien represented by a character.
+   * @param {Coords} gridPos - The position of the player within the grid.
+   * @returns {Alien} - A specific alien type.
+   */
   static create(ch: string, gridPos: Coords) {
     switch (ch) {
       case ".": {
@@ -474,7 +654,7 @@ class GameState {
   ) {}
 
   update(timeStep: number, keys: KeysTracker) {
-    this.alienSet.update(this, timeStep);
+    this.alienSet.update(timeStep);
     this.bullets.forEach((bullet) => bullet.update(timeStep));
 
     this.player.update(timeStep, keys);
@@ -635,11 +815,13 @@ class CanvasDisplay {
   }
 
   drawAlienSet(alienSet: AlienSet) {
+    const alienSetXPos = alienSet.pos!.x;
+
     for (const { alien, x, y } of alienSet) {
       if (!alien) continue;
 
       const xPercentage =
-        alienSet.pos!.x + x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
+        alienSetXPos + x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
 
       const yPercentage =
         alienSet.pos!.y + y * (DIMENSIONS.alienSetGap.h + DIMENSIONS.alien.h);
