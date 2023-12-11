@@ -290,7 +290,10 @@ const playerXSpeed = 30;
 class Player {
   public readonly actorType: "player" = "player";
 
-  public pos: Vector = new Vector(50 - DIMENSIONS.player.w / 2, 90);
+  private baseXPos = 50 - DIMENSIONS.player.w / 2;
+  private baseYPos = 90;
+
+  public pos: Vector = new Vector(this.baseXPos, this.baseYPos);
 
   public readonly gun: Gun = new Gun("player", 70, 500);
 
@@ -304,8 +307,8 @@ class Player {
     return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up");
   }
 
-  canFire() {
-    return this.gun.canFire();
+  resetPos() {
+    this.pos = new Vector(this.baseXPos, this.baseYPos);
   }
 
   update(timeStep: number, keys: KeysTracker) {
@@ -449,6 +452,10 @@ class GameEnv {
     return touches;
   }
 
+  alienSetReachedWall() {
+    return this.alienSet.pos!.y + this.alienSetHeight >= this.walls[0].pos.y;
+  }
+
   isActorShot(bullets: Bullet[], actorPos: Coords, actorSize: Size) {
     return bullets.some((bullet) => {
       return overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize);
@@ -471,7 +478,8 @@ class GameState {
     this.bullets.forEach((bullet) => bullet.update(timeStep));
 
     this.player.update(timeStep, keys);
-    if (keys[" "] && this.player.canFire()) {
+
+    if (keys[" "] && this.player.gun.canFire()) {
       this.bullets.push(this.player.fire()!);
     }
 
@@ -505,6 +513,7 @@ class GameState {
       this.env.isActorShot(alienBullets, this.player.pos, DIMENSIONS.player)
     ) {
       this.player.lives--;
+      this.player.resetPos();
     }
 
     if (this.alienSet.length === 0) {

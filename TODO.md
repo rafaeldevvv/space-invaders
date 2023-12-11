@@ -1,9 +1,3 @@
-- Clarify the percentage thing
-- commit & update README
-
-- Use key codes instead of key names for keyboard interaction
-- commit & update README
-
 - reset player position when it is hit by a bullet
 - commit & update README
 
