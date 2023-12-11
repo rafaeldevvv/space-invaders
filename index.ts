@@ -15,13 +15,6 @@ interface Display {
   syncState(state: GameState): void;
 }
 
-interface DisplaySize {
-  w: DisplayUnit;
-  h: DisplayUnit;
-}
-
-type DisplayUnit = `${number}d${"w" | "h"}`;
-
 interface Size {
   w: number;
   h: number;
@@ -121,26 +114,6 @@ function runAnimation(callback: (timeStep: number) => boolean) {
 
 function random(min: number, max: number) {
   return min + Math.random() * (max - min);
-}
-
-function numberFromDisplayUnit(unit: DisplayUnit) {
-  return Number(unit.replace(/d(w|h)/, ""));
-}
-
-function displayObjectPercentageWidth(unit: DisplayUnit | DisplaySize) {
-  if (typeof unit === "string") {
-    return numberFromDisplayUnit(unit);
-  } else {
-    return numberFromDisplayUnit(unit.w);
-  }
-}
-
-function displayObjectPercentageHeight(unit: DisplayUnit | DisplaySize) {
-  if (typeof unit === "string") {
-    return numberFromDisplayUnit(unit);
-  } else {
-    return numberFromDisplayUnit(unit.h);
-  }
 }
 
 function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {

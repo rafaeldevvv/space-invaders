@@ -75,6 +75,30 @@ type DisplayUnit = `${number}d${"w" | "h"}`;
 
 This would be like: `"10dw"` would mean 10% of the display width and `"50dh"` would mean 50% of the display height. But I realized that'd be tremendously error-prone and I would have a hard time trying to detect collision and put everything in place.
 
+I even started building the game with that approach in mind, but I am glad I changed because the folling code snippet is part of the work I would have:
+
+```ts
+function numberFromDisplayUnit(unit: DisplayUnit) {
+  return Number(unit.replace(/d(w|h)/, ""));
+}
+
+function displayObjectPercentageWidth(unit: DisplayUnit | DisplaySize) {
+  if (typeof unit === "string") {
+    return numberFromDisplayUnit(unit);
+  } else {
+    return numberFromDisplayUnit(unit.w);
+  }
+}
+
+function displayObjectPercentageHeight(unit: DisplayUnit | DisplaySize) {
+  if (typeof unit === "string") {
+    return numberFromDisplayUnit(unit);
+  } else {
+    return numberFromDisplayUnit(unit.h);
+  }
+}
+```
+
 ### Collisions
 
 I've made a class to manage collisions and sizes to separate the concerns of the game. It makes use of the `overlap` function to detect collision.
