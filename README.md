@@ -3,10 +3,16 @@
 This is an implementation of the classic Space Invaders game using [TypeScript](https://www.typescriptlang.org/) and the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API).
 
 ## Table of Contents
+
 - [Overview](#overview)
-   - [Built with](#built-with)
-   - [Screenshot](#screenshot)
+  - [Built with](#built-with)
+  - [Screenshot](#screenshot)
 - [Process](#process)
+   - [Objects Positions Problem](#objects-positions-problem)
+   - [Sizes](#sizes)
+   - [Collisions](#collisions)
+   - [Aliens](#aliens)
+   - [Display](#display)
    - [Useful Resources](#useful-resources)
 - [Author](#author)
 
@@ -25,7 +31,7 @@ I had fun building this game and I took a different approach that allowed me to 
 
 This time I got totally focused on the smaller components, such as bullets, aliens and so on, first and didn't worry about the high-level ones like state, rendering method, controller and so on. This allowed me to build my way up really fast.
 
-### Objects Position Problem
+### Objects Positions Problem
 
 The best approach i could think of, taking into account that I would like the canvas to resize, is using percentage for the position of the objects. For example, if the `x` property of the `pos` property of an object was 20, then the object would be 20% off the left border of the canvas.
 
@@ -131,22 +137,87 @@ class GameEnv {
     public alienSet: AlienSet,
     public player: Player,
     public walls: Wall[]
-  ) {
+  ) {}
+
+  getAlienPos({ gridPos: { x, y } }: Alien): Vector {}
+
+  bulletTouchesWall(bullet: Bullet) {}
+
+  bulletShouldBeRemoved(bullet: Bullet) {}
+
+  isActorShot(bullets: Bullet[], actorPos: Coords, actorSize: Size) {}
+}
+```
+
+### Aliens
+
+I made a convenient class to read a set of aliens:
+
+```ts
+class AlienSet {
+  public pos: Vector | null = null;
+  public numColumns: number;
+  public numRows: number;
+  public aliens: (Alien | null)[][];
+  public direction: 1 | -1 = 1;
+
+  constructor(plan: string) {
+    const rows = plan
+      .trim()
+      .split("\n")
+      .map((l) => [...l]);
+
+    this.numColumns = rows[0].length;
+    this.numRows = rows.length;
+
+    this.aliens = rows.map((row, y) => {
+      return row.map((ch, x) => {
+        return Alien.create(ch, { x, y });
+      });
+    });
   }
 
-  getAlienPos({ gridPos: { x, y } }: Alien): Vector {
+  update(state: GameState, timeStep: number) {
+    let ySpeed = 0;
+
+    if (this.pos!.x + state.env.alienSetWidth >= 100 - displayPadding.hor) {
+      this.direction = -1;
+      ySpeed = alienSetYSpeed;
+    } else if (this.pos!.x <= displayPadding.hor) {
+      this.direction = 1;
+      ySpeed = alienSetYSpeed;
+    }
+
+    let xSpeed = alienSetXSpeed * this.direction;
+
+    this.pos = this.pos!.plus(new Vector(xSpeed * timeStep, ySpeed));
   }
 
-  bulletTouchesWall(bullet: Bullet) {
+  removeAlien(x: number, y: number) {
+    this.aliens[y][x] = null;
   }
 
-  bulletShouldBeRemoved(bullet: Bullet) {
+  get length() {
+    return this.aliens.reduce((allAliensCount, row) => {
+      const rowCount = row.reduce((count, alien) => {
+        if (alien !== null) return count + 1;
+        else return count;
+      }, 0);
+      return allAliensCount + rowCount;
+    }, 0);
   }
 
-  isActorShot(bullets: Bullet[], actorPos: Coords, actorSize: Size) {
+  *[Symbol.iterator]() {
+    for (let y = 0; y < this.numRows; y++) {
+      for (let x = 0; x < this.numColumns; x++) {
+        yield { x, y, alien: this.aliens[y][x] };
+      }
+    }
   }
 }
 ```
+
+As you can see, I built my own iterator for this class because at some points of the code I need to have access to all aliens as well as their positions within the set. And there's also a `length` property to check how many aliens are alive.
 
 ### Display
 
@@ -165,70 +236,54 @@ class CanvasDisplay {
     public state: GameState,
     public controller: GameController,
     public parent: HTMLElement
-  ) {
-  }
+  ) {}
 
-  get canvasWidth() {
-  }
+  get canvasWidth() {}
 
-  get canvasHeight() {
-  }
+  get canvasHeight() {}
 
-  horPixels(percentage: number) {
-  }
+  horPixels(percentage: number) {}
 
-  verPixels(percentage: number) {
-  }
+  verPixels(percentage: number) {}
 
-  getPixelPos(percentagePos: Coords): PixelCoords {
-  }
+  getPixelPos(percentagePos: Coords): PixelCoords {}
 
-  getPixelSize(percentageSize: Size): PixelSize {
-  }
+  getPixelSize(percentageSize: Size): PixelSize {}
 
-  setCanvasSize() {
-  }
+  setCanvasSize() {}
 
-  syncState(state: CanvasDisplay["state"]) {
-  }
+  syncState(state: CanvasDisplay["state"]) {}
 
-  drawAlienSet(alienSet: AlienSet) {
-  }
+  drawAlienSet(alienSet: AlienSet) {}
 
-  drawAlien(alien: Alien, pos: Coords) {
-  }
+  drawAlien(alien: Alien, pos: Coords) {}
 
-  drawBullets(bullets: Bullet[]) {
-  }
+  drawBullets(bullets: Bullet[]) {}
 
-  drawBullet(bullet: Bullet) {
-  }
+  drawBullet(bullet: Bullet) {}
 
-  drawPlayer(player: Player) {
-    
-  }
+  drawPlayer(player: Player) {}
 
-  drawWalls(walls: Wall[]) {
-  }
+  drawWalls(walls: Wall[]) {}
 
-  drawMetadata(state: CanvasDisplay["state"]) {
-  }
+  drawMetadata(state: CanvasDisplay["state"]) {}
 
   drawGameOverScreen() {}
 }
 ```
 
-
 ### Useful Resources
+
 - [Generating a `tsconfig.json` file](https://stackoverflow.com/questions/36916989/how-can-i-generate-a-tsconfig-json-file)
 - [Eloquent JS - Project: A Platform Game](https://eloquentjavascript.net/16_game.html)
 - [tsc apparently not picking up tsconfig.json](https://github.com/microsoft/TypeScript/issues/6591)
 - [Is there a Typescript way of adding properties to a prototype?](https://stackoverflow.com/questions/74033732/is-there-a-typescript-way-of-adding-properties-to-a-prototype)
 - [Iteration protocols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - [How to define a private property when implementing an interface in Typescript?](https://stackoverflow.com/questions/37791947/how-to-define-a-private-property-when-implementing-an-interface-in-typescript)
-- []()
+- [KeyboardEvent.keyCode deprecated. What does this mean in practice?](https://stackoverflow.com/questions/35394937/keyboardevent-keycode-deprecated-what-does-this-mean-in-practice)
 
 ## Author
+
 - [Instagram](https://www.instagram.com/rafaeldevvv)
 - [Portfolio](https://rafaeldevvv.github.io/portfolio)
 - [X](https://www.twitter.com/rafaeldevvv)

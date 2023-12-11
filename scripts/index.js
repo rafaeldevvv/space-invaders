@@ -21,6 +21,9 @@ const displayPadding = {
     hor: 3,
     ver: 5,
 };
+const arrowRightKey = "ArrowRight";
+const arrowLeftKey = "ArrowLeft";
+const spaceKey = " ";
 class Vector {
     constructor(x, y) {
         this.x = x;
@@ -54,30 +57,39 @@ function runAnimation(callback) {
     }
     requestAnimationFrame(frame);
 }
-function numberFromDisplayUnit(unit) {
-    return Number(unit.replace(/d(w|h)/, ""));
-}
-function displayObjectPercentageWidth(unit) {
-    if (typeof unit === "string") {
-        return numberFromDisplayUnit(unit);
-    }
-    else {
-        return numberFromDisplayUnit(unit.w);
-    }
-}
-function displayObjectPercentageHeight(unit) {
-    if (typeof unit === "string") {
-        return numberFromDisplayUnit(unit);
-    }
-    else {
-        return numberFromDisplayUnit(unit.h);
-    }
+function random(min, max) {
+    return min + Math.random() * (max - min);
 }
 function overlap(pos1, size1, pos2, size2) {
     return (pos1.x + size1.w > pos2.x &&
         pos1.x < pos2.x + size2.w &&
         pos1.y + size1.h > pos2.y &&
         pos1.y < pos2.y + size2.h);
+}
+function getElementInnerDimensions(element) {
+    const cs = getComputedStyle(element);
+    const paddingY = parseFloat(cs.paddingBlockStart) + parseFloat(cs.paddingBlockEnd);
+    const paddingX = parseFloat(cs.paddingInlineStart) + parseFloat(cs.paddingInlineEnd);
+    const marginY = parseFloat(cs.marginBlockStart) + parseFloat(cs.marginBlockEnd);
+    const marginX = parseFloat(cs.marginInlineStart) + parseFloat(cs.marginInlineEnd);
+    return {
+        w: element.offsetWidth - paddingX - marginX,
+        h: element.offsetHeight - paddingY - marginY,
+    };
+}
+function keysTracker(keys) {
+    const down = {};
+    keys.forEach((key) => (down[key] = false));
+    function onPressKey(e) {
+        for (const key of keys) {
+            if (e.key === key) {
+                down[e.key] = e.type === "keydown";
+            }
+        }
+    }
+    window.addEventListener("keydown", onPressKey);
+    window.addEventListener("keyup", onPressKey);
+    return down;
 }
 const alienSetXSpeed = 10;
 const alienSetYSpeed = 5;
@@ -115,11 +127,11 @@ class AlienSet {
     }
     get length() {
         return this.aliens.reduce((allAliensCount, row) => {
-            const rowCount = row.reduce((count, alien) => {
+            const rowCount = row.reduce((rowCount, alien) => {
                 if (alien !== null)
-                    return count + 1;
+                    return rowCount + 1;
                 else
-                    return count;
+                    return rowCount;
             }, 0);
             return allAliensCount + rowCount;
         }, 0);
@@ -169,8 +181,9 @@ class Player {
     constructor() {
         this.actorType = "player";
         this.pos = new Vector(50 - DIMENSIONS.player.w / 2, 90);
-        this.speed = new Vector(5, 0);
         this.gun = new Gun("player", 70, 500);
+        this.lives = 3;
+        this.score = 0;
     }
     fire() {
         const bulletPosX = this.pos.x + DIMENSIONS.player.w / 2;
@@ -211,16 +224,13 @@ class Gun {
         return timeStep >= this.fireInterval;
     }
 }
-function random(min, max) {
-    return min + Math.random() * (max - min);
-}
 class Bullet {
     constructor(from, pos, speed) {
         this.from = from;
         this.pos = pos;
         this.speed = speed;
     }
-    update(state, timeStep) {
+    update(timeStep) {
         this.pos = this.pos.plus(this.speed.times(timeStep));
     }
 }
@@ -285,12 +295,11 @@ class GameState {
         this.player = player;
         this.env = env;
         this.bullets = [];
-        this.playerLives = 3;
         this.status = "running";
     }
     update(timeStep, keys) {
         this.alienSet.update(this, timeStep);
-        this.bullets.forEach((bullet) => bullet.update(this, timeStep));
+        this.bullets.forEach((bullet) => bullet.update(timeStep));
         this.player.update(timeStep, keys);
         if (keys[" "] && this.player.canFire()) {
             this.bullets.push(this.player.fire());
@@ -308,12 +317,12 @@ class GameState {
         }
         const alienBullets = this.bullets.filter((bullet) => bullet.from === "alien");
         if (this.env.isActorShot(alienBullets, this.player.pos, DIMENSIONS.player)) {
-            this.playerLives--;
+            this.player.lives--;
         }
         if (this.alienSet.length === 0) {
             this.status = "won";
         }
-        else if (this.playerLives === 0) {
+        else if (this.player.lives === 0) {
             this.status = "lost";
         }
         this.removeUnnecessaryBullets();
@@ -338,18 +347,6 @@ class GameState {
         return new GameState(alienSet, player, env);
     }
 }
-function getElementInnerDimensions(element) {
-    const cs = getComputedStyle(element);
-    console.log(cs.paddingInlineStart);
-    const paddingY = parseFloat(cs.paddingBlockStart) + parseFloat(cs.paddingBlockEnd);
-    const paddingX = parseFloat(cs.paddingInlineStart) + parseFloat(cs.paddingInlineEnd);
-    const marginY = parseFloat(cs.marginBlockStart) + parseFloat(cs.marginBlockEnd);
-    const marginX = parseFloat(cs.marginInlineStart) + parseFloat(cs.marginInlineEnd);
-    return {
-        w: element.offsetWidth - paddingX - marginX,
-        h: element.offsetHeight - paddingY - marginY,
-    };
-}
 const alienColors = {
     ".": "limegreen",
     x: "orange",
@@ -365,7 +362,7 @@ class CanvasDisplay {
         this.canvas.style.display = "block";
         this.canvas.style.marginInline = "auto";
         this.parent.appendChild(this.canvas);
-        this.setCanvasSize();
+        this.setDisplaySize();
         this.syncState(state);
     }
     get canvasWidth() {
@@ -392,9 +389,8 @@ class CanvasDisplay {
             h: this.verPixels(percentageSize.h),
         };
     }
-    setCanvasSize() {
+    setDisplaySize() {
         const canvasWidth = Math.min(720, getElementInnerDimensions(this.canvas.parentNode).w);
-        console.log(canvasWidth);
         this.canvas.setAttribute("width", canvasWidth.toString());
         this.canvas.setAttribute("height", ((canvasWidth / 4) * 3).toString());
     }
@@ -461,10 +457,6 @@ const basicInvaderPlan = `
 .xxooxx.
 .oo..oo.
 ...xx...`;
-const alienSet = new AlienSet(basicInvaderPlan);
-console.log("AlienSet has", alienSet.length, "length");
-const i = Alien.create("x", { x: 0, y: 0 });
-console.log(i);
 let a = {
     actorType: "alien",
     alienType: ".",
@@ -480,21 +472,8 @@ let a = {
 };
 let state = GameState.Start(basicInvaderPlan);
 const canvasDisplay = new CanvasDisplay(state, new GameController(), document.body);
-function keysTracker(keys) {
-    const down = {};
-    keys.forEach((key) => (down[key] = false));
-    function onPress(e) {
-        console.log(e.keyCode);
-        if (keys.some((key) => key === e.key))
-            down[e.key] = e.type === "keydown";
-    }
-    window.addEventListener("keydown", onPress);
-    window.addEventListener("keyup", onPress);
-    return down;
-}
 const keys = keysTracker(["ArrowRight", "ArrowLeft", " "]);
 runAnimation((timeStep) => {
-    console.log(state.playerLives);
     if (state.status === "lost") {
         console.log("lost");
         return false;

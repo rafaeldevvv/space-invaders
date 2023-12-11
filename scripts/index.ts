@@ -23,15 +23,15 @@ interface Size {
 interface PixelSize extends Size {}
 
 type TShooters = "player" | "alien";
-type GameKeys = " " | "ArrowLeft" | "ArrowRight";
 type TAliens = "." | "x" | "o";
 
-type Flags<Keys extends string> = {
+type FlagsFromUnion<Keys extends string> = {
   [Key in Keys]: boolean;
 };
 
-type KeysTracker = Flags<GameKeys>;
-
+// this is for methods that expect a keys tracker
+type GameKeys = " " | "ArrowLeft" | "ArrowRight";
+type KeysTracker = FlagsFromUnion<GameKeys>;
 
 /* ========================== constants ========================= */
 
@@ -67,6 +67,10 @@ const displayPadding = {
   hor: 3,
   ver: 5,
 };
+
+const arrowRightKey = "ArrowRight";
+const arrowLeftKey = "ArrowLeft";
+const spaceKey = " ";
 
 /* ========================== utilities ========================= */
 
@@ -125,7 +129,56 @@ function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
   );
 }
 
-/* ========================== classes ========================= */
+function getElementInnerDimensions(element: HTMLElement): Size {
+  /* ############################################################################################################################################ */
+  /* ############################################################################################################################################ */
+  /* ############################################################################################################################################ */
+  /* ############################################################################################################################################ */
+  /* ############################################################################################################################################ */
+  /* ############################################################################################################################################ */
+  /* ############################################################################################################################################ */
+  // if you have problems with the canvas width or canvas height, check this
+  // because there might be something going wrong in here
+
+  const cs = getComputedStyle(element);
+
+  const paddingY =
+    parseFloat(cs.paddingBlockStart) + parseFloat(cs.paddingBlockEnd);
+  const paddingX =
+    parseFloat(cs.paddingInlineStart) + parseFloat(cs.paddingInlineEnd);
+
+  const marginY =
+    parseFloat(cs.marginBlockStart) + parseFloat(cs.marginBlockEnd);
+  const marginX =
+    parseFloat(cs.marginInlineStart) + parseFloat(cs.marginInlineEnd);
+
+  return {
+    w: element.offsetWidth - paddingX - marginX,
+    h: element.offsetHeight - paddingY - marginY,
+  };
+}
+
+function keysTracker<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
+  const down = {} as FlagsFromUnion<Type>;
+  keys.forEach((key) => (down[key] = false));
+
+  function onPressKey(e: KeyboardEvent) {
+    for (const key of keys) {
+      if (e.key === key) {
+        down[e.key as Type] = e.type === "keydown";
+      }
+    }
+  }
+
+  window.addEventListener("keydown", onPressKey);
+  window.addEventListener("keyup", onPressKey);
+
+  return down;
+}
+
+/* ==================================================================== */
+/* ===================== Game Components ============================== */
+/* ==================================================================== */
 
 const alienSetXSpeed = 10;
 const alienSetYSpeed = 5;
@@ -175,10 +228,11 @@ class AlienSet {
 
   get length() {
     return this.aliens.reduce((allAliensCount, row) => {
-      const rowCount = row.reduce((count, alien) => {
-        if (alien !== null) return count + 1;
-        else return count;
+      const rowCount = row.reduce((rowCount, alien) => {
+        if (alien !== null) return rowCount + 1;
+        else return rowCount;
       }, 0);
+
       return allAliensCount + rowCount;
     }, 0);
   }
@@ -237,8 +291,11 @@ class Player {
   public readonly actorType: "player" = "player";
 
   public pos: Vector = new Vector(50 - DIMENSIONS.player.w / 2, 90);
-  public speed: Vector = new Vector(5, 0);
-  public gun: Gun = new Gun("player", 70, 500);
+
+  public readonly gun: Gun = new Gun("player", 70, 500);
+
+  public lives = 3;
+  public score = 0;
 
   fire() {
     /* from the center of the player */
@@ -308,40 +365,18 @@ class Bullet {
     public speed: Vector
   ) {}
 
-  update(state: GameState, timeStep: number) {
+  update(timeStep: number) {
     this.pos = this.pos.plus(this.speed.times(timeStep));
-
-    /* const shotPlayer =
-      this.from === "alien" &&
-      state.env.isActorShot([this], state.player.pos, DIMENSIONS.player);
-    let shotAlien = false;
-
-    for (const { alien } of state.alienSet) {
-      if (!alien) continue;
-
-      shotAlien =
-        state.env.isActorShot(
-          [this],
-          state.env.getAlienPos(alien),
-          DIMENSIONS.alien
-        ) && this.from === "player";
-    }
-
-    if (
-      this.pos.y >= 100 ||
-      this.pos.y + DIMENSIONS.bullet.h <= 0 ||
-      state.env.bulletTouchesWall(this) ||
-      shotPlayer ||
-      shotAlien
-    ) {
-      state.bullets = state.bullets.filter((bullet) => bullet !== this);
-    } */
   }
 }
 
 class Wall {
   constructor(public pos: Coords, public size: Size) {}
 }
+
+/* ========================================================================= */
+/* ========================== Environment and State ======================== */
+/* ========================================================================= */
 
 /* 
 Game Environment
@@ -423,7 +458,6 @@ class GameEnv {
 
 class GameState {
   public bullets: Bullet[] = [];
-  public playerLives: number = 3;
   public status: "lost" | "won" | "running" = "running";
 
   constructor(
@@ -432,14 +466,9 @@ class GameState {
     public env: GameEnv
   ) {}
 
-  /*
-    ####################################################################################
-    IMPLEMENT THIS ONE #################################################################
-    ####################################################################################
-  */
   update(timeStep: number, keys: KeysTracker) {
     this.alienSet.update(this, timeStep);
-    this.bullets.forEach((bullet) => bullet.update(this, timeStep));
+    this.bullets.forEach((bullet) => bullet.update(timeStep));
 
     this.player.update(timeStep, keys);
     if (keys[" "] && this.player.canFire()) {
@@ -475,12 +504,12 @@ class GameState {
     if (
       this.env.isActorShot(alienBullets, this.player.pos, DIMENSIONS.player)
     ) {
-      this.playerLives--;
+      this.player.lives--;
     }
 
     if (this.alienSet.length === 0) {
       this.status = "won";
-    } else if (this.playerLives === 0) {
+    } else if (this.player.lives === 0) {
       this.status = "lost";
     }
 
@@ -512,26 +541,9 @@ class GameState {
   }
 }
 
-function getElementInnerDimensions(element: HTMLElement): Size {
-  const cs = getComputedStyle(element);
-
-  console.log(cs.paddingInlineStart);
-
-  const paddingY =
-    parseFloat(cs.paddingBlockStart) + parseFloat(cs.paddingBlockEnd);
-  const paddingX =
-    parseFloat(cs.paddingInlineStart) + parseFloat(cs.paddingInlineEnd);
-
-  const marginY =
-    parseFloat(cs.marginBlockStart) + parseFloat(cs.marginBlockEnd);
-  const marginX =
-    parseFloat(cs.marginInlineStart) + parseFloat(cs.marginInlineEnd);
-
-  return {
-    w: element.offsetWidth - paddingX - marginX,
-    h: element.offsetHeight - paddingY - marginY,
-  };
-}
+/* ========================================================================= */
+/* ================================= Display =============================== */
+/* ========================================================================= */
 
 const alienColors: {
   [Key in TAliens]: string;
@@ -597,7 +609,6 @@ class CanvasDisplay {
       720,
       getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
     );
-    console.log(canvasWidth);
 
     this.canvas.setAttribute("width", canvasWidth.toString());
     this.canvas.setAttribute("height", ((canvasWidth / 4) * 3).toString());
@@ -681,18 +692,16 @@ class CanvasDisplay {
   drawGameOverScreen() {}
 }
 
+/* ========================================================================= */
+/* ========================== Controller =================================== */
+/* ========================================================================= */
+
 class GameController {}
 
 const basicInvaderPlan = `
 .xxooxx.
 .oo..oo.
 ...xx...`;
-
-const alienSet = new AlienSet(basicInvaderPlan);
-console.log("AlienSet has", alienSet.length, "length");
-
-const i = Alien.create("x", { x: 0, y: 0 });
-console.log(i);
 
 let a: Alien = {
   actorType: "alien",
@@ -715,32 +724,9 @@ const canvasDisplay = new CanvasDisplay(
   document.body
 );
 
-function keysTracker<Type extends string>(
-  keys: Type[]
-): {
-  [Key in Type]: boolean;
-} {
-  const down = {} as {
-    [Key in Type]: boolean;
-  };
-  keys.forEach((key) => (down[key] = false));
-
-  function onPress(e: KeyboardEvent) {
-    console.log(e.keyCode);
-    //@ts-ignore
-    if (keys.some((key) => key === e.key)) down[e.key] = e.type === "keydown";
-  }
-
-  window.addEventListener("keydown", onPress);
-  window.addEventListener("keyup", onPress);
-
-  return down;
-}
-
 const keys = keysTracker(["ArrowRight", "ArrowLeft", " "]);
 
 runAnimation((timeStep) => {
-  console.log(state.playerLives);
   if (state.status === "lost") {
     console.log("lost");
     return false;
