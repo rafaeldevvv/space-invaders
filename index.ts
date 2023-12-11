@@ -11,10 +11,16 @@ this is just to make it clear what
  */
 interface PixelCoords extends Coords {}
 
+interface Display {
+  syncState(state: GameState): void;
+}
+
 interface DisplaySize {
   w: DisplayUnit;
   h: DisplayUnit;
 }
+
+type DisplayUnit = `${number}d${"w" | "h"}`;
 
 interface Size {
   w: number;
@@ -33,7 +39,6 @@ type Flags<Keys extends string> = {
 
 type KeysTracker = Flags<GameKeys>;
 
-type DisplayUnit = `${number}d${"w" | "h"}`;
 
 /* ========================== constants ========================= */
 
@@ -112,6 +117,10 @@ function runAnimation(callback: (timeStep: number) => boolean) {
     if (shouldContinue) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
+}
+
+function random(min: number, max: number) {
+  return min + Math.random() * (max - min);
 }
 
 function numberFromDisplayUnit(unit: DisplayUnit) {
@@ -317,10 +326,6 @@ class Gun {
     const timeStep = now - lastFire;
     return timeStep >= this.fireInterval;
   }
-}
-
-function random(min: number, max: number) {
-  return min + Math.random() * (max - min);
 }
 
 class Bullet {
@@ -580,41 +585,41 @@ class CanvasDisplay {
 
     this.parent.appendChild(this.canvas);
 
-    this.setCanvasSize();
+    this.setDisplaySize();
     this.syncState(state);
   }
 
-  get canvasWidth() {
+  private get canvasWidth() {
     return this.canvas.width;
   }
 
-  get canvasHeight() {
+  private get canvasHeight() {
     return this.canvas.height;
   }
 
-  horPixels(percentage: number) {
+  private horPixels(percentage: number) {
     return (percentage / 100) * this.canvasWidth;
   }
 
-  verPixels(percentage: number) {
+  private verPixels(percentage: number) {
     return (percentage / 100) * this.canvasHeight;
   }
 
-  getPixelPos(percentagePos: Coords): PixelCoords {
+  private getPixelPos(percentagePos: Coords): PixelCoords {
     return {
       x: this.horPixels(percentagePos.x),
       y: this.verPixels(percentagePos.y),
     };
   }
 
-  getPixelSize(percentageSize: Size): PixelSize {
+  private getPixelSize(percentageSize: Size): PixelSize {
     return {
       w: this.horPixels(percentageSize.w),
       h: this.verPixels(percentageSize.h),
     };
   }
 
-  setCanvasSize() {
+  setDisplaySize() {
     const canvasWidth = Math.min(
       720,
       getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
