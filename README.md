@@ -272,6 +272,16 @@ class CanvasDisplay {
 }
 ```
 
+### Comments
+
+I found two different ways of adding comments to `.js` and `.ts` files and I filled my code with comments to practice these new approaches.
+
+I started writing [JSDoc](https://jsdoc.app/) comments but soon I realized that I was writing TypeScript code. So I looked for a JSDoc version for typescript and I found [TSDoc](https://tsdoc.org/). [Bing](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx) helped me find a way to generate a documentation from `.ts` files and it was the [`typedoc` package on NPM](https://www.npmjs.com/package/typedoc).
+
+I liked it. I feel like TSDoc comments make the code more meaningful somehow.
+
+Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn't it?
+
 ### Useful Resources
 
 - [Generating a `tsconfig.json` file](https://stackoverflow.com/questions/36916989/how-can-i-generate-a-tsconfig-json-file)
@@ -281,6 +291,15 @@ class CanvasDisplay {
 - [Iteration protocols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - [How to define a private property when implementing an interface in Typescript?](https://stackoverflow.com/questions/37791947/how-to-define-a-private-property-when-implementing-an-interface-in-typescript)
 - [KeyboardEvent.keyCode deprecated. What does this mean in practice?](https://stackoverflow.com/questions/35394937/keyboardevent-keycode-deprecated-what-does-this-mean-in-practice)
+- [JSDoc](https://jsdoc.app/) - very effective way of adding comments.
+- [JSDoc Reference](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#param-and-returns)
+- [What is TSDoc?](https://tsdoc.org/) - very effective way of adding comments in `.ts` files.
+- [TSDoc | Play](https://tsdoc.org/play/) - Playground for TSDoc comments.
+- [`@microsoft/tsdoc`](https://www.npmjs.com/package/@microsoft/tsdoc) 
+- [TypeDoc](https://typedoc.org/) - It generates a documentation for TSCode.
+- [`typedoc` NPM package](https://www.npmjs.com/package/typedoc)
+- [TS: What is TSDoc?](https://medium.com/suyeonme/ts-what-is-tsdoc-6e11427c9704)
+- [Bing](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx) - I love AIs ❤
 
 ## Author
 

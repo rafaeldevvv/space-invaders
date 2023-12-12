@@ -1,7 +1,7 @@
 /* ========================= Interfaces and Types ======================= */
 
 /**
- * @interface Coords - A two-dimensional position.
+ * A two-dimensional position.
  */
 interface Coords {
   x: number;
@@ -9,28 +9,46 @@ interface Coords {
 }
 
 /**
- * This interface is meant to be used by the CanvasDisplay just 
+ * This interface is meant to be used by the CanvasDisplay just
  * to make it clear what the method expects.
- * 
- * @interface PixelCoords - A two-dimensional position in pixels.
- * @extends {Coords} - Another interface representing coordinates.
-*/ 
+ *
+ * @extends - Interface representing percentage coordinates.
+ */
 interface PixelCoords extends Coords {}
 
 interface Display {
   syncState(state: GameState): void;
 }
 
+/**
+ * A two-dimensional size
+ */
 interface Size {
   w: number;
   h: number;
 }
 
+/**
+ * Just like {@link PixelCoords}, it is meant to improve clarity.
+ *
+ * @extends - Interface representing percentage sizes.
+ */
 interface PixelSize extends Size {}
 
+/**
+ * Strings representing the objects which can fire.
+ */
 type TShooters = "player" | "alien";
+
+/**
+ * String characters representing which kind of aliens can be created.
+ */
 type TAliens = "." | "x" | "o";
 
+/**
+ * It takes a union of strings and generate an object type whose 
+ * property names are the strings passed in and whose property values are booleans.
+ */
 type FlagsFromUnion<Keys extends string> = {
   [Key in Keys]: boolean;
 };
@@ -84,7 +102,7 @@ const spaceKey = " ";
 /* ========================== utilities ========================= */
 
 /**
- * Class representing a vector
+ * Class representing a vector.
  */
 class Vector {
   x: number;
@@ -92,7 +110,7 @@ class Vector {
 
   /**
    * Create a Vector.
-   * 
+   *
    * @param x - The position along the horizontal axis.
    * @param y - The position along the vertical axis.
    */
@@ -103,9 +121,9 @@ class Vector {
 
   /**
    * Add two Vector objects' axes' values.
-   * 
-   * @param {Vector} other - Another Vector to add to the current one.
-   * @returns {Vector} - A Vector with the added axes of both previous vectors.
+   *
+   * @param other - Another Vector to add to the current one.
+   * @returns - A Vector with the added axes of both previous vectors.
    */
   plus(other: Vector) {
     return new Vector(this.x + other.x, this.y + other.y);
@@ -113,9 +131,9 @@ class Vector {
 
   /**
    * Subtract one Vector's axes' values from another Vector.
-   * 
-   * @param {Vector} other - Another Vector to subtract from the current one.
-   * @returns {Vector} - A Vector with subtracted axes.
+   *
+   * @param other - Another Vector to subtract from the current one.
+   * @returns - A Vector with subtracted axes.
    */
   minus(other: Vector) {
     return new Vector(this.x - other.x, this.y - other.y);
@@ -123,9 +141,9 @@ class Vector {
 
   /**
    * Mulitply a Vector's axes' values by a number.
-   * 
-   * @param {number} factor - A number by which the method will multiply the Vector's axes.
-   * @returns {Vector} - A Vector with multiplied axes.
+   *
+   * @param factor - A number by which the method will multiply the Vector's axes.
+   * @returns - A Vector with multiplied axes.
    */
   times(factor: number) {
     return new Vector(this.x * factor, this.y * factor);
@@ -134,16 +152,16 @@ class Vector {
 
 /**
  * Run an animation.
- * 
- * @param {function(timeStep: number): boolean} callback - A function to be called everytime a frame can be painted to the screen.
+ *
+ * @param callback - A function to be called everytime a frame can be painted to the screen.
  */
 function runAnimation(callback: (timeStep: number) => boolean) {
   let lastTime: null | number = null;
 
   /**
    * A function that manages each frame of the animation.
-   * 
-   * @param {number} time - The current time since the application started.
+   *
+   * @param time - The current time since the application started.
    */
   function frame(time: number) {
     let shouldContinue: boolean;
@@ -165,23 +183,23 @@ function runAnimation(callback: (timeStep: number) => boolean) {
 
 /**
  * Generate a random number between two numbers.
- * 
- * @param {number} min - The minimum value.
- * @param {number} max - The maximum value.
- * @returns {number} - The random number between min and max value.
+ *
+ * @param min - The minimum value.
+ * @param max - The maximum value.
+ * @returns - A random number between min and max value.
  */
-function random(min: number, max: number) {
+function randomNum(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
 
 /**
  * Check whether two objects overlap.
- * 
- * @param {Coords} pos1 - The position of the first object.
- * @param {Size} size1 - The size of the first objet.
- * @param {Coords} pos2 - The position of the second object.
- * @param {Size} size2 - The size of the second objet.
- * @returns {boolean} - A boolean stating whether the two objects overlap.
+ *
+ * @param pos1 - The position of the first object.
+ * @param size1 - The size of the first objet.
+ * @param pos2 - The position of the second object.
+ * @param size2 - The size of the second objet.
+ * @returns - A boolean stating whether the two objects overlap.
  */
 function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
   return (
@@ -193,9 +211,9 @@ function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
 }
 
 /**
- * Calculate the size of the element excluding padding, border and margin
- * 
- * @param element - An HTML Element
+ * Calculate the size of an HTML Element excluding padding, border and margin
+ *
+ * @param element
  * @returns - The size of the element excluding padding, border and margin
  */
 function getElementInnerDimensions(element: HTMLElement): Size {
@@ -228,10 +246,10 @@ function getElementInnerDimensions(element: HTMLElement): Size {
 }
 
 /**
- * 
- * 
- * @param keys - An array of strings
- * @returns - An object whose property names are the strings withing `keys`
+ * Keep track of which keyboard keys are currently held down.
+ *
+ * @param keys - An array of strings representing key names.
+ * @returns - An object whose property names are the strings within `keys`.
  */
 function keysTracker<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
   const down = {} as FlagsFromUnion<Type>;
@@ -264,6 +282,14 @@ const alienSetYStep = 5;
 const alienSetMoveTime = 1;
 
 /**
+ * The horizontal directions that {@link AlienSet} can move.
+ */
+enum HorizontalDirection {
+  Right = 1,
+  Left = -1,
+}
+
+/**
  * A class represeting a set of {@link Alien}s
  */
 class AlienSet {
@@ -271,17 +297,17 @@ class AlienSet {
   public numColumns: number;
   public numRows: number;
   public aliens: (Alien | null)[][];
-  public direction: 1 | -1 = 1;
+  public direction: HorizontalDirection = 1;
 
- /**
-  * A variable that manages when the AlienSet's position can update.
-  * When it is greater than or equal to alienSetMoveTime, then the alien set can move.
-  */
+  /**
+   * A variable that manages when the AlienSet's position can update.
+   * When it is greater than or equal to alienSetMoveTime, then the alien set can move.
+   */
   private timeStepSum = 0;
 
   /**
    * Create an AlienSet.
-   * 
+   *
    * @param plan - A string represeting an arranged set of aliens.
    */
   constructor(plan: string) {
@@ -300,11 +326,11 @@ class AlienSet {
     });
   }
 
-  /** 
+  /**
    * Update the AlienSet instance.
-   * 
-   * @param {number} timeStep - The time that has passed since the last update.
-  */
+   *
+   * @param timeStep - The time that has passed since the last update.
+   */
   update(timeStep: number) {
     this.timeStepSum += timeStep;
 
@@ -317,33 +343,33 @@ class AlienSet {
     if (
       this.pos!.x + state.env.alienSetWidth >= 100 - displayPadding.hor &&
       this.timeStepSum >= alienSetMoveTime &&
-      this.direction === 1
+      this.direction === HorizontalDirection.Right
     ) {
-      this.direction = -1;
+      this.direction = HorizontalDirection.Left;
       movedY = alienSetYStep;
     } else if (
       /* if it is going left and has touched the padding area and can update */
       this.pos!.x <= displayPadding.hor &&
       this.timeStepSum >= alienSetMoveTime &&
-      this.direction === -1
+      this.direction === HorizontalDirection.Left
     ) {
-      this.direction = 1;
+      this.direction = HorizontalDirection.Right;
       movedY = alienSetYStep;
     }
 
     let movedX = 0;
     /* if can update and has not moved down */
     if (this.timeStepSum >= alienSetMoveTime && movedY === 0) {
-      if (this.direction === 1) {
+      if (this.direction === HorizontalDirection.Right) {
         /*
           here we get either the distance left to reach the inner right padding edge
           or the normal step to move
         */
-       movedX = Math.min(
-         alienSetXStep,
-         100 - this.pos!.x - displayPadding.hor - state.env.alienSetWidth
-         );
-        } else {
+        movedX = Math.min(
+          alienSetXStep,
+          100 - this.pos!.x - displayPadding.hor - state.env.alienSetWidth
+        );
+      } else {
         /*
           here we get either the distance left to reach the inner left padding edge
           or the normal step to move
@@ -363,9 +389,9 @@ class AlienSet {
 
   /**
    * Remove an alien from the set.
-   * 
-   * @param {number} x - The X position of the alien within the grid.
-   * @param {number} y - The Y position of the alien within the grid.
+   *
+   * @param x - The X position of the alien within the grid.
+   * @param y - The Y position of the alien within the grid.
    */
   removeAlien(x: number, y: number) {
     this.aliens[y][x] = null;
@@ -405,11 +431,11 @@ class Alien {
 
   /**
    * Create an Alien.
-   * 
-   * @param {Coords} gridPos - The position of the alien within the alien set.
-   * @param {number} score - The score the player gets when it kills this alien.
-   * @param {Gun} gun - The gun of the alien.
-   * @param {TAliens} alienType - The type of the alien.
+   *
+   * @param gridPos - The position of the alien within the alien set.
+   * @param score - The score the player gets when it kills this alien.
+   * @param gun - The gun of the alien.
+   * @param alienType - The type of the alien.
    */
   constructor(
     public readonly gridPos: Coords,
@@ -420,8 +446,8 @@ class Alien {
 
   /**
    * Fire an alien bullet.
-   * 
-   * @param {Coords} from - The position from where the alien fires.
+   *
+   * @param from - The position from where the alien fires.
    * @returns {Bullet | null} - The fired bullet or null if the gun wasn't able to fire.
    */
   fire(from: Coords) {
@@ -432,9 +458,9 @@ class Alien {
   }
 
   /**
-   * Check whether the gun can be fired.
-   * 
-   * @returns {boolean} - Whether the alien's gun can be fired.
+   * Check whether the alien's gun can be fired.
+   *
+   * @returns - Boolean representing whether the alien's gun can be fired.
    */
   canFire() {
     return this.gun.canFire();
@@ -442,10 +468,10 @@ class Alien {
 
   /**
    * Create an alien based on a character.
-   * 
-   * @param {string} ch - The type of the alien represented by a character.
-   * @param {Coords} gridPos - The position of the player within the grid.
-   * @returns {Alien} - A specific alien type.
+   *
+   * @param ch - The type of the alien represented by a character.
+   * @param gridPos - The position of the alien within the grid.
+   * @returns - A specific alien type.
    */
   static create(ch: string, gridPos: Coords) {
     switch (ch) {
@@ -467,6 +493,9 @@ class Alien {
 
 const playerXSpeed = 30;
 
+/**
+ * Class representing the player.
+ */
 class Player {
   public readonly actorType: "player" = "player";
 
@@ -480,6 +509,11 @@ class Player {
   public lives = 3;
   public score = 0;
 
+  /**
+   * Fire a player's bullet.
+   *
+   * @returns {Bulelt | null} - The fired bullet or null if the fun wasn't able to fire.
+   */
   fire() {
     /* from the center of the player */
     const bulletPosX = this.pos.x + DIMENSIONS.player.w / 2;
@@ -487,10 +521,19 @@ class Player {
     return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up");
   }
 
+  /**
+   * Reset the position of the Player.
+   */
   resetPos() {
     this.pos = new Vector(this.baseXPos, this.baseYPos);
   }
 
+  /**
+   * Update the Player.
+   *
+   * @param timeStep - The time in seconds that has passed since the last update.
+   * @param keys - An object that tracks which keys are currently held down.
+   */
   update(timeStep: number, keys: KeysTracker) {
     const movedX = new Vector(timeStep * playerXSpeed, 0);
 
@@ -505,18 +548,35 @@ class Player {
   }
 }
 
+/**
+ * Class representing a gun.
+ */
 class Gun {
   private lastFire: number;
 
+  /**
+   * Create a Gun.
+   *
+   * @param owner - The object which fires the gun.
+   * @param bulletSpeed - The speed of the bullet.
+   * @param fireInterval - The time it takes for the gun to fire again.
+   */
   constructor(
     public owner: TShooters,
     public bulletSpeed: number,
     public fireInterval: number
   ) {
     // to give a random initial fireInterval
-    this.lastFire = performance.now() - random(0, fireInterval);
+    this.lastFire = performance.now() - randomNum(0, fireInterval);
   }
 
+  /**
+   * Fire a bullet from a position.
+   *
+   * @param pos - The position from where the gun is fired.
+   * @param {"up" | "down"} direction - The direction the bullet goes.
+   * @returns {Bullet | null} - A bullet or null if the gun wasn't able to fire.
+   */
   fire(pos: Vector, direction: "up" | "down") {
     if (this.canFire()) {
       /* update lastFire prop to track the time of the last shot */
@@ -532,6 +592,11 @@ class Gun {
     return null;
   }
 
+  /**
+   * Check whether the gun can be fired.
+   *
+   * @returns - A boolean value saying whether the gun can fire.
+   */
   canFire() {
     const lastFire = this.lastFire;
     const now = performance.now();
@@ -541,7 +606,17 @@ class Gun {
   }
 }
 
+/**
+ * Class representing a bullet.
+ */
 class Bullet {
+  /**
+   * Create a bullet.
+   *
+   * @param from - A string representing the object that fired.
+   * @param pos - The position from where the bullet was fired.
+   * @param speed - The speed of the bullet.
+   */
   constructor(
     public from: TShooters,
     public pos: Vector,
@@ -553,7 +628,16 @@ class Bullet {
   }
 }
 
+/**
+ * Class representing a wall.
+ */
 class Wall {
+  /**
+   * Create a wall.
+   *
+   * @param pos - The position of the wall.
+   * @param size - The size of the wall.
+   */
   constructor(public pos: Coords, public size: Size) {}
 }
 
@@ -561,11 +645,11 @@ class Wall {
 /* ========================== Environment and State ======================== */
 /* ========================================================================= */
 
-/* 
-Game Environment
-
-this class is supposed to manage the position and sizes
-of the objects and check things like colision */
+/**
+ * Class representing the Game Environment responsible
+ * for managing the positions and sizes
+ * of the objects and checking things like colision.
+ */
 class GameEnv {
   /* these are all percentages within the display */
   public alienSize: number;
@@ -573,6 +657,13 @@ class GameEnv {
   public alienSetHeight: number;
   public alienSetGap: number;
 
+  /**
+   * Initialize the game environment.
+   *
+   * @param alienSet - The aliens.
+   * @param player - The player.
+   * @param {Wall[]} walls - The walls.
+   */
   constructor(
     public alienSet: AlienSet,
     public player: Player,
@@ -592,6 +683,12 @@ class GameEnv {
     this.alienSet = alienSet;
   }
 
+  /**
+   * Get the position of an alien within the whole game screen.
+   *
+   * @param param0 - The alien.
+   * @returns - The position of the alien.
+   */
   getAlienPos({ gridPos: { x, y } }: Alien): Vector {
     return new Vector(
       /* alienSet positions + sizes + gaps */
@@ -600,12 +697,24 @@ class GameEnv {
     );
   }
 
+  /**
+   * Check whether a bullet touches a wall.
+   *
+   * @param bullet - The bullet whose position needs to be checked as overlapping a wall.
+   * @returns - A boolean value which says whether the bullet touches a wall.
+   */
   bulletTouchesWall(bullet: Bullet) {
     return this.walls.some((wall) => {
       return overlap(wall.pos, wall.size, bullet.pos, DIMENSIONS.bullet);
     });
   }
 
+  /**
+   * Perform checks to check whether a bullet needs to be removed from the game environment.
+   *
+   * @param bullet - A bullet that may need to be removed.
+   * @returns - A boolean value that says whether the bullet should be removed.
+   */
   bulletShouldBeRemoved(bullet: Bullet) {
     let touches = false;
 
@@ -632,10 +741,23 @@ class GameEnv {
     return touches;
   }
 
+  /**
+   * Check whether the alien set has reached the wall.
+   *
+   * @returns - A boolean value that says whether the alien set has reached a wall.
+   */
   alienSetReachedWall() {
     return this.alienSet.pos!.y + this.alienSetHeight >= this.walls[0].pos.y;
   }
 
+  /**
+   * Check whether an object in the game has been shot.
+   *
+   * @param {Bullet[]} bullets - An array of the bullets that may hit the object.
+   * @param actorPos - The position of the object.
+   * @param actorSize - The size of the object.
+   * @returns - A boolean value that says whether the object is shot.
+   */
   isActorShot(bullets: Bullet[], actorPos: Coords, actorSize: Size) {
     return bullets.some((bullet) => {
       return overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize);
@@ -643,16 +765,32 @@ class GameEnv {
   }
 }
 
+/**
+ * Class that manages the state of a running game.
+ */
 class GameState {
   public bullets: Bullet[] = [];
   public status: "lost" | "won" | "running" = "running";
 
+  /**
+   * Initializes the state.
+   *
+   * @param alienSet - The aliens.
+   * @param player - The player.
+   * @param env - The game environment.
+   */
   constructor(
     public alienSet: AlienSet,
     public player: Player,
     public env: GameEnv
   ) {}
 
+  /**
+   * Update the state of the game.
+   *
+   * @param timeStep - The time in seconds that has passed since the last update.
+   * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
+   */
   update(timeStep: number, keys: KeysTracker) {
     this.alienSet.update(timeStep);
     this.bullets.forEach((bullet) => bullet.update(timeStep));
@@ -705,6 +843,9 @@ class GameState {
     this.removeUnnecessaryBullets();
   }
 
+  /**
+   * Remove the bullets that are not relevant for the game anymore.
+   */
   removeUnnecessaryBullets() {
     for (const bullet of this.bullets) {
       if (
@@ -717,6 +858,12 @@ class GameState {
     }
   }
 
+  /**
+   * Create a basic initial game state.
+   *
+   * @param plan - A string represeting an arranged set of aliens.
+   * @returns - A initial state for the game.
+   */
   static Start(plan: string) {
     const alienSet = new AlienSet(plan);
     const player = new Player();
@@ -734,6 +881,9 @@ class GameState {
 /* ================================= Display =============================== */
 /* ========================================================================= */
 
+/**
+ * The colors of the aliens
+ */
 const alienColors: {
   [Key in TAliens]: string;
 } = {
@@ -742,10 +892,21 @@ const alienColors: {
   o: "pink",
 };
 
+/**
+ * Class represeting a view component used to display the game state.
+ * It uses the HTML Canvas API.
+ */
 class CanvasDisplay {
-  canvas: HTMLCanvasElement;
-  canvasContext: CanvasRenderingContext2D;
+  private canvas: HTMLCanvasElement;
+  private canvasContext: CanvasRenderingContext2D;
 
+  /**
+   * Create a view component for the game that uses the Canvas API.
+   *
+   * @param state - The initial state of the game.
+   * @param controller - The component responsible for coordinating the information flow between the View and the Model (state).
+   * @param parent - The HTML Element used to display the view.
+   */
   constructor(
     public state: GameState,
     public controller: GameController,
@@ -771,14 +932,32 @@ class CanvasDisplay {
     return this.canvas.height;
   }
 
+  /**
+   * Calculate the horizontal pixels according to a percentage of the canvas width.
+   *
+   * @param percentage - The percentage of the canvas width.
+   * @returns - The corresponding horizontal pixels.
+   */
   private horPixels(percentage: number) {
     return (percentage / 100) * this.canvasWidth;
   }
 
+  /**
+   * Calculate the vertical pixels according to a percentage of the canvas height.
+   *
+   * @param percentage - The percentage of the canvas heigth.
+   * @returns - The corresponding vertical pixels.
+   */
   private verPixels(percentage: number) {
     return (percentage / 100) * this.canvasHeight;
   }
 
+  /**
+   * Calculate the pixel position of an object within the canvas based on a percentage position.
+   *
+   * @param percentagePos - The percentage position.
+   * @returns - The corresponding pixel position.
+   */
   private getPixelPos(percentagePos: Coords): PixelCoords {
     return {
       x: this.horPixels(percentagePos.x),
@@ -786,6 +965,12 @@ class CanvasDisplay {
     };
   }
 
+  /**
+   * Calculate the pixel size of an object within the canvas based on a percentage size.
+   *
+   * @param percentagePos - The percentage size.
+   * @returns - The corresponding pixel size.
+   */
   private getPixelSize(percentageSize: Size): PixelSize {
     return {
       w: this.horPixels(percentageSize.w),
@@ -793,6 +978,9 @@ class CanvasDisplay {
     };
   }
 
+  /**
+   * Set the size of the canvas based on the size of the its parent element.
+   */
   setDisplaySize() {
     const canvasWidth = Math.min(
       720,
@@ -803,7 +991,12 @@ class CanvasDisplay {
     this.canvas.setAttribute("height", ((canvasWidth / 4) * 3).toString());
   }
 
-  syncState(state: CanvasDisplay["state"]) {
+  /**
+   * Synchonize the view with a new model (state).
+   *
+   * @param state - A new game state.
+   */
+  syncState(state: GameState) {
     this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.canvasContext.fillStyle = "black";
     this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -814,6 +1007,11 @@ class CanvasDisplay {
     this.drawWalls(state.env.walls);
   }
 
+  /**
+   * Draw the alien set in the canvas.
+   *
+   * @param alienSet
+   */
   drawAlienSet(alienSet: AlienSet) {
     const alienSetXPos = alienSet.pos!.x;
 
@@ -833,6 +1031,12 @@ class CanvasDisplay {
     }
   }
 
+  /**
+   * Draw an alien in the canvas.
+   *
+   * @param alien
+   * @param pos - A percentage position.
+   */
   drawAlien(alien: Alien, pos: Coords) {
     const { w, h } = this.getPixelSize(DIMENSIONS.alien);
     const { x, y } = this.getPixelPos(pos);
@@ -841,12 +1045,22 @@ class CanvasDisplay {
     this.canvasContext.fillRect(x, y, w, h);
   }
 
+  /**
+   * Draw an array of bullets on the canvas.
+   *
+   * @param {Bullet[]} bullets
+   */
   drawBullets(bullets: Bullet[]) {
     for (const bullet of bullets) {
       this.drawBullet(bullet);
     }
   }
 
+  /**
+   * Draw a bullet on the canvas.
+   *
+   * @param bullet
+   */
   drawBullet(bullet: Bullet) {
     const { x, y } = this.getPixelPos(bullet.pos);
     const { w, h } = this.getPixelSize(DIMENSIONS.bullet);
@@ -856,6 +1070,11 @@ class CanvasDisplay {
     this.canvasContext.fillRect(x, y, w, h);
   }
 
+  /**
+   * Draw player on the canvas.
+   *
+   * @param player
+   */
   drawPlayer(player: Player) {
     const { x, y } = this.getPixelPos(player.pos);
     const { w, h } = this.getPixelSize(DIMENSIONS.player);
@@ -864,6 +1083,11 @@ class CanvasDisplay {
     this.canvasContext.fillRect(x, y, w, h);
   }
 
+  /**
+   * Draw walls on canvas.
+   *
+   * @param {Wall[]} walls
+   */
   drawWalls(walls: Wall[]) {
     for (const wall of walls) {
       const { x, y } = this.getPixelPos(wall.pos);
@@ -874,12 +1098,20 @@ class CanvasDisplay {
     }
   }
 
-  drawMetadata(state: CanvasDisplay["state"]) {
+  /**
+   * Draw metadata such as score, player remaining lives and so on.
+   *
+   * @param state
+   */
+  drawMetadata(state: GameState) {
     // draw hearts to show player's lives
     // draw score
     //
   }
 
+  /**
+   * Draw a screen for when the game is over.
+   */
   drawGameOverScreen() {}
 }
 
@@ -887,6 +1119,9 @@ class CanvasDisplay {
 /* ========================== Controller =================================== */
 /* ========================================================================= */
 
+/**
+ * A class responsible for managing the flow of information between model (state) and view (display).
+ */
 class GameController {}
 
 const basicInvaderPlan = `
