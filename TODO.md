@@ -1,6 +1,3 @@
-- Update score when alien is killed
-- commit & update README
-
 - show metadata
 - commit & update README
 
@@ -25,10 +22,13 @@
 - Use HTMLWebpack Plugin or something like that
 - commit & update README
 
+- Minify the code (look for an html plugin for that)
+- commit & update README
+
 - See more tags available for TSDoc comments.
 - commit & update README
 
-- Minify the code (look for an html plugin for that)
+- Generate TSDoc docs
 - commit & update README
 
 - Update the code snippets of `README.md` file

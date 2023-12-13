@@ -1,7 +1,7 @@
 # Space Invaders
 
-[![Language](https://img.shields.io/badge/javascript-yellow.svg?style=flat)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![Release](https://img.shields.io/badge/v1.0-green.svg?style=flat)](./dist/)
+[![Language](https://img.shields.io/badge/language-typescript-blue.svg?style=flat)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Release](https://img.shields.io/badge/v1.0-limegreen.svg?style=flat)](./dist/)
 
 This is an implementation of the classic Space Invaders game using [TypeScript](https://www.typescriptlang.org/) and the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API).
 
@@ -26,10 +26,10 @@ This is an implementation of the classic Space Invaders game using [TypeScript](
 
 ### Built with
 
-- TypeScript
-- Canvas API
-- ESlint
-- Webpack
+- [TypeScript](https://www.typescriptlang.org/)
+- [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
+- [ESlint](https://eslint.org/)
+- [Webpack](https://webpack.js.org/)
 
 ## Process
 
@@ -302,6 +302,7 @@ Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn
 - [How to define a private property when implementing an interface in Typescript?](https://stackoverflow.com/questions/37791947/how-to-define-a-private-property-when-implementing-an-interface-in-typescript)
 - [KeyboardEvent.keyCode deprecated. What does this mean in practice?](https://stackoverflow.com/questions/35394937/keyboardevent-keycode-deprecated-what-does-this-mean-in-practice)
 - [Bing](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx) - I love AIs ❤
+- [Intro | Shields.io](https://shields.io/docs) - A service for concise, consistent, and legible badges, which can easily be included in GitHub readmes or any other web page.
 
 #### Comments
 

@@ -811,7 +811,9 @@ class GameState {
           DIMENSIONS.alien
         )
       ) {
+        this.player.score += alien.score;
         this.alienSet.removeAlien(x, y);
+        console.log(this.player.score);
       }
 
       if (alien.canFire()) {
