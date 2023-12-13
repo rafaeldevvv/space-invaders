@@ -667,7 +667,6 @@ class GameEnv {
     public player: Player,
     public walls: Wall[]
   ) {
-
     this.alienSetWidth =
       DIMENSIONS.alien.w * alienSet.numColumns +
       DIMENSIONS.alienSetGap.w * (alienSet.numColumns - 1);
@@ -688,8 +687,12 @@ class GameEnv {
   getAlienPos({ gridPos: { x, y } }: Alien): Vector {
     return new Vector(
       /* alienSet positions + sizes + gaps */
-      this.alienSet.pos!.x + x * DIMENSIONS.alien.w + x * DIMENSIONS.alienSetGap.w,
-      this.alienSet.pos!.y + y * DIMENSIONS.alien.h + y * DIMENSIONS.alienSetGap.h
+      this.alienSet.pos!.x +
+        x * DIMENSIONS.alien.w +
+        x * DIMENSIONS.alienSetGap.w,
+      this.alienSet.pos!.y +
+        y * DIMENSIONS.alien.h +
+        y * DIMENSIONS.alienSetGap.h
     );
   }
 
@@ -1003,6 +1006,7 @@ class CanvasDisplay {
     this.drawPlayer(state.player);
     this.drawBullets(state.bullets);
     this.drawWalls(state.env.walls);
+    this.drawMetadata(state);
   }
 
   /**
@@ -1104,7 +1108,22 @@ class CanvasDisplay {
   drawMetadata(state: GameState) {
     // draw hearts to show player's lives
     // draw score
-    //
+
+    const fontSize = Math.min(30, this.verPixels(5));
+    
+    this.canvasContext.font = `${fontSize}px monospace`;
+    this.canvasContext.textAlign = "start";
+    this.canvasContext.fillText(
+      `SCORE ${state.player.score}`,
+      this.horPixels(2),
+      fontSize + this.verPixels(1)
+    );
+    this.canvasContext.textAlign = "end";
+    this.canvasContext.fillText(
+      `Lives ${state.player.lives}`,
+      this.horPixels(98),
+      fontSize + this.verPixels(1)
+    );
   }
 
   /**
@@ -1152,6 +1171,8 @@ const canvasDisplay = new CanvasDisplay(
 const keys = keysTracker(["ArrowRight", "ArrowLeft", " "]);
 
 runAnimation((timeStep) => {
+  canvasDisplay.syncState(state);
+
   if (state.status === "lost") {
     console.log("lost");
     return false;
@@ -1160,7 +1181,6 @@ runAnimation((timeStep) => {
     return false;
   } else {
     state.update(timeStep, keys);
-    canvasDisplay.syncState(state);
     return true;
   }
 });

@@ -303,6 +303,7 @@ Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn
 - [KeyboardEvent.keyCode deprecated. What does this mean in practice?](https://stackoverflow.com/questions/35394937/keyboardevent-keycode-deprecated-what-does-this-mean-in-practice)
 - [Bing](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx) - I love AIs ❤
 - [Intro | Shields.io](https://shields.io/docs) - A service for concise, consistent, and legible badges, which can easily be included in GitHub readmes or any other web page.
+- [HEAD Meta elements list](https://github.com/joshbuchea/HEAD#meta)
 
 #### Comments
 
@@ -325,6 +326,8 @@ Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn
 
 - [WebPack Docs](https://webpack.js.org/concepts/)
 - [`package.json` file](https://docs.npmjs.com/cli/v10/configuring-npm/package-json)
+- [html-webpack-plugin](https://webpack.js.org/plugins/html-webpack-plugin/)
+- [html-webpack-plugin options](https://github.com/jantimon/html-webpack-plugin#options)
 
 ## Author
 
