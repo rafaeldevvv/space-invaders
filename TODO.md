@@ -1,6 +1,3 @@
-- Finish adding the jsdoc comments
-- Commit & update README
-
 - Update score when alien is killed
 - commit & update README
 
@@ -18,6 +15,9 @@
 - commit & update README
 
 - Refactor the code
+- commit & update README
+
+- See more tags available for TSDoc comments.
 - commit & update README
 
 - Update the code snippets of `README.md` file

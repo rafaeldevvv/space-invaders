@@ -1,0 +1,30 @@
+{
+  "name": "space-invaders",
+  "version": "1.0.0",
+  "description": "An implementation of the classic Space Invaders game using TypeScript",
+  "main": "scripts/index.ts",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafaeldevvv/space-invaders.git"
+  },
+  "keywords": [
+    "space",
+    "invaders",
+    "space-invaders",
+    "typescript",
+    "canvas"
+  ],
+  "author": "Rafael Maia",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rafaeldevvv/space-invaders/issues"
+  },
+  "homepage": "https://github.com/rafaeldevvv/space-invaders#readme"
+}

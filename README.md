@@ -5,14 +5,15 @@ This is an implementation of the classic Space Invaders game using [TypeScript](
 ## Table of Contents
 
 - [Overview](#overview)
-  - [Built with](#built-with)
   - [Screenshot](#screenshot)
+  - [Built with](#built-with)
 - [Process](#process)
    - [Objects Positions Problem](#objects-positions-problem)
    - [Sizes](#sizes)
    - [Collisions](#collisions)
    - [Aliens](#aliens)
    - [Display](#display)
+   - [Comments](#comments)
    - [Useful Resources](#useful-resources)
 - [Author](#author)
 

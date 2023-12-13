@@ -46,7 +46,7 @@ type TShooters = "player" | "alien";
 type TAliens = "." | "x" | "o";
 
 /**
- * It takes a union of strings and generate an object type whose 
+ * It takes a union of strings and generate an object type whose
  * property names are the strings passed in and whose property values are booleans.
  */
 type FlagsFromUnion<Keys extends string> = {
@@ -652,10 +652,8 @@ class Wall {
  */
 class GameEnv {
   /* these are all percentages within the display */
-  public alienSize: number;
   public alienSetWidth: number;
   public alienSetHeight: number;
-  public alienSetGap: number;
 
   /**
    * Initialize the game environment.
@@ -669,15 +667,13 @@ class GameEnv {
     public player: Player,
     public walls: Wall[]
   ) {
-    this.alienSize = DIMENSIONS.alien.w;
-    this.alienSetGap = DIMENSIONS.alienSetGap.w;
 
     this.alienSetWidth =
-      this.alienSize * alienSet.numColumns +
-      this.alienSetGap * (alienSet.numColumns - 1);
+      DIMENSIONS.alien.w * alienSet.numColumns +
+      DIMENSIONS.alienSetGap.w * (alienSet.numColumns - 1);
     this.alienSetHeight =
-      this.alienSize * alienSet.numRows +
-      this.alienSetGap * (this.alienSet.numRows - 1);
+      DIMENSIONS.alien.h * alienSet.numRows +
+      DIMENSIONS.alienSetGap.h * (this.alienSet.numRows - 1);
 
     alienSet.pos = new Vector(50 - this.alienSetWidth / 2, 10);
     this.alienSet = alienSet;
@@ -692,8 +688,8 @@ class GameEnv {
   getAlienPos({ gridPos: { x, y } }: Alien): Vector {
     return new Vector(
       /* alienSet positions + sizes + gaps */
-      this.alienSet.pos!.x + x * this.alienSize + x * this.alienSetGap,
-      this.alienSet.pos!.y + y * this.alienSize + y * this.alienSetGap
+      this.alienSet.pos!.x + x * DIMENSIONS.alien.w + x * DIMENSIONS.alienSetGap.w,
+      this.alienSet.pos!.y + y * DIMENSIONS.alien.h + y * DIMENSIONS.alienSetGap.h
     );
   }
 
