@@ -922,7 +922,14 @@ class CanvasDisplay {
     this.parent.appendChild(this.canvas);
 
     this.setDisplaySize();
+    this.defineEventListeners();
     this.syncState(state);
+  }
+
+  defineEventListeners() {
+    window.addEventListener("resize", () => {
+      this.setDisplaySize();
+    })
   }
 
   private get canvasWidth() {
