@@ -427,7 +427,7 @@ class AlienSet {
  * Class representing an alien.
  */
 class Alien {
-  public readonly actorType: "alien" = "alien";
+  public readonly actorType = "alien" as const;
 
   /**
    * Create an Alien.
@@ -497,7 +497,7 @@ const playerXSpeed = 30;
  * Class representing the player.
  */
 class Player {
-  public readonly actorType: "player" = "player";
+  public readonly actorType = "player" as const;
 
   private baseXPos = 50 - DIMENSIONS.player.w / 2;
   private baseYPos = 90;
@@ -1125,7 +1125,8 @@ const basicInvaderPlan = `
 .oo..oo.
 ...xx...`;
 
-let a: Alien = {
+//
+const a: Alien = {
   actorType: "alien",
   alienType: ".",
   gridPos: { x: 8, y: 8 },
@@ -1139,7 +1140,7 @@ let a: Alien = {
   },
 };
 
-let state = GameState.Start(basicInvaderPlan);
+const state = GameState.Start(basicInvaderPlan);
 const canvasDisplay = new CanvasDisplay(
   state,
   new GameController(),

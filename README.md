@@ -1,5 +1,8 @@
 # Space Invaders
 
+[![Language](https://img.shields.io/badge/javascript-yellow.svg?style=flat)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Release](https://img.shields.io/badge/v1.0-green.svg?style=flat)](./dist/)
+
 This is an implementation of the classic Space Invaders game using [TypeScript](https://www.typescriptlang.org/) and the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API).
 
 ## Table of Contents
@@ -25,12 +28,16 @@ This is an implementation of the classic Space Invaders game using [TypeScript](
 
 - TypeScript
 - Canvas API
+- ESlint
+- Webpack
 
 ## Process
 
 I had fun building this game and I took a different approach that allowed me to build it quicker than building [my implementation of the Snake Game](https://github.com/rafaeldevvv/snake-game).
 
 This time I got totally focused on the smaller components, such as bullets, aliens and so on, first and didn't worry about the high-level ones like state, rendering method, controller and so on. This allowed me to build my way up really fast.
+
+I got very excited about trying new technologies and so I used [ESLint](https://eslint.org/docs), [WebPack](https://webpack.js.org/concepts/) (which is not new for me, but it was the first time I read through the documentation) and [TSDoc](https://tsdoc.org/) comments.
 
 ### Objects Positions Problem
 
@@ -285,6 +292,8 @@ Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn
 
 ### Useful Resources
 
+#### General
+
 - [Generating a `tsconfig.json` file](https://stackoverflow.com/questions/36916989/how-can-i-generate-a-tsconfig-json-file)
 - [Eloquent JS - Project: A Platform Game](https://eloquentjavascript.net/16_game.html)
 - [tsc apparently not picking up tsconfig.json](https://github.com/microsoft/TypeScript/issues/6591)
@@ -292,6 +301,10 @@ Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn
 - [Iteration protocols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)
 - [How to define a private property when implementing an interface in Typescript?](https://stackoverflow.com/questions/37791947/how-to-define-a-private-property-when-implementing-an-interface-in-typescript)
 - [KeyboardEvent.keyCode deprecated. What does this mean in practice?](https://stackoverflow.com/questions/35394937/keyboardevent-keycode-deprecated-what-does-this-mean-in-practice)
+- [Bing](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx) - I love AIs ❤
+
+#### Comments
+
 - [JSDoc](https://jsdoc.app/) - very effective way of adding comments.
 - [JSDoc Reference](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#param-and-returns)
 - [What is TSDoc?](https://tsdoc.org/) - very effective way of adding comments in `.ts` files.
@@ -300,7 +313,17 @@ Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn
 - [TypeDoc](https://typedoc.org/) - It generates a documentation for TSCode.
 - [`typedoc` NPM package](https://www.npmjs.com/package/typedoc)
 - [TS: What is TSDoc?](https://medium.com/suyeonme/ts-what-is-tsdoc-6e11427c9704)
-- [Bing](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx) - I love AIs ❤
+
+#### ESLint
+
+- [ESLint Docs](https://eslint.org/docs)
+- [typescript-eslint](https://typescript-eslint.io/)
+- [Ignore files](https://eslint.org/docs/latest/use/configure/ignore)
+
+#### Webpack
+
+- [WebPack Docs](https://webpack.js.org/concepts/)
+- [`package.json` file](https://docs.npmjs.com/cli/v10/configuring-npm/package-json)
 
 ## Author
 
@@ -308,3 +331,15 @@ Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn
 - [Portfolio](https://rafaeldevvv.github.io/portfolio)
 - [X](https://www.twitter.com/rafaeldevvv)
 - [Linkedin](https://www.linkedin.com/in/rafael-maia-b69662263)
+
+## LICENSE
+
+The MIT License
+
+Copyright 2023-2024 Rafael Maia
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
