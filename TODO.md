@@ -1,14 +1,10 @@
-- Improve config of the game (sizes, speeds and more)
-  - Decrease the player's fireInterval and make its bullet disappear when it hits an alien
-- commit & update README
-
-- Fix player's bullet origin position
-- commit & update README
-
 - change the fire interval management in the gun class
 - commit & update README
 
 - Implement wall with bricks
+- commit & update README
+
+- Add a visual clue to track the gun's reload time
 - commit & update README
 
 - Make the assets, styles and so on

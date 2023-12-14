@@ -572,34 +572,40 @@ class Player {
  */
 class Gun {
   private lastFire: number;
+  private fireInterval: number;
 
   /**
    * Create a Gun.
    *
    * @param owner - The object which fires the gun.
    * @param bulletSpeed - The speed of the bullet.
-   * @param fireInterval - The time it takes for the gun to fire again.
+   * @param baseFireInterval - The time it takes for the gun to fire again.
    */
   constructor(
     public owner: TShooters,
-    public bulletSpeed: number,
-    public fireInterval: number
+    private bulletSpeed: number,
+    private baseFireInterval: number,
   ) {
     // to give a random initial fireInterval
-    this.lastFire = performance.now() - randomNum(0, fireInterval);
+    this.fireInterval = randomNum(0.9 * baseFireInterval, baseFireInterval);
+    this.lastFire = performance.now() - randomNum(0, baseFireInterval);
   }
 
   /**
    * Fire a bullet from a position.
    *
    * @param pos - The position from where the gun is fired.
-   * @param {"up" | "down"} direction - The direction the bullet goes.
-   * @returns {Bullet | null} - A bullet or null if the gun wasn't able to fire.
+   * @param direction - The direction the bullet goes.
+   * @returns - A bullet or null if the gun wasn't able to fire.
    */
   fire(pos: Vector, direction: "up" | "down") {
     if (this.canFire()) {
       /* update lastFire prop to track the time of the last shot */
       this.lastFire = performance.now();
+
+      /* generate random fire interval for dynamic gameplay */
+      this.fireInterval = randomNum(0.9 * this.baseFireInterval, this.baseFireInterval);
+      
       return new Bullet(
         this.owner,
         pos,
@@ -683,7 +689,7 @@ class GameEnv {
    *
    * @param alienSet - The aliens.
    * @param player - The player.
-   * @param {Wall[]} walls - The walls.
+   * @param walls - The walls.
    */
   constructor(
     public alienSet: AlienSet,
@@ -756,7 +762,7 @@ class GameEnv {
   /**
    * Check whether an object in the game has been shot.
    *
-   * @param {Bullet} bullet - A bullet that may hit the object.
+   * @param bullet - A bullet that may hit the object.
    * @param actorPos - The position of the object.
    * @param actorSize - The size of the object.
    * @returns - A boolean value that says whether the object is shot.
@@ -1080,7 +1086,7 @@ class CanvasDisplay {
   /**
    * Draw an array of bullets onto the canvas.
    *
-   * @param {Bullet[]} bullets
+   * @param bullets
    */
   drawBullets(bullets: Bullet[]) {
     for (const bullet of bullets) {
@@ -1118,7 +1124,7 @@ class CanvasDisplay {
   /**
    * Draw walls onto canvas.
    *
-   * @param {Wall[]} walls
+   * @param walls
    */
   drawWalls(walls: Wall[]) {
     for (const wall of walls) {
