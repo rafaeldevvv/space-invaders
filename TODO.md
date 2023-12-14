@@ -1,9 +1,3 @@
-- show metadata
-- commit & update README
-
-- resize canvas on resize event
-- commit & update README
-
 - Check when alienset reached wall
 - commit & update README
 

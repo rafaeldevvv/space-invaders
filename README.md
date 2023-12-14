@@ -304,6 +304,7 @@ Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn
 - [Bing](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx) - I love AIs ❤
 - [Intro | Shields.io](https://shields.io/docs) - A service for concise, consistent, and legible badges, which can easily be included in GitHub readmes or any other web page.
 - [HEAD Meta elements list](https://github.com/joshbuchea/HEAD#meta)
+- [Aspect Ratio | Definition, Formula & Examples](https://study.com/academy/lesson/aspect-ratio-definition-calculation.html#:~:text=long%2C%20thin%20wings-,Lesson%20Summary,height%3A%20r%20%3D%20w%20h%20.)
 
 #### Comments
 

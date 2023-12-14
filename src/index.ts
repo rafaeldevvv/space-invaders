@@ -99,6 +99,9 @@ const arrowRightKey = "ArrowRight";
 const arrowLeftKey = "ArrowLeft";
 const spaceKey = " ";
 
+const displayMaxWidth = 720;
+const displayAspectRatio = 4 / 3;
+
 /* ========================== utilities ========================= */
 
 /**
@@ -412,12 +415,12 @@ class AlienSet {
   }
 
   /**
-   * Iterate through the AlienSet, yielding an alien as well as its position within the grid.
+   * Iterate through the AlienSet, yielding every alien in the set
    */
   *[Symbol.iterator]() {
     for (let y = 0; y < this.numRows; y++) {
       for (let x = 0; x < this.numColumns; x++) {
-        yield { x, y, alien: this.aliens[y][x] };
+        yield this.aliens[y][x];
       }
     }
   }
@@ -447,23 +450,15 @@ class Alien {
   /**
    * Fire an alien bullet.
    *
-   * @param from - The position from where the alien fires.
+   * @param alienPos - The position from where the alien fires.
    * @returns {Bullet | null} - The fired bullet or null if the gun wasn't able to fire.
    */
-  fire(from: Coords) {
+  fire(alienPos: Coords) {
     /* bullet is fired from the center of the alien */
-    const bulletX = from.x + DIMENSIONS.alien.w / 2 - DIMENSIONS.bullet.w / 2;
+    const bulletX =
+      alienPos.x + DIMENSIONS.alien.w / 2 - DIMENSIONS.bullet.w / 2;
 
-    return this.gun.fire(new Vector(bulletX, from.y), "down");
-  }
-
-  /**
-   * Check whether the alien's gun can be fired.
-   *
-   * @returns - Boolean representing whether the alien's gun can be fired.
-   */
-  canFire() {
-    return this.gun.canFire();
+    return this.gun.fire(new Vector(bulletX, alienPos.y), "down");
   }
 
   /**
@@ -626,6 +621,10 @@ class Bullet {
   update(timeStep: number) {
     this.pos = this.pos.plus(this.speed.times(timeStep));
   }
+
+  collide(state: GameState) {
+    state.bullets = state.bullets.filter((bullet) => bullet !== this);
+  }
 }
 
 /**
@@ -717,21 +716,24 @@ class GameEnv {
   bulletShouldBeRemoved(bullet: Bullet) {
     let touches = false;
 
-    if (
-      this.isActorShot([bullet], this.player.pos, DIMENSIONS.player) &&
-      bullet.from === "alien"
-    )
+    if (bullet.pos.y >= 100 || bullet.pos.y + DIMENSIONS.bullet.h <= 0) {
       touches = true;
+    }
+
+    if (
+      this.isActorShot(bullet, this.player.pos, DIMENSIONS.player) &&
+      bullet.from === "alien"
+    ) {
+      touches = true;
+    }
 
     if (this.bulletTouchesWall(bullet)) touches = true;
 
-    for (const { alien } of this.alienSet) {
+    for (const alien of this.alienSet) {
       if (bullet.from === "alien") break;
       if (!alien) continue;
 
-      if (
-        this.isActorShot([bullet], this.getAlienPos(alien), DIMENSIONS.alien)
-      ) {
+      if (this.isActorShot(bullet, this.getAlienPos(alien), DIMENSIONS.alien)) {
         touches = true;
         break;
       }
@@ -752,15 +754,25 @@ class GameEnv {
   /**
    * Check whether an object in the game has been shot.
    *
-   * @param {Bullet[]} bullets - An array of the bullets that may hit the object.
+   * @param {Bullet} bullet - A bullet that may hit the object.
    * @param actorPos - The position of the object.
    * @param actorSize - The size of the object.
    * @returns - A boolean value that says whether the object is shot.
    */
-  isActorShot(bullets: Bullet[], actorPos: Coords, actorSize: Size) {
-    return bullets.some((bullet) => {
-      return overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize);
-    });
+  isActorShot(bullet: Bullet, actorPos: Coords, actorSize: Size) {
+    return overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize);
+  }
+
+  isActorShot2(actorPos: Coords, actorSize: Size) {
+    /* 
+    for (const bullet of this.bullets) {
+      if (overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize)) {
+        return true;
+      }
+    }
+
+    return false;
+    */
   }
 }
 
@@ -800,26 +812,37 @@ class GameState {
       this.bullets.push(this.player.fire()!);
     }
 
+    // get player bullets
     const playerBullets = this.bullets.filter(
       (bullet) => bullet.from === "player"
     );
 
-    for (const { x, y, alien } of this.alienSet) {
+    // check if any of bullets hit an alien, and if it does, it is removed from the game,
+    // the player's score is increased and the hit alien is also removed
+
+    // get, check, remove, remove, increase
+    for (const playerBullet of playerBullets) {
+      for (const alien of this.alienSet) {
+        if (!alien) continue;
+
+        if (
+          this.env.isActorShot(
+            playerBullet,
+            this.env.getAlienPos(alien),
+            DIMENSIONS.alien
+          )
+        ) {
+          this.player.score += alien.score;
+          this.alienSet.removeAlien(alien.gridPos.x, alien.gridPos.y);
+          playerBullet.collide(this);
+        }
+      }
+    }
+
+    for (const alien of this.alienSet) {
       if (!alien) continue;
 
-      if (
-        this.env.isActorShot(
-          playerBullets,
-          this.env.getAlienPos(alien),
-          DIMENSIONS.alien
-        )
-      ) {
-        this.player.score += alien.score;
-        this.alienSet.removeAlien(x, y);
-        console.log(this.player.score);
-      }
-
-      if (alien.canFire()) {
+      if (alien.gun.canFire()) {
         this.bullets.push(alien.fire(this.env.getAlienPos(alien))!);
       }
     }
@@ -828,16 +851,22 @@ class GameState {
       (bullet) => bullet.from === "alien"
     );
 
-    if (
-      this.env.isActorShot(alienBullets, this.player.pos, DIMENSIONS.player)
-    ) {
-      this.player.lives--;
-      this.player.resetPos();
-    }
+    alienBullets.forEach((b) => {
+      if (this.env.isActorShot(b, this.player.pos, DIMENSIONS.player)) {
+        this.player.lives--;
+        this.player.resetPos();
+        b.collide(this);
+      }
+    });
 
     if (this.alienSet.length === 0) {
       this.status = "won";
     } else if (this.player.lives === 0) {
+      this.status = "lost";
+    }
+
+    if (this.env.alienSetReachedWall()) {
+      this.env.walls = [];
       this.status = "lost";
     }
 
@@ -848,15 +877,15 @@ class GameState {
    * Remove the bullets that are not relevant for the game anymore.
    */
   removeUnnecessaryBullets() {
+    const necessaryBullets = [];
     for (const bullet of this.bullets) {
-      if (
-        bullet.pos.y >= 100 ||
-        bullet.pos.y + DIMENSIONS.bullet.h <= 0 ||
-        this.env.bulletShouldBeRemoved(bullet)
-      ) {
-        this.bullets = this.bullets.filter((b) => b !== bullet);
+      if (!this.env.bulletShouldBeRemoved(bullet)) {
+        necessaryBullets.push(bullet);
       }
     }
+
+    this.bullets = necessaryBullets;
+    console.log(this.bullets.filter((bullet) => bullet.from == "player"));
   }
 
   /**
@@ -929,7 +958,8 @@ class CanvasDisplay {
   defineEventListeners() {
     window.addEventListener("resize", () => {
       this.setDisplaySize();
-    })
+      this.syncState(this.state);
+    });
   }
 
   private get canvasWidth() {
@@ -991,12 +1021,15 @@ class CanvasDisplay {
    */
   setDisplaySize() {
     const canvasWidth = Math.min(
-      720,
+      displayMaxWidth,
       getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
     );
 
     this.canvas.setAttribute("width", canvasWidth.toString());
-    this.canvas.setAttribute("height", ((canvasWidth / 4) * 3).toString());
+    this.canvas.setAttribute(
+      "height",
+      (canvasWidth / displayAspectRatio).toString()
+    );
   }
 
   /**
@@ -1017,21 +1050,23 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw the alien set in the canvas.
+   * Draw the alien set onto the canvas.
    *
    * @param alienSet
    */
   drawAlienSet(alienSet: AlienSet) {
     const alienSetXPos = alienSet.pos!.x;
 
-    for (const { alien, x, y } of alienSet) {
+    for (const alien of alienSet) {
       if (!alien) continue;
 
       const xPercentage =
-        alienSetXPos + x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
+        alienSetXPos +
+        alien.gridPos.x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
 
       const yPercentage =
-        alienSet.pos!.y + y * (DIMENSIONS.alienSetGap.h + DIMENSIONS.alien.h);
+        alienSet.pos!.y +
+        alien.gridPos.y * (DIMENSIONS.alienSetGap.h + DIMENSIONS.alien.h);
 
       this.drawAlien(alien, {
         x: xPercentage,
@@ -1041,7 +1076,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw an alien in the canvas.
+   * Draw an alien onto the canvas.
    *
    * @param alien
    * @param pos - A percentage position.
@@ -1055,7 +1090,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw an array of bullets on the canvas.
+   * Draw an array of bullets onto the canvas.
    *
    * @param {Bullet[]} bullets
    */
@@ -1066,7 +1101,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw a bullet on the canvas.
+   * Draw a bullet onto the canvas.
    *
    * @param bullet
    */
@@ -1080,7 +1115,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw player on the canvas.
+   * Draw player onto the canvas.
    *
    * @param player
    */
@@ -1093,7 +1128,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw walls on canvas.
+   * Draw walls onto canvas.
    *
    * @param {Wall[]} walls
    */
@@ -1115,20 +1150,22 @@ class CanvasDisplay {
   drawMetadata(state: GameState) {
     // draw hearts to show player's lives
     // draw score
+    const fontSize = Math.min(30, this.verPixels(8));
 
-    const fontSize = Math.min(30, this.verPixels(5));
-    
+    this.canvasContext.fillStyle = "#fff";
     this.canvasContext.font = `${fontSize}px monospace`;
+
     this.canvasContext.textAlign = "start";
     this.canvasContext.fillText(
       `SCORE ${state.player.score}`,
-      this.horPixels(2),
+      this.horPixels(displayPadding.hor),
       fontSize + this.verPixels(1)
     );
+
     this.canvasContext.textAlign = "end";
     this.canvasContext.fillText(
       `Lives ${state.player.lives}`,
-      this.horPixels(98),
+      this.horPixels(100 - displayPadding.hor),
       fontSize + this.verPixels(1)
     );
   }
@@ -1161,9 +1198,6 @@ const a: Alien = {
   score: 899,
   gun: new Gun("alien", 5, 200),
   fire(from: Coords): Bullet {
-    throw "";
-  },
-  canFire(): boolean {
     throw "";
   },
 };
