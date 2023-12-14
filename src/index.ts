@@ -531,7 +531,7 @@ class Player {
   fire() {
     /* from the center of the player */
     const bulletPosX =
-      this.pos.x + DIMENSIONS.player.w / 2; /* - DIMENSIONS.bullet.w / 2 */
+      this.pos.x + DIMENSIONS.player.w / 2 - DIMENSIONS.bullet.w / 2;
 
     return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up");
   }
