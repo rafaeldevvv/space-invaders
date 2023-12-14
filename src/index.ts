@@ -41,9 +41,19 @@ interface PixelSize extends Size {}
 type TShooters = "player" | "alien";
 
 /**
- * String characters representing which kind of aliens can be created.
+ * String characters representing which kind of aliens can be created. These were chosen arbitrarily.
+ *
+ * `.` represents the lowest level alien.
+ * `x` represents the medium level alien.
+ * `o` represents the highest level alien.
  */
-type TAliens = "." | "x" | "o";
+const alienTypes = [".", "x", "o"] as const;
+type TAliens = (typeof alienTypes)[number];
+
+const alienTypesRegExp = new RegExp(
+  `(\\w*(${alienTypes.join("|")})*\\w*)+`,
+  ""
+);
 
 /**
  * It takes a union of strings and generate an object type whose
@@ -70,20 +80,20 @@ const DIMENSIONS: {
   readonly alienSetGap: Size;
 } = {
   alien: {
-    w: 5, // 5% of the display width
-    h: 7, // 5% of the display height
+    w: 4, // 4% of the display width
+    h: 6, // 6% of the display height
   },
   player: {
     w: 5, // 5% of the display width
-    h: 7, // 5% of the display height
+    h: 7, // 7% of the display height
   },
   bullet: {
-    w: 1, // 2% of the display width
-    h: 3, // 4% of the display height
+    w: 0.5, // 0.5% of the display width
+    h: 3, // 3% of the display height
   },
   alienSetGap: {
     w: 1, // 1% of the display width
-    h: 1, // 1% of the display height
+    h: 1.5, // 1.5% of the display height
   },
 };
 
@@ -314,6 +324,14 @@ class AlienSet {
    * @param plan - A string represeting an arranged set of aliens.
    */
   constructor(plan: string) {
+    if (!alienTypesRegExp.test(plan)) {
+      throw new Error(
+        `Invalid character(s) in plan ${plan}. Consider using only valid characters (${alienTypes.join(
+          ","
+        )})`
+      );
+    }
+
     const rows = plan
       .trim()
       .split("\n")
@@ -324,7 +342,7 @@ class AlienSet {
 
     this.aliens = rows.map((row, y) => {
       return row.map((ch, x) => {
-        return Alien.create(ch, { x, y });
+        return Alien.create(ch as TAliens, { x, y });
       });
     });
   }
@@ -468,19 +486,20 @@ class Alien {
    * @param gridPos - The position of the alien within the grid.
    * @returns - A specific alien type.
    */
-  static create(ch: string, gridPos: Coords) {
+  static create(ch: TAliens, gridPos: Coords) {
     switch (ch) {
       case ".": {
-        return new Alien(gridPos, 100, new Gun("alien", 50, 2000), ch);
+        return new Alien(gridPos, 20, new Gun("alien", 40, 4000), ch);
       }
       case "x": {
-        return new Alien(gridPos, 300, new Gun("alien", 80, 5500), ch);
+        return new Alien(gridPos, 40, new Gun("alien", 60, 6000), ch);
       }
       case "o": {
-        return new Alien(gridPos, 500, new Gun("alien", 30, 3000), ch);
+        return new Alien(gridPos, 60, new Gun("alien", 80, 7000), ch);
       }
       default: {
-        throw new Error("Unexpected character: " + ch);
+        const _never: never = ch;
+        throw new Error("Unexpected character: " + _never);
       }
     }
   }
@@ -499,7 +518,7 @@ class Player {
 
   public pos: Vector = new Vector(this.baseXPos, this.baseYPos);
 
-  public readonly gun: Gun = new Gun("player", 70, 500);
+  public readonly gun: Gun = new Gun("player", 70, 400);
 
   public lives = 3;
   public score = 0;
@@ -507,11 +526,12 @@ class Player {
   /**
    * Fire a player's bullet.
    *
-   * @returns {Bulelt | null} - The fired bullet or null if the fun wasn't able to fire.
+   * @returns {Bullet | null} - The fired bullet or null if the fun wasn't able to fire.
    */
   fire() {
     /* from the center of the player */
-    const bulletPosX = this.pos.x + DIMENSIONS.player.w / 2;
+    const bulletPosX =
+      this.pos.x + DIMENSIONS.player.w / 2; /* - DIMENSIONS.bullet.w / 2 */
 
     return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up");
   }
@@ -529,16 +549,20 @@ class Player {
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys are currently held down.
    */
-  update(timeStep: number, keys: KeysTracker) {
+  update(state: GameState, timeStep: number, keys: KeysTracker) {
     const movedX = new Vector(timeStep * playerXSpeed, 0);
 
-    if (keys.ArrowLeft && this.pos.x > displayPadding.hor) {
+    if (keys[arrowLeftKey] && this.pos.x > displayPadding.hor) {
       this.pos = this.pos.minus(movedX);
     } else if (
-      keys.ArrowRight &&
+      keys[arrowRightKey] &&
       this.pos.x + DIMENSIONS.player.w < 100 - displayPadding.hor
     ) {
       this.pos = this.pos.plus(movedX);
+    }
+
+    if (keys[spaceKey] && this.gun.canFire()) {
+      state.bullets.push(this.fire()!);
     }
   }
 }
@@ -673,7 +697,10 @@ class GameEnv {
       DIMENSIONS.alien.h * alienSet.numRows +
       DIMENSIONS.alienSetGap.h * (this.alienSet.numRows - 1);
 
-    alienSet.pos = new Vector(50 - this.alienSetWidth / 2, 10);
+    alienSet.pos = new Vector(
+      50 - this.alienSetWidth / 2,
+      displayPadding.ver + 10
+    );
     this.alienSet = alienSet;
   }
 
@@ -708,38 +735,13 @@ class GameEnv {
   }
 
   /**
-   * Perform checks to check whether a bullet needs to be removed from the game environment.
-   *
-   * @param bullet - A bullet that may need to be removed.
-   * @returns - A boolean value that says whether the bullet should be removed.
+   * Check whether the bullet is outside the boundaries of the screen.
+   * 
+   * @param bullet
+   * @returns
    */
-  bulletShouldBeRemoved(bullet: Bullet) {
-    let touches = false;
-
-    if (bullet.pos.y >= 100 || bullet.pos.y + DIMENSIONS.bullet.h <= 0) {
-      touches = true;
-    }
-
-    if (
-      this.isActorShot(bullet, this.player.pos, DIMENSIONS.player) &&
-      bullet.from === "alien"
-    ) {
-      touches = true;
-    }
-
-    if (this.bulletTouchesWall(bullet)) touches = true;
-
-    for (const alien of this.alienSet) {
-      if (bullet.from === "alien") break;
-      if (!alien) continue;
-
-      if (this.isActorShot(bullet, this.getAlienPos(alien), DIMENSIONS.alien)) {
-        touches = true;
-        break;
-      }
-    }
-
-    return touches;
+  isBulletOffLimits(bullet: Bullet) {
+    return bullet.pos.y >= 100 || bullet.pos.y + DIMENSIONS.bullet.h <= 0;
   }
 
   /**
@@ -761,18 +763,6 @@ class GameEnv {
    */
   isActorShot(bullet: Bullet, actorPos: Coords, actorSize: Size) {
     return overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize);
-  }
-
-  isActorShot2(actorPos: Coords, actorSize: Size) {
-    /* 
-    for (const bullet of this.bullets) {
-      if (overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize)) {
-        return true;
-      }
-    }
-
-    return false;
-    */
   }
 }
 
@@ -806,21 +796,16 @@ class GameState {
     this.alienSet.update(timeStep);
     this.bullets.forEach((bullet) => bullet.update(timeStep));
 
-    this.player.update(timeStep, keys);
+    this.player.update(this, timeStep, keys);
 
-    if (keys[" "] && this.player.gun.canFire()) {
-      this.bullets.push(this.player.fire()!);
-    }
-
-    // get player bullets
     const playerBullets = this.bullets.filter(
       (bullet) => bullet.from === "player"
     );
 
-    // check if any of bullets hit an alien, and if it does, it is removed from the game,
-    // the player's score is increased and the hit alien is also removed
-
-    // get, check, remove, remove, increase
+    /*  
+      check if any of the player bullets hits an alien, and if it does, 
+      the score is increased and alien and bullet are removed 
+    */
     for (const playerBullet of playerBullets) {
       for (const alien of this.alienSet) {
         if (!alien) continue;
@@ -838,6 +823,7 @@ class GameState {
         }
       }
     }
+
 
     for (const alien of this.alienSet) {
       if (!alien) continue;
@@ -879,13 +865,15 @@ class GameState {
   removeUnnecessaryBullets() {
     const necessaryBullets = [];
     for (const bullet of this.bullets) {
-      if (!this.env.bulletShouldBeRemoved(bullet)) {
+      if (
+        !this.env.isBulletOffLimits(bullet) &&
+        !this.env.bulletTouchesWall(bullet)
+      ) {
         necessaryBullets.push(bullet);
       }
     }
 
     this.bullets = necessaryBullets;
-    console.log(this.bullets.filter((bullet) => bullet.from == "player"));
   }
 
   /**
@@ -894,7 +882,7 @@ class GameState {
    * @param plan - A string represeting an arranged set of aliens.
    * @returns - A initial state for the game.
    */
-  static Start(plan: string) {
+  static start(plan: string) {
     const alienSet = new AlienSet(plan);
     const player = new Player();
     const walls: Wall[] = [
@@ -1159,14 +1147,14 @@ class CanvasDisplay {
     this.canvasContext.fillText(
       `SCORE ${state.player.score}`,
       this.horPixels(displayPadding.hor),
-      fontSize + this.verPixels(1)
+      fontSize + this.verPixels(displayPadding.ver)
     );
 
     this.canvasContext.textAlign = "end";
     this.canvasContext.fillText(
       `Lives ${state.player.lives}`,
       this.horPixels(100 - displayPadding.hor),
-      fontSize + this.verPixels(1)
+      fontSize + this.verPixels(displayPadding.ver)
     );
   }
 
@@ -1202,14 +1190,14 @@ const a: Alien = {
   },
 };
 
-const state = GameState.Start(basicInvaderPlan);
+const state = GameState.start(basicInvaderPlan);
 const canvasDisplay = new CanvasDisplay(
   state,
   new GameController(),
   document.body
 );
 
-const keys = keysTracker(["ArrowRight", "ArrowLeft", " "]);
+const keys = keysTracker([arrowRightKey, arrowLeftKey, spaceKey]);
 
 runAnimation((timeStep) => {
   canvasDisplay.syncState(state);
