@@ -1,6 +1,6 @@
 # Space Invaders
 
-[![Language](https://img.shields.io/badge/language-typescript-blue.svg?style=flat)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Language](https://img.shields.io/badge/language-typescript-blue.svg?style=flat)](https://www.typescriptlang.org/)
 [![Release](https://img.shields.io/badge/v1.0-limegreen.svg?style=flat)](./dist/)
 
 This is an implementation of the classic Space Invaders game using [TypeScript](https://www.typescriptlang.org/) and the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API).
