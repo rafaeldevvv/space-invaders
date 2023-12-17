@@ -76,7 +76,6 @@ type KeysTracker = FlagsFromUnion<GameKeys>;
 const DIMENSIONS: {
   readonly alien: Size;
   readonly player: Size;
-  readonly bullet: Size;
   readonly alienSetGap: Size;
 } = {
   alien: {
@@ -86,10 +85,6 @@ const DIMENSIONS: {
   player: {
     w: 5, // 5% of the display width
     h: 7, // 7% of the display height
-  },
-  bullet: {
-    w: 0.5, // 0.5% of the display width
-    h: 3, // 3% of the display height
   },
   alienSetGap: {
     w: 1, // 1% of the display width
@@ -474,7 +469,7 @@ class Alien {
   fire(alienPos: Coords) {
     /* bullet is fired from the center of the alien */
     const bulletX =
-      alienPos.x + DIMENSIONS.alien.w / 2 - DIMENSIONS.bullet.w / 2;
+      alienPos.x + DIMENSIONS.alien.w / 2 - this.gun.bulletSize.w / 2;
 
     return this.gun.fire(new Vector(bulletX, alienPos.y), "down");
   }
@@ -489,13 +484,28 @@ class Alien {
   static create(ch: TAliens, gridPos: Coords) {
     switch (ch) {
       case ".": {
-        return new Alien(gridPos, 20, new Gun("alien", 40, 4000), ch);
+        return new Alien(
+          gridPos,
+          20,
+          new Gun("alien", 40, { w: 0.5, h: 3 }, 4000),
+          ch
+        );
       }
       case "x": {
-        return new Alien(gridPos, 40, new Gun("alien", 60, 6000), ch);
+        return new Alien(
+          gridPos,
+          40,
+          new Gun("alien", 60, { w: 1, h: 3 }, 6000),
+          ch
+        );
       }
       case "o": {
-        return new Alien(gridPos, 60, new Gun("alien", 80, 7000), ch);
+        return new Alien(
+          gridPos,
+          60,
+          new Gun("alien", 80, { w: 1.5, h: 3 }, 7000),
+          ch
+        );
       }
       default: {
         const _never: never = ch;
@@ -518,7 +528,7 @@ class Player {
 
   public pos: Vector = new Vector(this.baseXPos, this.baseYPos);
 
-  public readonly gun: Gun = new Gun("player", 70, 400);
+  public readonly gun: Gun = new Gun("player", 70, { w: 0.5, h: 3 }, 400);
 
   public lives = 3;
   public score = 0;
@@ -531,7 +541,7 @@ class Player {
   fire() {
     /* from the center of the player */
     const bulletPosX =
-      this.pos.x + DIMENSIONS.player.w / 2 - DIMENSIONS.bullet.w / 2;
+      this.pos.x + DIMENSIONS.player.w / 2 - this.gun.bulletSize.w / 2;
 
     return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up");
   }
@@ -584,7 +594,8 @@ class Gun {
   constructor(
     public owner: TShooters,
     private bulletSpeed: number,
-    private baseFireInterval: number,
+    public bulletSize: Size,
+    private baseFireInterval: number
   ) {
     // to give a random initial fireInterval
     this.fireInterval = randomNum(0.9 * baseFireInterval, baseFireInterval);
@@ -604,12 +615,19 @@ class Gun {
       this.lastFire = performance.now();
 
       /* generate random fire interval for dynamic gameplay */
-      this.fireInterval = randomNum(0.9 * this.baseFireInterval, this.baseFireInterval);
-      
+      this.fireInterval = randomNum(
+        0.9 * this.baseFireInterval,
+        this.baseFireInterval
+      );
+
       return new Bullet(
         this.owner,
         pos,
-        new Vector(0, direction === "up" ? -this.bulletSpeed : this.bulletSpeed)
+        new Vector(
+          0,
+          direction === "up" ? -this.bulletSpeed : this.bulletSpeed
+        ),
+        this.bulletSize
       );
     }
 
@@ -645,7 +663,8 @@ class Bullet {
   constructor(
     public from: TShooters,
     public pos: Vector,
-    public speed: Vector
+    public speed: Vector,
+    public size: Size
   ) {}
 
   update(timeStep: number) {
@@ -660,7 +679,7 @@ class Bullet {
 /**
  * Class representing a wall.
  */
-class Wall {
+class UnbreakableWall {
   /**
    * Create a wall.
    *
@@ -668,6 +687,84 @@ class Wall {
    * @param size - The size of the wall.
    */
   constructor(public pos: Coords, public size: Size) {}
+}
+
+/**
+ * Class representing a wall that can be broken into pieces.
+ */
+class BreakableWall {
+  piecesMatrix: boolean[][];
+  pieceSize: Size;
+
+  /**
+   * @param pos
+   * @param size 
+   * @param numRows - The number of rows of breakable pieces.
+   * @param numColumns - The number of columns of breakable pieces.
+   */
+  constructor(
+    public pos: Coords,
+    public size: Size,
+    public numRows = 6,
+    public numColumns = 20
+  ) {
+    /* 
+    the problem with this is that the same array is assined to each row
+    so when i update a piece in a row, i actually update a piece in 
+    all the rows in the same column
+     */
+    /* this.piecesMatrix = new Array(numRows).fill(
+      new Array(numColumns).fill(true)
+    );*/
+
+    /* this works properly */
+    this.piecesMatrix = new Array(numRows).fill(undefined).map(() =>
+      new Array(numColumns).fill(true)
+    );
+
+    this.pieceSize = {
+      w: this.size.w / numColumns,
+      h: this.size.h / numRows,
+    };
+  }
+
+  /**
+   * Gets the position of a piece of the wall within the whole display screen in percentage values.
+   * 
+   * @param column - The column in which the piece is.
+   * @param row - The row in which the piece is.
+   * @returns - The position of the piece within the whole display in percentage values.
+   */
+  getPiecePos(column: number, row: number): Coords {
+    return {
+      x: this.pos.x + column * this.pieceSize.w,
+      y: this.pos.y + row * this.pieceSize.h,
+    };
+  }
+
+  /**
+   * This method is called when a bullet hits the wall.
+   * It checks which pieces the bullet has hit and removes them, 
+   * calling {@link Bullet.collide} if it hits a piece.
+   * 
+   * @param state - The state of the game.
+   * @param bullet - The bullet that hit the wall.
+   */
+  collide(state: GameState, bullet: Bullet) {
+    for (let row = 0; row < this.piecesMatrix.length; row++) {
+      for (let column = 0; column < this.piecesMatrix[row].length; column++) {
+        const piecePos = this.getPiecePos(column, row);
+
+        if (
+          overlap(bullet.pos, bullet.size, piecePos, this.pieceSize) &&
+          this.piecesMatrix[row][column]
+        ) {
+          this.piecesMatrix[row][column] = false;
+          bullet.collide(state);
+        }
+      }
+    }
+  }
 }
 
 /* ========================================================================= */
@@ -694,7 +791,7 @@ class GameEnv {
   constructor(
     public alienSet: AlienSet,
     public player: Player,
-    public walls: Wall[]
+    public walls: UnbreakableWall[] | BreakableWall[]
   ) {
     this.alienSetWidth =
       DIMENSIONS.alien.w * alienSet.numColumns +
@@ -735,19 +832,37 @@ class GameEnv {
    * @returns - A boolean value which says whether the bullet touches a wall.
    */
   bulletTouchesWall(bullet: Bullet) {
-    return this.walls.some((wall) => {
-      return overlap(wall.pos, wall.size, bullet.pos, DIMENSIONS.bullet);
+    return this.walls.some((wall: BreakableWall | UnbreakableWall) => {
+      if (wall instanceof UnbreakableWall) {
+        return overlap(wall.pos, wall.size, bullet.pos, bullet.size);
+      } else {
+        let touches = false;
+        for (let row = 0; row < wall.piecesMatrix.length; row++) {
+          for (let column = 0; column < wall.piecesMatrix[0].length; column++) {
+            if (!wall.piecesMatrix[row][column]) continue;
+
+            touches = overlap(
+              bullet.pos,
+              bullet.size,
+              wall.getPiecePos(column, row),
+              wall.pieceSize
+            );
+          }
+        }
+
+        return touches;
+      }
     });
   }
 
   /**
    * Check whether the bullet is outside the boundaries of the screen.
-   * 
+   *
    * @param bullet
    * @returns
    */
   isBulletOffLimits(bullet: Bullet) {
-    return bullet.pos.y >= 100 || bullet.pos.y + DIMENSIONS.bullet.h <= 0;
+    return bullet.pos.y >= 100 || bullet.pos.y + bullet.size.h <= 0;
   }
 
   /**
@@ -768,7 +883,7 @@ class GameEnv {
    * @returns - A boolean value that says whether the object is shot.
    */
   isActorShot(bullet: Bullet, actorPos: Coords, actorSize: Size) {
-    return overlap(bullet.pos, DIMENSIONS.bullet, actorPos, actorSize);
+    return overlap(bullet.pos, bullet.size, actorPos, actorSize);
   }
 }
 
@@ -804,6 +919,18 @@ class GameState {
 
     this.player.update(this, timeStep, keys);
 
+    for (const bullet of this.bullets) {
+      for (const wall of this.env.walls) {
+        if (wall instanceof BreakableWall) {
+          if (overlap(wall.pos, wall.size, bullet.pos, bullet.size)) {
+            wall.collide(this, bullet);
+          }
+        } else if (overlap(wall.pos, wall.size, bullet.pos, bullet.size)) {
+          bullet.collide(this);
+        }
+      }
+    }
+
     const playerBullets = this.bullets.filter(
       (bullet) => bullet.from === "player"
     );
@@ -830,7 +957,6 @@ class GameState {
       }
     }
 
-
     for (const alien of this.alienSet) {
       if (!alien) continue;
 
@@ -843,6 +969,10 @@ class GameState {
       (bullet) => bullet.from === "alien"
     );
 
+    /* 
+      check if any alien bullet hits the player and if it does, the bullet
+      is removed and the player resets its position and loses one life 
+    */
     alienBullets.forEach((b) => {
       if (this.env.isActorShot(b, this.player.pos, DIMENSIONS.player)) {
         this.player.lives--;
@@ -853,7 +983,7 @@ class GameState {
 
     if (this.alienSet.length === 0) {
       this.status = "won";
-    } else if (this.player.lives === 0) {
+    } else if (this.player.lives < 1) {
       this.status = "lost";
     }
 
@@ -863,6 +993,7 @@ class GameState {
     }
 
     this.removeUnnecessaryBullets();
+    console.log(this.bullets);
   }
 
   /**
@@ -871,10 +1002,7 @@ class GameState {
   removeUnnecessaryBullets() {
     const necessaryBullets = [];
     for (const bullet of this.bullets) {
-      if (
-        !this.env.isBulletOffLimits(bullet) &&
-        !this.env.bulletTouchesWall(bullet)
-      ) {
+      if (!this.env.isBulletOffLimits(bullet)) {
         necessaryBullets.push(bullet);
       }
     }
@@ -891,9 +1019,9 @@ class GameState {
   static start(plan: string) {
     const alienSet = new AlienSet(plan);
     const player = new Player();
-    const walls: Wall[] = [
-      new Wall({ x: 20, y: 75 }, { w: 20, h: 5 }),
-      new Wall({ x: 60, y: 75 }, { w: 20, h: 5 }),
+    const walls: BreakableWall[] = [
+      new BreakableWall({ x: 20, y: 75 }, { w: 20, h: 5 }),
+      new BreakableWall({ x: 60, y: 75 }, { w: 20, h: 5 }),
     ];
     const env = new GameEnv(alienSet, player, walls);
 
@@ -999,7 +1127,7 @@ class CanvasDisplay {
 
   /**
    * Calculate the pixel size of an object within the canvas based on a percentage size.
-   *
+   
    * @param percentagePos - The percentage size.
    * @returns - The corresponding pixel size.
    */
@@ -1101,7 +1229,7 @@ class CanvasDisplay {
    */
   drawBullet(bullet: Bullet) {
     const { x, y } = this.getPixelPos(bullet.pos);
-    const { w, h } = this.getPixelSize(DIMENSIONS.bullet);
+    const { w, h } = this.getPixelSize(bullet.size);
 
     this.canvasContext.fillStyle =
       bullet.from === "alien" ? "limegreen" : "white";
@@ -1126,13 +1254,41 @@ class CanvasDisplay {
    *
    * @param walls
    */
-  drawWalls(walls: Wall[]) {
+  drawWalls(walls: UnbreakableWall[] | BreakableWall[]) {
     for (const wall of walls) {
-      const { x, y } = this.getPixelPos(wall.pos);
-      const { w, h } = this.getPixelSize(wall.size);
+      this.canvasContext.save();
 
-      this.canvasContext.fillStyle = "#ffffff";
-      this.canvasContext.fillRect(x, y, w, h);
+      const { x, y } = this.getPixelPos(wall.pos);
+
+      this.canvasContext.translate(x, y);
+
+      if (wall instanceof UnbreakableWall) {
+        const { w, h } = this.getPixelSize(wall.size);
+        this.canvasContext.fillStyle = "#ffffff";
+        this.canvasContext.fillRect(0, 0, w, h);
+      } else {
+        const { w, h } = wall.pieceSize;
+        const pieceWPixels = this.horPixels(w),
+          pieceHPixels = this.horPixels(h);
+
+        wall.piecesMatrix.forEach((row, y) => {
+          row.forEach((piece, x) => {
+            if (piece) {
+              const xPixels = this.horPixels(x * w),
+                yPixels = this.verPixels(y * h);
+
+              this.canvasContext.fillStyle = "#ffffff";
+              this.canvasContext.fillRect(
+                xPixels,
+                yPixels,
+                pieceWPixels,
+                pieceHPixels
+              );
+            }
+          });
+        });
+      }
+      this.canvasContext.restore();
     }
   }
 
@@ -1184,18 +1340,6 @@ const basicInvaderPlan = `
 .oo..oo.
 ...xx...`;
 
-//
-const a: Alien = {
-  actorType: "alien",
-  alienType: ".",
-  gridPos: { x: 8, y: 8 },
-  score: 899,
-  gun: new Gun("alien", 5, 200),
-  fire(from: Coords): Bullet {
-    throw "";
-  },
-};
-
 const state = GameState.start(basicInvaderPlan);
 const canvasDisplay = new CanvasDisplay(
   state,
@@ -1206,6 +1350,7 @@ const canvasDisplay = new CanvasDisplay(
 const keys = keysTracker([arrowRightKey, arrowLeftKey, spaceKey]);
 
 runAnimation((timeStep) => {
+  console.log(`${Math.round(1 / timeStep)} fps`);
   canvasDisplay.syncState(state);
 
   if (state.status === "lost") {

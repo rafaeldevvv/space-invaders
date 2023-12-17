@@ -290,6 +290,41 @@ I liked it. I feel like TSDoc comments make the code more meaningful somehow.
 
 Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn't it?
 
+### `Array.prototpe.fill()` sucks
+
+I was building the first version of a breakable wall and I ran into this mistake:
+
+```ts
+class BreakableWall {
+  piecesMatrix: boolean[][];
+  pieceSize: Size;
+
+  constructor(
+    public pos: Coords,
+    public size: Size,
+    public numRows = 6,
+    public numColumns = 20
+  ) {
+    this.piecesMatrix = new Array(numRows).fill(
+      new Array(numColumns).fill(true)
+    );
+
+    console.log(this.piecesMatrix);
+
+    this.pieceSize = {
+      w: this.size.w / numColumns,
+      h: this.size.h / numRows,
+    };
+  }
+}
+```
+
+At first glance you might think that the code is okay, like I am just creating an array of arrays of boolean values, but this code is extremely faulty. 
+
+The thing is that all of the arrays in the `piecesMatrix` property refer to the same array. So all rows are the same! Gee-whiz! And when I updated a piece in a row, I was actually updating the same piece in all rows, which would update a whole column!
+
+So be aware that the `fill()` method assigns the value you pass in to all elements in the array, without creating new instances.
+
 ### Useful Resources
 
 #### General
@@ -305,6 +340,7 @@ Check out the [generated docs](./docs/) to see how it looks like. It's nice, isn
 - [Intro | Shields.io](https://shields.io/docs) - A service for concise, consistent, and legible badges, which can easily be included in GitHub readmes or any other web page.
 - [HEAD Meta elements list](https://github.com/joshbuchea/HEAD#meta)
 - [Aspect Ratio | Definition, Formula & Examples](https://study.com/academy/lesson/aspect-ratio-definition-calculation.html#:~:text=long%2C%20thin%20wings-,Lesson%20Summary,height%3A%20r%20%3D%20w%20h%20.)
+- [Javascript efficiency: 'for' vs 'forEach' \[closed\]](https://stackoverflow.com/questions/43031988/javascript-efficiency-for-vs-foreach) - This made me decide to use readable and maintainable approaches.
 
 #### Comments
 

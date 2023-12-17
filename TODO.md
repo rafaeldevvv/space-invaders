@@ -1,10 +1,10 @@
-- change the fire interval management in the gun class
-- commit & update README
-
-- Implement wall with bricks
+- Refactor the code
 - commit & update README
 
 - Add a visual clue to track the gun's reload time
+- commit & update README
+
+- Add FPS marker
 - commit & update README
 
 - Make the assets, styles and so on
