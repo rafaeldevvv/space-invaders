@@ -50,10 +50,7 @@ type TShooters = "player" | "alien";
 const alienTypes = [".", "x", "o"] as const;
 type TAliens = (typeof alienTypes)[number];
 
-const alienTypesRegExp = new RegExp(
-  `(\\w*(${alienTypes.join("|")})*\\w*)+`,
-  ""
-);
+const alienTypesRegExp = new RegExp(`(\\w*(${alienTypes.join("|")})*\\w*)+`);
 
 /**
  * It takes a union of strings and generate an object type whose
@@ -63,8 +60,8 @@ type FlagsFromUnion<Keys extends string> = {
   [Key in Keys]: boolean;
 };
 
-// this is for methods that expect a keys tracker
 type GameKeys = " " | "ArrowLeft" | "ArrowRight";
+// this is for methods that expect a keys tracker
 type KeysTracker = FlagsFromUnion<GameKeys>;
 
 /* ========================== constants ========================= */
@@ -100,12 +97,17 @@ const displayPadding = {
   ver: 5,
 };
 
-const arrowRightKey = "ArrowRight";
-const arrowLeftKey = "ArrowLeft";
-const spaceKey = " ";
+const moveRightActionKey = "ArrowRight";
+const moveLeftActionKey = "ArrowLeft";
+const fireActionKey = " ";
 
 const displayMaxWidth = 720;
 const displayAspectRatio = 4 / 3;
+
+const basicInvaderPlan = `
+.xxooxx.
+.oo..oo.
+...xx...`;
 
 /* ========================== utilities ========================= */
 
@@ -175,7 +177,7 @@ function runAnimation(callback: (timeStep: number) => boolean) {
     let shouldContinue: boolean;
 
     if (lastTime) {
-      const timeStep = Math.min((time - lastTime) / 1000, 0.1);
+      const timeStep = Math.min(time - lastTime, 100) / 1000;
       lastTime = time;
 
       shouldContinue = callback(timeStep);
@@ -257,7 +259,7 @@ function getElementInnerDimensions(element: HTMLElement): Size {
  * Keep track of which keyboard keys are currently held down.
  *
  * @param keys - An array of strings representing key names.
- * @returns - An object whose property names are the strings within `keys`.
+ * @returns - An object whose property names are the strings within `keys` and values are booleans.
  */
 function keysTracker<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
   const down = {} as FlagsFromUnion<Type>;
@@ -287,7 +289,7 @@ function keysTracker<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
 */
 const alienSetXStep = (100 - displayPadding.hor * 2) / 20;
 const alienSetYStep = 5;
-const alienSetMoveTime = 1;
+const alienSetMoveTime = 1; // in seconds
 
 /**
  * The horizontal directions that {@link AlienSet} can move.
@@ -301,11 +303,14 @@ enum HorizontalDirection {
  * A class represeting a set of {@link Alien}s
  */
 class AlienSet {
-  public pos: Vector | null = null;
+  public pos: Vector;
+  public size: Size;
+
   public numColumns: number;
   public numRows: number;
+
   public aliens: (Alien | null)[][];
-  public direction: HorizontalDirection = 1;
+  private direction: HorizontalDirection = 1;
 
   /**
    * A variable that manages when the AlienSet's position can update.
@@ -335,6 +340,16 @@ class AlienSet {
     this.numColumns = rows[0].length;
     this.numRows = rows.length;
 
+    const w =
+      this.numColumns * DIMENSIONS.alien.w +
+      (this.numColumns - 1) * DIMENSIONS.alienSetGap.w;
+    const h =
+      this.numRows * DIMENSIONS.alien.h +
+      (this.numRows - 1) * DIMENSIONS.alienSetGap.h;
+
+    this.size = { w, h };
+    this.pos = new Vector(50 - w / 2, displayPadding.ver + 10);
+
     this.aliens = rows.map((row, y) => {
       return row.map((ch, x) => {
         return Alien.create(ch as TAliens, { x, y });
@@ -347,7 +362,7 @@ class AlienSet {
    *
    * @param timeStep - The time that has passed since the last update.
    */
-  update(timeStep: number) {
+  public update(timeStep: number) {
     this.timeStepSum += timeStep;
 
     let movedY = 0;
@@ -357,20 +372,20 @@ class AlienSet {
       the padding area and it can update its position
     */
     if (
-      this.pos!.x + state.env.alienSetWidth >= 100 - displayPadding.hor &&
+      this.pos.x + this.size.w >= 100 - displayPadding.hor &&
       this.timeStepSum >= alienSetMoveTime &&
       this.direction === HorizontalDirection.Right
     ) {
-      this.direction = HorizontalDirection.Left;
       movedY = alienSetYStep;
+      this.direction = HorizontalDirection.Left;
     } else if (
       /* if it is going left and has touched the padding area and can update */
-      this.pos!.x <= displayPadding.hor &&
+      this.pos.x <= displayPadding.hor &&
       this.timeStepSum >= alienSetMoveTime &&
       this.direction === HorizontalDirection.Left
     ) {
-      this.direction = HorizontalDirection.Right;
       movedY = alienSetYStep;
+      this.direction = HorizontalDirection.Right;
     }
 
     let movedX = 0;
@@ -383,14 +398,14 @@ class AlienSet {
         */
         movedX = Math.min(
           alienSetXStep,
-          100 - this.pos!.x - displayPadding.hor - state.env.alienSetWidth
+          100 - this.pos.x - displayPadding.hor - this.size.w
         );
       } else {
         /*
           here we get either the distance left to reach the inner left padding edge
           or the normal step to move
         */
-        movedX = Math.min(alienSetXStep, this.pos!.x - displayPadding.hor);
+        movedX = Math.min(alienSetXStep, this.pos.x - displayPadding.hor);
       }
       movedX *= this.direction;
     }
@@ -400,7 +415,21 @@ class AlienSet {
       this.timeStepSum = 0;
     }
 
-    this.pos = this.pos!.plus(new Vector(movedX, movedY));
+    this.pos = this.pos.plus(new Vector(movedX, movedY));
+  }
+
+  /**
+   * Get the position of an alien within the whole game screen.
+   *
+   * @param param0 - The alien.
+   * @returns - The position of the alien.
+   */
+  public getAlienPos({ gridPos: { x, y } }: Alien): Vector {
+    return new Vector(
+      /* alienSet positions + sizes + gaps */
+      this.pos.x + x * DIMENSIONS.alien.w + x * DIMENSIONS.alienSetGap.w,
+      this.pos.y + y * DIMENSIONS.alien.h + y * DIMENSIONS.alienSetGap.h
+    );
   }
 
   /**
@@ -409,14 +438,14 @@ class AlienSet {
    * @param x - The X position of the alien within the grid.
    * @param y - The Y position of the alien within the grid.
    */
-  removeAlien(x: number, y: number) {
-    this.aliens[y][x] = null;
+  public removeAlien(alien: Alien) {
+    this.aliens[alien.gridPos.y][alien.gridPos.x] = null;
   }
 
   /**
    * The current number of aliens that are alive.
    */
-  get length() {
+  public get alive() {
     return this.aliens.reduce((allAliensCount, row) => {
       const rowCount = row.reduce((rowCount, alien) => {
         if (alien !== null) return rowCount + 1;
@@ -430,7 +459,7 @@ class AlienSet {
   /**
    * Iterate through the AlienSet, yielding every alien in the set
    */
-  *[Symbol.iterator]() {
+  public *[Symbol.iterator]() {
     for (let y = 0; y < this.numRows; y++) {
       for (let x = 0; x < this.numColumns; x++) {
         yield this.aliens[y][x];
@@ -464,9 +493,9 @@ class Alien {
    * Fire an alien bullet.
    *
    * @param alienPos - The position from where the alien fires.
-   * @returns {Bullet | null} - The fired bullet or null if the gun wasn't able to fire.
+   * @returns - The fired bullet or null if the gun wasn't able to fire.
    */
-  fire(alienPos: Coords) {
+  public fire(alienPos: Coords): Bullet | null {
     /* bullet is fired from the center of the alien */
     const bulletX =
       alienPos.x + DIMENSIONS.alien.w / 2 - this.gun.bulletSize.w / 2;
@@ -481,7 +510,7 @@ class Alien {
    * @param gridPos - The position of the alien within the grid.
    * @returns - A specific alien type.
    */
-  static create(ch: TAliens, gridPos: Coords) {
+  public static create(ch: TAliens, gridPos: Coords) {
     switch (ch) {
       case ".": {
         return new Alien(
@@ -536,9 +565,9 @@ class Player {
   /**
    * Fire a player's bullet.
    *
-   * @returns {Bullet | null} - The fired bullet or null if the fun wasn't able to fire.
+   * @returns - The fired bullet or null if the fun wasn't able to fire.
    */
-  fire() {
+  public fire(): Bullet | null {
     /* from the center of the player */
     const bulletPosX =
       this.pos.x + DIMENSIONS.player.w / 2 - this.gun.bulletSize.w / 2;
@@ -549,7 +578,7 @@ class Player {
   /**
    * Reset the position of the Player.
    */
-  resetPos() {
+  public resetPos() {
     this.pos = new Vector(this.baseXPos, this.baseYPos);
   }
 
@@ -559,19 +588,19 @@ class Player {
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys are currently held down.
    */
-  update(state: GameState, timeStep: number, keys: KeysTracker) {
+  public update(state: GameState, timeStep: number, keys: KeysTracker) {
     const movedX = new Vector(timeStep * playerXSpeed, 0);
 
-    if (keys[arrowLeftKey] && this.pos.x > displayPadding.hor) {
+    if (keys[moveLeftActionKey] && this.pos.x > displayPadding.hor) {
       this.pos = this.pos.minus(movedX);
     } else if (
-      keys[arrowRightKey] &&
+      keys[moveRightActionKey] &&
       this.pos.x + DIMENSIONS.player.w < 100 - displayPadding.hor
     ) {
       this.pos = this.pos.plus(movedX);
     }
 
-    if (keys[spaceKey] && this.gun.canFire()) {
+    if (keys[fireActionKey] && this.gun.canFire()) {
       state.bullets.push(this.fire()!);
     }
   }
@@ -588,7 +617,8 @@ class Gun {
    * Create a Gun.
    *
    * @param owner - The object which fires the gun.
-   * @param bulletSpeed - The speed of the bullet.
+   * @param bulletSpeed - The speed of the bullet the gun fires.
+   * @param bulletSize - The size of the bullet the gun fires.
    * @param baseFireInterval - The time it takes for the gun to fire again.
    */
   constructor(
@@ -659,6 +689,7 @@ class Bullet {
    * @param from - A string representing the object that fired.
    * @param pos - The position from where the bullet was fired.
    * @param speed - The speed of the bullet.
+   * @param size - The size of the bullet.
    */
   constructor(
     public from: TShooters,
@@ -667,21 +698,31 @@ class Bullet {
     public size: Size
   ) {}
 
+  /**
+   * Updates the bullet's position.
+   *
+   * @param timeStep
+   */
   update(timeStep: number) {
     this.pos = this.pos.plus(this.speed.times(timeStep));
   }
 
+  /**
+   * Is called when the bullet hits something.
+   *
+   * @param state - The state of the game.
+   */
   collide(state: GameState) {
     state.bullets = state.bullets.filter((bullet) => bullet !== this);
   }
 }
 
 /**
- * Class representing a wall.
+ * Class representing an unbreakable wall.
  */
 class UnbreakableWall {
   /**
-   * Create a wall.
+   * Create an unbreakable wall.
    *
    * @param pos - The position of the wall.
    * @param size - The size of the wall.
@@ -690,15 +731,18 @@ class UnbreakableWall {
 }
 
 /**
- * Class representing a wall that can be broken into pieces.
+ * Class representing a breakable wall.
  */
 class BreakableWall {
+  /**
+   * The pieces of the wall as a matrix.
+   */
   piecesMatrix: boolean[][];
   pieceSize: Size;
 
   /**
    * @param pos
-   * @param size 
+   * @param size
    * @param numRows - The number of rows of breakable pieces.
    * @param numColumns - The number of columns of breakable pieces.
    */
@@ -718,19 +762,19 @@ class BreakableWall {
     );*/
 
     /* this works properly */
-    this.piecesMatrix = new Array(numRows).fill(undefined).map(() =>
-      new Array(numColumns).fill(true)
-    );
+    this.piecesMatrix = new Array(numRows)
+      .fill(undefined)
+      .map(() => new Array(numColumns).fill(true));
 
     this.pieceSize = {
-      w: this.size.w / numColumns,
-      h: this.size.h / numRows,
+      w: size.w / numColumns,
+      h: size.h / numRows,
     };
   }
 
   /**
    * Gets the position of a piece of the wall within the whole display screen in percentage values.
-   * 
+   *
    * @param column - The column in which the piece is.
    * @param row - The row in which the piece is.
    * @returns - The position of the piece within the whole display in percentage values.
@@ -744,24 +788,32 @@ class BreakableWall {
 
   /**
    * This method is called when a bullet hits the wall.
-   * It checks which pieces the bullet has hit and removes them, 
+   * It checks which pieces the bullet has hit and removes them,
    * calling {@link Bullet.collide} if it hits a piece.
-   * 
+   *
    * @param state - The state of the game.
    * @param bullet - The bullet that hit the wall.
    */
   collide(state: GameState, bullet: Bullet) {
-    for (let row = 0; row < this.piecesMatrix.length; row++) {
-      for (let column = 0; column < this.piecesMatrix[row].length; column++) {
-        const piecePos = this.getPiecePos(column, row);
+    for (const { row, column, piece } of this) {
+      if (!piece) continue;
 
-        if (
-          overlap(bullet.pos, bullet.size, piecePos, this.pieceSize) &&
-          this.piecesMatrix[row][column]
-        ) {
-          this.piecesMatrix[row][column] = false;
-          bullet.collide(state);
-        }
+      const piecePos = this.getPiecePos(column, row);
+
+      if (overlap(bullet.pos, bullet.size, piecePos, this.pieceSize)) {
+        this.piecesMatrix[row][column] = false;
+        bullet.collide(state);
+      }
+    }
+  }
+
+  *[Symbol.iterator]() {
+    const rows = this.piecesMatrix.length;
+    for (let row = 0; row < rows; row++) {
+      const columnLength = this.piecesMatrix[row].length;
+      for (let column = 0; column < columnLength; column++) {
+        const piece = this.piecesMatrix[row][column];
+        yield { row, column, piece };
       }
     }
   }
@@ -773,14 +825,9 @@ class BreakableWall {
 
 /**
  * Class representing the Game Environment responsible
- * for managing the positions and sizes
- * of the objects and checking things like colision.
+ * for managing colision.
  */
 class GameEnv {
-  /* these are all percentages within the display */
-  public alienSetWidth: number;
-  public alienSetHeight: number;
-
   /**
    * Initialize the game environment.
    *
@@ -792,38 +839,7 @@ class GameEnv {
     public alienSet: AlienSet,
     public player: Player,
     public walls: UnbreakableWall[] | BreakableWall[]
-  ) {
-    this.alienSetWidth =
-      DIMENSIONS.alien.w * alienSet.numColumns +
-      DIMENSIONS.alienSetGap.w * (alienSet.numColumns - 1);
-    this.alienSetHeight =
-      DIMENSIONS.alien.h * alienSet.numRows +
-      DIMENSIONS.alienSetGap.h * (this.alienSet.numRows - 1);
-
-    alienSet.pos = new Vector(
-      50 - this.alienSetWidth / 2,
-      displayPadding.ver + 10
-    );
-    this.alienSet = alienSet;
-  }
-
-  /**
-   * Get the position of an alien within the whole game screen.
-   *
-   * @param param0 - The alien.
-   * @returns - The position of the alien.
-   */
-  getAlienPos({ gridPos: { x, y } }: Alien): Vector {
-    return new Vector(
-      /* alienSet positions + sizes + gaps */
-      this.alienSet.pos!.x +
-        x * DIMENSIONS.alien.w +
-        x * DIMENSIONS.alienSetGap.w,
-      this.alienSet.pos!.y +
-        y * DIMENSIONS.alien.h +
-        y * DIMENSIONS.alienSetGap.h
-    );
-  }
+  ) {}
 
   /**
    * Check whether a bullet touches a wall.
@@ -831,28 +847,30 @@ class GameEnv {
    * @param bullet - The bullet whose position needs to be checked as overlapping a wall.
    * @returns - A boolean value which says whether the bullet touches a wall.
    */
-  bulletTouchesWall(bullet: Bullet) {
-    return this.walls.some((wall: BreakableWall | UnbreakableWall) => {
-      if (wall instanceof UnbreakableWall) {
-        return overlap(wall.pos, wall.size, bullet.pos, bullet.size);
-      } else {
-        let touches = false;
-        for (let row = 0; row < wall.piecesMatrix.length; row++) {
-          for (let column = 0; column < wall.piecesMatrix[0].length; column++) {
-            if (!wall.piecesMatrix[row][column]) continue;
+  bulletTouchesWall(
+    bullet: Bullet,
+    wall: BreakableWall | UnbreakableWall
+  ): boolean {
+    if (wall instanceof UnbreakableWall) {
+      return overlap(wall.pos, wall.size, bullet.pos, bullet.size);
+    } else {
+      for (const { row, column, piece } of wall) {
+        if (!piece) continue;
 
-            touches = overlap(
-              bullet.pos,
-              bullet.size,
-              wall.getPiecePos(column, row),
-              wall.pieceSize
-            );
-          }
+        if (
+          overlap(
+            bullet.pos,
+            bullet.size,
+            wall.getPiecePos(column, row),
+            wall.pieceSize
+          )
+        ) {
+          return true;
         }
-
-        return touches;
       }
-    });
+    }
+
+    return false;
   }
 
   /**
@@ -861,7 +879,7 @@ class GameEnv {
    * @param bullet
    * @returns
    */
-  isBulletOffLimits(bullet: Bullet) {
+  isBulletOutOfBounds(bullet: Bullet) {
     return bullet.pos.y >= 100 || bullet.pos.y + bullet.size.h <= 0;
   }
 
@@ -871,7 +889,7 @@ class GameEnv {
    * @returns - A boolean value that says whether the alien set has reached a wall.
    */
   alienSetReachedWall() {
-    return this.alienSet.pos!.y + this.alienSetHeight >= this.walls[0].pos.y;
+    return this.alienSet.pos.y + this.alienSet.size.h >= this.walls[0].pos.y;
   }
 
   /**
@@ -908,37 +926,62 @@ class GameState {
   ) {}
 
   /**
-   * Update the state of the game.
+   * Update the state of the game, including player, bullets, walls and aliens.
    *
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
    */
   update(timeStep: number, keys: KeysTracker) {
     this.alienSet.update(timeStep);
-    this.bullets.forEach((bullet) => bullet.update(timeStep));
-
+    this.fireAliens();
     this.player.update(this, timeStep, keys);
 
+    this.handleBulletContactWithWall();
+
+    this.bullets.forEach((bullet) => bullet.update(timeStep));
+
+    this.handleBulletsThatHitAlien();
+    this.handleBulletsThatHitPlayer();
+    this.removeOutOfBoundsBullets();
+
+    if (this.alienSet.alive === 0) {
+      this.status = "won";
+    } else if (this.player.lives < 1) {
+      this.status = "lost";
+    }
+
+    if (this.env.alienSetReachedWall()) {
+      this.env.walls = [];
+      this.status = "lost";
+    }
+  }
+
+  /**
+   * Removes the bullets that hit the wall and update the wall if needed.
+   */
+  private handleBulletContactWithWall() {
     for (const bullet of this.bullets) {
       for (const wall of this.env.walls) {
+        if (!this.env.bulletTouchesWall(bullet, wall)) continue;
+
         if (wall instanceof BreakableWall) {
-          if (overlap(wall.pos, wall.size, bullet.pos, bullet.size)) {
-            wall.collide(this, bullet);
-          }
-        } else if (overlap(wall.pos, wall.size, bullet.pos, bullet.size)) {
+          wall.collide(this, bullet);
+        } else {
           bullet.collide(this);
         }
       }
     }
+  }
 
+  /**
+   * Checks if any alien is hit by a player bullet, removes the bullet
+   * and the alien and increases player's score by the score of the alien.
+   */
+  private handleBulletsThatHitAlien() {
     const playerBullets = this.bullets.filter(
       (bullet) => bullet.from === "player"
     );
 
-    /*  
-      check if any of the player bullets hits an alien, and if it does, 
-      the score is increased and alien and bullet are removed 
-    */
     for (const playerBullet of playerBullets) {
       for (const alien of this.alienSet) {
         if (!alien) continue;
@@ -946,25 +989,35 @@ class GameState {
         if (
           this.env.isActorShot(
             playerBullet,
-            this.env.getAlienPos(alien),
+            this.alienSet.getAlienPos(alien),
             DIMENSIONS.alien
           )
         ) {
           this.player.score += alien.score;
-          this.alienSet.removeAlien(alien.gridPos.x, alien.gridPos.y);
+          this.alienSet.removeAlien(alien);
           playerBullet.collide(this);
         }
       }
     }
+  }
 
+  /**
+   * Fires the aliens that can fire.
+   */
+  private fireAliens() {
     for (const alien of this.alienSet) {
       if (!alien) continue;
 
       if (alien.gun.canFire()) {
-        this.bullets.push(alien.fire(this.env.getAlienPos(alien))!);
+        this.bullets.push(alien.fire(this.alienSet.getAlienPos(alien))!);
       }
     }
+  }
 
+  /**
+   * Checks which bullets hit the player, removes them and decreases the player's lives.
+   */
+  private handleBulletsThatHitPlayer() {
     const alienBullets = this.bullets.filter(
       (bullet) => bullet.from === "alien"
     );
@@ -980,29 +1033,12 @@ class GameState {
         b.collide(this);
       }
     });
-
-    if (this.alienSet.length === 0) {
-      this.status = "won";
-    } else if (this.player.lives < 1) {
-      this.status = "lost";
-    }
-
-    if (this.env.alienSetReachedWall()) {
-      this.env.walls = [];
-      this.status = "lost";
-    }
-
-    this.removeUnnecessaryBullets();
-    console.log(this.bullets);
   }
 
-  /**
-   * Remove the bullets that are not relevant for the game anymore.
-   */
-  removeUnnecessaryBullets() {
+  removeOutOfBoundsBullets() {
     const necessaryBullets = [];
     for (const bullet of this.bullets) {
-      if (!this.env.isBulletOffLimits(bullet)) {
+      if (!this.env.isBulletOutOfBounds(bullet)) {
         necessaryBullets.push(bullet);
       }
     }
@@ -1077,7 +1113,7 @@ class CanvasDisplay {
     this.syncState(state);
   }
 
-  defineEventListeners() {
+  private defineEventListeners() {
     window.addEventListener("resize", () => {
       this.setDisplaySize();
       this.syncState(this.state);
@@ -1141,7 +1177,7 @@ class CanvasDisplay {
   /**
    * Set the size of the canvas based on the size of the its parent element.
    */
-  setDisplaySize() {
+  public setDisplaySize() {
     const canvasWidth = Math.min(
       displayMaxWidth,
       getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
@@ -1159,7 +1195,7 @@ class CanvasDisplay {
    *
    * @param state - A new game state.
    */
-  syncState(state: GameState) {
+  public syncState(state: GameState) {
     this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.canvasContext.fillStyle = "black";
     this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -1176,8 +1212,8 @@ class CanvasDisplay {
    *
    * @param alienSet
    */
-  drawAlienSet(alienSet: AlienSet) {
-    const alienSetXPos = alienSet.pos!.x;
+  private drawAlienSet(alienSet: AlienSet) {
+    const alienSetXPos = alienSet.pos.x;
 
     for (const alien of alienSet) {
       if (!alien) continue;
@@ -1187,7 +1223,7 @@ class CanvasDisplay {
         alien.gridPos.x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
 
       const yPercentage =
-        alienSet.pos!.y +
+        alienSet.pos.y +
         alien.gridPos.y * (DIMENSIONS.alienSetGap.h + DIMENSIONS.alien.h);
 
       this.drawAlien(alien, {
@@ -1203,7 +1239,7 @@ class CanvasDisplay {
    * @param alien
    * @param pos - A percentage position.
    */
-  drawAlien(alien: Alien, pos: Coords) {
+  private drawAlien(alien: Alien, pos: Coords) {
     const { w, h } = this.getPixelSize(DIMENSIONS.alien);
     const { x, y } = this.getPixelPos(pos);
 
@@ -1216,7 +1252,7 @@ class CanvasDisplay {
    *
    * @param bullets
    */
-  drawBullets(bullets: Bullet[]) {
+  private drawBullets(bullets: Bullet[]) {
     for (const bullet of bullets) {
       this.drawBullet(bullet);
     }
@@ -1227,7 +1263,7 @@ class CanvasDisplay {
    *
    * @param bullet
    */
-  drawBullet(bullet: Bullet) {
+  private drawBullet(bullet: Bullet) {
     const { x, y } = this.getPixelPos(bullet.pos);
     const { w, h } = this.getPixelSize(bullet.size);
 
@@ -1241,7 +1277,7 @@ class CanvasDisplay {
    *
    * @param player
    */
-  drawPlayer(player: Player) {
+  private drawPlayer(player: Player) {
     const { x, y } = this.getPixelPos(player.pos);
     const { w, h } = this.getPixelSize(DIMENSIONS.player);
 
@@ -1254,42 +1290,55 @@ class CanvasDisplay {
    *
    * @param walls
    */
-  drawWalls(walls: UnbreakableWall[] | BreakableWall[]) {
+  private drawWalls(walls: UnbreakableWall[] | BreakableWall[]) {
     for (const wall of walls) {
-      this.canvasContext.save();
-
-      const { x, y } = this.getPixelPos(wall.pos);
-
-      this.canvasContext.translate(x, y);
-
       if (wall instanceof UnbreakableWall) {
-        const { w, h } = this.getPixelSize(wall.size);
-        this.canvasContext.fillStyle = "#ffffff";
-        this.canvasContext.fillRect(0, 0, w, h);
+        this.drawUnbreakableWall(wall);
       } else {
-        const { w, h } = wall.pieceSize;
-        const pieceWPixels = this.horPixels(w),
-          pieceHPixels = this.horPixels(h);
-
-        wall.piecesMatrix.forEach((row, y) => {
-          row.forEach((piece, x) => {
-            if (piece) {
-              const xPixels = this.horPixels(x * w),
-                yPixels = this.verPixels(y * h);
-
-              this.canvasContext.fillStyle = "#ffffff";
-              this.canvasContext.fillRect(
-                xPixels,
-                yPixels,
-                pieceWPixels,
-                pieceHPixels
-              );
-            }
-          });
-        });
+        this.drawBreakableWall(wall);
       }
-      this.canvasContext.restore();
     }
+  }
+
+  private drawUnbreakableWall(wall: UnbreakableWall) {
+    const { x, y } = this.getPixelPos(wall.pos);
+
+    this.canvasContext.save();
+    this.canvasContext.translate(x, y);
+
+    const { w, h } = this.getPixelSize(wall.size);
+    this.canvasContext.fillStyle = "#ffffff";
+    this.canvasContext.fillRect(0, 0, w, h);
+
+    this.canvasContext.restore();
+  }
+
+  private drawBreakableWall(wall: BreakableWall) {
+    const { x, y } = this.getPixelPos(wall.pos);
+
+    this.canvasContext.save();
+    this.canvasContext.translate(x, y);
+
+    const { w, h } = wall.pieceSize;
+    const pieceWPixels = this.horPixels(w),
+      pieceHPixels = this.horPixels(h);
+
+    for (const { row, column, piece } of wall) {
+      if (piece) {
+        const xPixels = this.horPixels(column * w),
+          yPixels = this.verPixels(row * h);
+
+        this.canvasContext.fillStyle = "#ffffff";
+        this.canvasContext.fillRect(
+          xPixels,
+          yPixels,
+          pieceWPixels,
+          pieceHPixels
+        );
+      }
+    }
+
+    this.canvasContext.restore();
   }
 
   /**
@@ -1297,7 +1346,7 @@ class CanvasDisplay {
    *
    * @param state
    */
-  drawMetadata(state: GameState) {
+  private drawMetadata(state: GameState) {
     // draw hearts to show player's lives
     // draw score
     const fontSize = Math.min(30, this.verPixels(8));
@@ -1323,7 +1372,7 @@ class CanvasDisplay {
   /**
    * Draw a screen for when the game is over.
    */
-  drawGameOverScreen() {}
+  private drawGameOverScreen() {}
 }
 
 /* ========================================================================= */
@@ -1335,11 +1384,6 @@ class CanvasDisplay {
  */
 class GameController {}
 
-const basicInvaderPlan = `
-.xxooxx.
-.oo..oo.
-...xx...`;
-
 const state = GameState.start(basicInvaderPlan);
 const canvasDisplay = new CanvasDisplay(
   state,
@@ -1347,7 +1391,11 @@ const canvasDisplay = new CanvasDisplay(
   document.body
 );
 
-const keys = keysTracker([arrowRightKey, arrowLeftKey, spaceKey]);
+const keys = keysTracker([
+  moveRightActionKey,
+  moveLeftActionKey,
+  fireActionKey,
+]);
 
 runAnimation((timeStep) => {
   console.log(`${Math.round(1 / timeStep)} fps`);

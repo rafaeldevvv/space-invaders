@@ -1,4 +1,6 @@
 - Refactor the code
+  - Use env.bulletTouchesWall, but change this method first to make it take a bullet and a wall as parameters
+  and then use `instanceof` to check the kind of wall
 - commit & update README
 
 - Add a visual clue to track the gun's reload time
@@ -6,6 +8,17 @@
 
 - Add FPS marker
 - commit & update README
+
+- Make the alien respawn after the player has killed all aliens of the previous alien set
+- commit & update README
+
+- Increase the steps the alien set takes within the display
+- commit & update README
+
+- When the alien set hits the wall, break the wall, don't make the player lose.
+- commit & update README
+
+- M
 
 - Make the assets, styles and so on
 - commit & update README
@@ -28,6 +41,7 @@
 - commit & update README
 
 - Generate TSDoc docs
+  - npx typedoc _path_
 - commit & update README
 
 - Update the code snippets of `README.md` file
