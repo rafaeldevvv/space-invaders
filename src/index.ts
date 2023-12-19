@@ -416,6 +416,9 @@ class AlienSet {
     }
 
     this.pos = this.pos.plus(new Vector(movedX, movedY));
+    for (const alien of this) {
+      if (alien) alien.gun.update(timeStep);
+    }
   }
 
   /**
@@ -600,6 +603,7 @@ class Player {
       this.pos = this.pos.plus(movedX);
     }
 
+    this.gun.update(timeStep);
     if (keys[fireActionKey] && this.gun.canFire()) {
       state.bullets.push(this.fire()!);
     }
@@ -610,8 +614,8 @@ class Player {
  * Class representing a gun.
  */
 class Gun {
-  private lastFire: number;
   private fireInterval: number;
+  public timeSinceLastShot: number = 0;
 
   /**
    * Create a Gun.
@@ -629,7 +633,7 @@ class Gun {
   ) {
     // to give a random initial fireInterval
     this.fireInterval = randomNum(0.9 * baseFireInterval, baseFireInterval);
-    this.lastFire = performance.now() - randomNum(0, baseFireInterval);
+    this.timeSinceLastShot = randomNum(0, this.fireInterval);
   }
 
   /**
@@ -642,7 +646,7 @@ class Gun {
   fire(pos: Vector, direction: "up" | "down") {
     if (this.canFire()) {
       /* update lastFire prop to track the time of the last shot */
-      this.lastFire = performance.now();
+      this.timeSinceLastShot = 0;
 
       /* generate random fire interval for dynamic gameplay */
       this.fireInterval = randomNum(
@@ -665,17 +669,17 @@ class Gun {
     return null;
   }
 
+  update(timeStep: number) {
+    this.timeSinceLastShot += timeStep * 1000;
+  }
+
   /**
    * Check whether the gun can be fired.
    *
    * @returns - A boolean value saying whether the gun can fire.
    */
   canFire() {
-    const lastFire = this.lastFire;
-    const now = performance.now();
-
-    const timeStep = now - lastFire;
-    return timeStep >= this.fireInterval;
+    return this.timeSinceLastShot >= this.fireInterval;
   }
 }
 

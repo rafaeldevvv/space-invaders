@@ -1,8 +1,3 @@
-- Refactor the code
-  - Use env.bulletTouchesWall, but change this method first to make it take a bullet and a wall as parameters
-  and then use `instanceof` to check the kind of wall
-- commit & update README
-
 - Add a visual clue to track the gun's reload time
 - commit & update README
 
@@ -18,7 +13,6 @@
 - When the alien set hits the wall, break the wall, don't make the player lose.
 - commit & update README
 
-- M
 
 - Make the assets, styles and so on
 - commit & update README
