@@ -119,7 +119,7 @@ class Vector {
   y: number;
 
   /**
-   * Create a Vector.
+   * Creates a Vector.
    *
    * @param x - The position along the horizontal axis.
    * @param y - The position along the vertical axis.
@@ -130,7 +130,7 @@ class Vector {
   }
 
   /**
-   * Add two Vector objects' axes' values.
+   * Adds two Vector objects' axes' values.
    *
    * @param other - Another Vector to add to the current one.
    * @returns - A Vector with the added axes of both previous vectors.
@@ -140,7 +140,7 @@ class Vector {
   }
 
   /**
-   * Subtract one Vector's axes' values from another Vector.
+   * Subtracts one Vector's axes' values from another Vector.
    *
    * @param other - Another Vector to subtract from the current one.
    * @returns - A Vector with subtracted axes.
@@ -150,7 +150,7 @@ class Vector {
   }
 
   /**
-   * Mulitply a Vector's axes' values by a number.
+   * Mulitplies a Vector's axes' values by a number.
    *
    * @param factor - A number by which the method will multiply the Vector's axes.
    * @returns - A Vector with multiplied axes.
@@ -161,7 +161,7 @@ class Vector {
 }
 
 /**
- * Run an animation.
+ * Runs an animation.
  *
  * @param callback - A function to be called everytime a frame can be painted to the screen.
  */
@@ -192,7 +192,7 @@ function runAnimation(callback: (timeStep: number) => boolean) {
 }
 
 /**
- * Generate a random number between two numbers.
+ * Generates a random number between two numbers.
  *
  * @param min - The minimum value.
  * @param max - The maximum value.
@@ -203,7 +203,7 @@ function randomNum(min: number, max: number) {
 }
 
 /**
- * Check whether two objects overlap.
+ * Checks whether two objects overlap.
  *
  * @param pos1 - The position of the first object.
  * @param size1 - The size of the first objet.
@@ -221,7 +221,7 @@ function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
 }
 
 /**
- * Calculate the size of an HTML Element excluding padding, border and margin
+ * Calculates the size of an HTML Element excluding padding, border and margin
  *
  * @param element
  * @returns - The size of the element excluding padding, border and margin
@@ -256,7 +256,7 @@ function getElementInnerDimensions(element: HTMLElement): Size {
 }
 
 /**
- * Keep track of which keyboard keys are currently held down.
+ * Keeps track of which keyboard keys are currently held down.
  *
  * @param keys - An array of strings representing key names.
  * @returns - An object whose property names are the strings within `keys` and values are booleans.
@@ -319,7 +319,7 @@ class AlienSet {
   private timeStepSum = 0;
 
   /**
-   * Create an AlienSet.
+   * Creates an AlienSet.
    *
    * @param plan - A string represeting an arranged set of aliens.
    */
@@ -358,7 +358,7 @@ class AlienSet {
   }
 
   /**
-   * Update the AlienSet instance.
+   * Updates the AlienSet instance.
    *
    * @param timeStep - The time that has passed since the last update.
    */
@@ -422,7 +422,7 @@ class AlienSet {
   }
 
   /**
-   * Get the position of an alien within the whole game screen.
+   * Gets the position of an alien within the whole game screen.
    *
    * @param param0 - The alien.
    * @returns - The position of the alien.
@@ -436,7 +436,7 @@ class AlienSet {
   }
 
   /**
-   * Remove an alien from the set.
+   * Removes an alien from the set.
    *
    * @param x - The X position of the alien within the grid.
    * @param y - The Y position of the alien within the grid.
@@ -460,7 +460,7 @@ class AlienSet {
   }
 
   /**
-   * Iterate through the AlienSet, yielding every alien in the set
+   * Iterates through the AlienSet, yielding every alien in the set
    */
   public *[Symbol.iterator]() {
     for (let y = 0; y < this.numRows; y++) {
@@ -478,7 +478,7 @@ class Alien {
   public readonly actorType = "alien" as const;
 
   /**
-   * Create an Alien.
+   * Creates an Alien.
    *
    * @param gridPos - The position of the alien within the alien set.
    * @param score - The score the player gets when it kills this alien.
@@ -493,7 +493,7 @@ class Alien {
   ) {}
 
   /**
-   * Fire an alien bullet.
+   * Fires an alien bullet.
    *
    * @param alienPos - The position from where the alien fires.
    * @returns - The fired bullet or null if the gun wasn't able to fire.
@@ -507,7 +507,7 @@ class Alien {
   }
 
   /**
-   * Create an alien based on a character.
+   * Creates an alien based on a character.
    *
    * @param ch - The type of the alien represented by a character.
    * @param gridPos - The position of the alien within the grid.
@@ -566,7 +566,7 @@ class Player {
   public score = 0;
 
   /**
-   * Fire a player's bullet.
+   * Fires a player's bullet.
    *
    * @returns - The fired bullet or null if the fun wasn't able to fire.
    */
@@ -578,15 +578,12 @@ class Player {
     return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up");
   }
 
-  /**
-   * Reset the position of the Player.
-   */
   public resetPos() {
     this.pos = new Vector(this.baseXPos, this.baseYPos);
   }
 
   /**
-   * Update the Player.
+   * Updates the Player.
    *
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys are currently held down.
@@ -618,7 +615,7 @@ class Gun {
   public timeSinceLastShot: number = 0;
 
   /**
-   * Create a Gun.
+   * Creates a Gun.
    *
    * @param owner - The object which fires the gun.
    * @param bulletSpeed - The speed of the bullet the gun fires.
@@ -637,7 +634,7 @@ class Gun {
   }
 
   /**
-   * Fire a bullet from a position.
+   * Fires a bullet from a position.
    *
    * @param pos - The position from where the gun is fired.
    * @param direction - The direction the bullet goes.
@@ -669,12 +666,17 @@ class Gun {
     return null;
   }
 
+  /**
+   * Updates the time that has passed since the last shot
+   * 
+   * @param timeStep 
+   */
   update(timeStep: number) {
     this.timeSinceLastShot += timeStep * 1000;
   }
 
   /**
-   * Check whether the gun can be fired.
+   * Checks whether the gun can be fired.
    *
    * @returns - A boolean value saying whether the gun can fire.
    */
@@ -688,7 +690,7 @@ class Gun {
  */
 class Bullet {
   /**
-   * Create a bullet.
+   * Creates a bullet.
    *
    * @param from - A string representing the object that fired.
    * @param pos - The position from where the bullet was fired.
@@ -726,7 +728,7 @@ class Bullet {
  */
 class UnbreakableWall {
   /**
-   * Create an unbreakable wall.
+   * Creates an unbreakable wall.
    *
    * @param pos - The position of the wall.
    * @param size - The size of the wall.
@@ -833,7 +835,7 @@ class BreakableWall {
  */
 class GameEnv {
   /**
-   * Initialize the game environment.
+   * Initializes the game environment.
    *
    * @param alienSet - The aliens.
    * @param player - The player.
@@ -846,7 +848,7 @@ class GameEnv {
   ) {}
 
   /**
-   * Check whether a bullet touches a wall.
+   * Checks whether a bullet touches a wall.
    *
    * @param bullet - The bullet whose position needs to be checked as overlapping a wall.
    * @returns - A boolean value which says whether the bullet touches a wall.
@@ -878,7 +880,7 @@ class GameEnv {
   }
 
   /**
-   * Check whether the bullet is outside the boundaries of the screen.
+   * Checks whether the bullet is outside the boundaries of the screen.
    *
    * @param bullet
    * @returns
@@ -888,7 +890,7 @@ class GameEnv {
   }
 
   /**
-   * Check whether the alien set has reached the wall.
+   * Checks whether the alien set has reached the wall.
    *
    * @returns - A boolean value that says whether the alien set has reached a wall.
    */
@@ -897,7 +899,7 @@ class GameEnv {
   }
 
   /**
-   * Check whether an object in the game has been shot.
+   * Checks whether an object in the game has been shot.
    *
    * @param bullet - A bullet that may hit the object.
    * @param actorPos - The position of the object.
@@ -930,7 +932,7 @@ class GameState {
   ) {}
 
   /**
-   * Update the state of the game, including player, bullets, walls and aliens.
+   * Updates the state of the game, including player, bullets, walls and aliens.
    *
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
@@ -1051,7 +1053,7 @@ class GameState {
   }
 
   /**
-   * Create a basic initial game state.
+   * Creates a basic initial game state.
    *
    * @param plan - A string represeting an arranged set of aliens.
    * @returns - A initial state for the game.
@@ -1093,7 +1095,7 @@ class CanvasDisplay {
   private canvasContext: CanvasRenderingContext2D;
 
   /**
-   * Create a view component for the game that uses the Canvas API.
+   * Creates a view component for the game that uses the Canvas API.
    *
    * @param state - The initial state of the game.
    * @param controller - The component responsible for coordinating the information flow between the View and the Model (state).
@@ -1133,7 +1135,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Calculate the horizontal pixels according to a percentage of the canvas width.
+   * Calculates the horizontal pixels according to a percentage of the canvas width.
    *
    * @param percentage - The percentage of the canvas width.
    * @returns - The corresponding horizontal pixels.
@@ -1143,7 +1145,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Calculate the vertical pixels according to a percentage of the canvas height.
+   * Calculates the vertical pixels according to a percentage of the canvas height.
    *
    * @param percentage - The percentage of the canvas heigth.
    * @returns - The corresponding vertical pixels.
@@ -1153,7 +1155,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Calculate the pixel position of an object within the canvas based on a percentage position.
+   * Calculates the pixel position of an object within the canvas based on a percentage position.
    *
    * @param percentagePos - The percentage position.
    * @returns - The corresponding pixel position.
@@ -1166,7 +1168,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Calculate the pixel size of an object within the canvas based on a percentage size.
+   * Calculates the pixel size of an object within the canvas based on a percentage size.
    
    * @param percentagePos - The percentage size.
    * @returns - The corresponding pixel size.
@@ -1179,7 +1181,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Set the size of the canvas based on the size of the its parent element.
+   * Sets the size of the canvas based on the size of the its parent element.
    */
   public setDisplaySize() {
     const canvasWidth = Math.min(
@@ -1195,7 +1197,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Synchonize the view with a new model (state).
+   * Synchonizes the view with a new model (state).
    *
    * @param state - A new game state.
    */
@@ -1212,7 +1214,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw the alien set onto the canvas.
+   * Draws the alien set onto the canvas.
    *
    * @param alienSet
    */
@@ -1238,7 +1240,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw an alien onto the canvas.
+   * Draws an alien onto the canvas.
    *
    * @param alien
    * @param pos - A percentage position.
@@ -1252,7 +1254,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw an array of bullets onto the canvas.
+   * Draws an array of bullets onto the canvas.
    *
    * @param bullets
    */
@@ -1263,7 +1265,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw a bullet onto the canvas.
+   * Draws a bullet onto the canvas.
    *
    * @param bullet
    */
@@ -1277,7 +1279,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw player onto the canvas.
+   * Draws player onto the canvas.
    *
    * @param player
    */
@@ -1290,7 +1292,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw walls onto canvas.
+   * Draws walls onto canvas.
    *
    * @param walls
    */
@@ -1346,7 +1348,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw metadata such as score, player remaining lives and so on.
+   * Draws metadata such as score, player remaining lives and so on.
    *
    * @param state
    */
@@ -1374,7 +1376,7 @@ class CanvasDisplay {
   }
 
   /**
-   * Draw a screen for when the game is over.
+   * Draws a screen for when the game is over.
    */
   private drawGameOverScreen() {}
 }
