@@ -1116,13 +1116,13 @@ class CanvasDisplay {
 
     this.setDisplaySize();
     this.defineEventListeners();
-    this.syncState(state);
+    this.syncState(state, 0);
   }
 
   private defineEventListeners() {
     window.addEventListener("resize", () => {
       this.setDisplaySize();
-      this.syncState(this.state);
+      this.syncState(this.state, 0);
     });
   }
 
@@ -1201,7 +1201,7 @@ class CanvasDisplay {
    *
    * @param state - A new game state.
    */
-  public syncState(state: GameState) {
+  public syncState(state: GameState, timeStep: number) {
     this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.canvasContext.fillStyle = "black";
     this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -1210,14 +1210,9 @@ class CanvasDisplay {
     this.drawPlayer(state.player);
     this.drawBullets(state.bullets);
     this.drawWalls(state.env.walls);
-    this.drawMetadata(state);
+    this.drawMetadata(state, timeStep);
   }
 
-  /**
-   * Draws the alien set onto the canvas.
-   *
-   * @param alienSet
-   */
   private drawAlienSet(alienSet: AlienSet) {
     const alienSetXPos = alienSet.pos.x;
 
@@ -1239,12 +1234,6 @@ class CanvasDisplay {
     }
   }
 
-  /**
-   * Draws an alien onto the canvas.
-   *
-   * @param alien
-   * @param pos - A percentage position.
-   */
   private drawAlien(alien: Alien, pos: Coords) {
     const { w, h } = this.getPixelSize(DIMENSIONS.alien);
     const { x, y } = this.getPixelPos(pos);
@@ -1253,22 +1242,12 @@ class CanvasDisplay {
     this.canvasContext.fillRect(x, y, w, h);
   }
 
-  /**
-   * Draws an array of bullets onto the canvas.
-   *
-   * @param bullets
-   */
   private drawBullets(bullets: Bullet[]) {
     for (const bullet of bullets) {
       this.drawBullet(bullet);
     }
   }
 
-  /**
-   * Draws a bullet onto the canvas.
-   *
-   * @param bullet
-   */
   private drawBullet(bullet: Bullet) {
     const { x, y } = this.getPixelPos(bullet.pos);
     const { w, h } = this.getPixelSize(bullet.size);
@@ -1278,11 +1257,6 @@ class CanvasDisplay {
     this.canvasContext.fillRect(x, y, w, h);
   }
 
-  /**
-   * Draws player onto the canvas.
-   *
-   * @param player
-   */
   private drawPlayer(player: Player) {
     const { x, y } = this.getPixelPos(player.pos);
     const { w, h } = this.getPixelSize(DIMENSIONS.player);
@@ -1325,8 +1299,8 @@ class CanvasDisplay {
       0,
       loadedPercentage * cluePixelsWidth,
       cluePixelsHeight
-      );
-      
+    );
+
     // draw how much the gun is not reloaded (gray)
     this.canvasContext.fillStyle = "#999";
     this.canvasContext.fillRect(
@@ -1339,11 +1313,6 @@ class CanvasDisplay {
     this.canvasContext.restore();
   }
 
-  /**
-   * Draws walls onto canvas.
-   *
-   * @param walls
-   */
   private drawWalls(walls: UnbreakableWall[] | BreakableWall[]) {
     for (const wall of walls) {
       if (wall instanceof UnbreakableWall) {
@@ -1400,26 +1369,38 @@ class CanvasDisplay {
    *
    * @param state
    */
-  private drawMetadata(state: GameState) {
+  private drawMetadata(state: GameState, timeStep: number) {
     // draw hearts to show player's lives
     // draw score
     const fontSize = Math.min(30, this.verPixels(8));
+    const yPixelsPadding = this.verPixels(displayPadding.ver);
 
     this.canvasContext.fillStyle = "#fff";
     this.canvasContext.font = `${fontSize}px monospace`;
 
+    // draw the score of the player
     this.canvasContext.textAlign = "start";
     this.canvasContext.fillText(
       `SCORE ${state.player.score}`,
       this.horPixels(displayPadding.hor),
-      fontSize + this.verPixels(displayPadding.ver)
+      fontSize + yPixelsPadding
     );
 
+    // draw how many lives the player has
     this.canvasContext.textAlign = "end";
     this.canvasContext.fillText(
       `Lives ${state.player.lives}`,
       this.horPixels(100 - displayPadding.hor),
-      fontSize + this.verPixels(displayPadding.ver)
+      fontSize + yPixelsPadding
+    );
+
+    // draw how many fps the game is running at
+    const fps = Math.round(1 / timeStep);
+    this.canvasContext.textAlign = "center";
+    this.canvasContext.fillText(
+      `${fps} FPS`,
+      this.horPixels(50),
+      fontSize + yPixelsPadding
     );
   }
 
@@ -1452,9 +1433,8 @@ const keys = keysTracker([
 ]);
 
 runAnimation((timeStep) => {
-  console.log(`${Math.round(1 / timeStep)} fps`);
   state.update(timeStep, keys);
-  canvasDisplay.syncState(state);
+  canvasDisplay.syncState(state, timeStep);
   // console.log(state.bullets);
 
   if (state.status === "lost") {

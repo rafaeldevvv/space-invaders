@@ -1,6 +1,3 @@
-- Add a visual clue to track the gun's reload time
-- commit & update README
-
 - Add FPS marker
 - commit & update README
 
