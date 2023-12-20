@@ -1,17 +1,16 @@
-- Add FPS marker
-- commit & update README
-
-- Make the alien respawn after the player has killed all aliens of the previous alien set
-- commit & update README
-
 - Increase the steps the alien set takes within the display
 - commit & update README
 
 - When the alien set hits the wall, break the wall, don't make the player lose.
 - commit & update README
 
+- Implement Controller
+- commit & update README
 
 - Make the assets, styles and so on
+- commit & update README
+
+- Make initial screen, game over screen
 - commit & update README
 
 - Refactor the code

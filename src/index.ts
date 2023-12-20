@@ -916,7 +916,7 @@ class GameEnv {
  */
 class GameState {
   public bullets: Bullet[] = [];
-  public status: "lost" | "won" | "running" = "running";
+  public status: "lost" | "running" = "running";
 
   /**
    * Initializes the state.
@@ -951,7 +951,8 @@ class GameState {
     this.removeOutOfBoundsBullets();
 
     if (this.alienSet.alive === 0) {
-      this.status = "won";
+      this.alienSet = new AlienSet(basicInvaderPlan);
+      this.player.lives++;
     } else if (this.player.lives < 1) {
       this.status = "lost";
     }
@@ -1439,9 +1440,6 @@ runAnimation((timeStep) => {
 
   if (state.status === "lost") {
     console.log("lost");
-    return false;
-  } else if (state.status === "won") {
-    console.log("won");
     return false;
   } else {
     return true;
