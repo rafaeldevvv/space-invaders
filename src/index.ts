@@ -1289,18 +1289,26 @@ class CanvasDisplay {
 
     this.canvasContext.fillStyle = "white";
     this.canvasContext.fillRect(x, y, w, h);
-    this.drawGunReloadVisualClue(player.gun);
+    this.drawPlayerGunReloadVisualClue(player);
   }
 
-  private drawGunReloadVisualClue(gun: Gun) {
-    const clueHeight = 20,
-      clueWidth = 1,
+  private drawPlayerGunReloadVisualClue(player: Player) {
+    const { gun, pos } = player;
+
+    const extraWidth = DIMENSIONS.player.w * 0.15;
+    const gap = DIMENSIONS.player.h * 0.1;
+
+    // Calculate the size of the clue
+    const clueHeight = 1,
+      clueWidth = DIMENSIONS.player.w + extraWidth,
       cluePixelsHeight = this.verPixels(clueHeight),
       cluePixelsWidth = this.horPixels(clueWidth);
-    const x = 98,
-      y = 50,
+
+    // Calculate the position of the clue within the display
+    const x = pos.x - extraWidth / 2,
+      y = pos.y + DIMENSIONS.player.h + gap,
       xPixels = this.horPixels(x),
-      yPixels = this.verPixels(y - clueHeight / 2);
+      yPixels = this.verPixels(y);
 
     const loadedPercentage = Math.min(
       1,
@@ -1310,12 +1318,22 @@ class CanvasDisplay {
     this.canvasContext.save();
     this.canvasContext.translate(xPixels, yPixels);
 
-    this.canvasContext.fillStyle = "#ffffff";
+    // draw how much the gun is reloaded (green)
+    this.canvasContext.fillStyle = "#0f0";
     this.canvasContext.fillRect(
+      0 - extraWidth / 2,
       0,
-      (1 - loadedPercentage) * cluePixelsHeight,
-      cluePixelsWidth,
-      loadedPercentage * cluePixelsHeight
+      loadedPercentage * cluePixelsWidth,
+      cluePixelsHeight
+      );
+      
+    // draw how much the gun is not reloaded (gray)
+    this.canvasContext.fillStyle = "#999";
+    this.canvasContext.fillRect(
+      loadedPercentage * cluePixelsWidth - extraWidth / 2,
+      0,
+      cluePixelsWidth - loadedPercentage * cluePixelsWidth,
+      cluePixelsHeight
     );
 
     this.canvasContext.restore();
