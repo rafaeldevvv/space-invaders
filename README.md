@@ -325,6 +325,60 @@ The thing is that all of the arrays in the `piecesMatrix` property refer to the 
 
 So be aware that the `fill()` method assigns the value you pass in to all elements in the array, without creating new instances.
 
+### Canvas `clip()` and `globalCompositeOperation` misunderstanding
+
+I was reading [Compositing and clipping on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing) and I thought about implementing the player's gun reloaxd clue using the `clip()` method and `globalCompositeOperation` property. I started doing it and I tried really hard to make it work, but it didn't because those properties don't interact directly. 
+
+I was trying to make a rectangle be drawn outside the clipping path, which was also a rectangle. But the `clip()` method makes the current path into a clipping region inside of which new shapes are drawn.
+
+This was the code I got (it doesn't work):
+
+```ts
+class CanvasDisplay {
+  private drawGunReloadVisualClue(gun: Gun) {
+    const clueHeight = 20,
+      clueWidth = 1,
+      cluePixelsHeight = this.verPixels(clueHeight),
+      cluePixelsWidth = this.horPixels(clueWidth);
+    const x = 98,
+      y = 50,
+      xPixels = this.horPixels(x),
+      yPixels = this.verPixels(y - clueHeight / 2);
+  
+    const loadedPercentage = Math.min(
+      1,
+      gun.timeSinceLastShot / gun.fireInterval
+    );
+  
+    this.canvasContext.save();
+    this.canvasContext.translate(xPixels, yPixels);
+
+    const clueRegion = new Path2D();
+    clueRegion.rect(
+      0, 
+      0, 
+      cluePixelsWidth, 
+      cluePixelsHeight - loadedPercentage * cluePixelsHeight
+    );
+    this.canvasContext.clip();
+
+    this.canvasContext.globalCompositeOperation = "source-out";
+  
+    this.canvasContext.fillStyle = "#ffffff";
+    this.canvasContext.fillRect(
+      0,
+      0,
+      cluePixelsWidth,
+      cluePixelsHeight
+    );
+  
+    this.canvasContext.globalCompositeOperation = "source-over";
+    this.canvasContext.restore();
+  }
+}
+```
+
+
 ### Useful Resources
 
 #### General
@@ -341,6 +395,12 @@ So be aware that the `fill()` method assigns the value you pass in to all elemen
 - [HEAD Meta elements list](https://github.com/joshbuchea/HEAD#meta)
 - [Aspect Ratio | Definition, Formula & Examples](https://study.com/academy/lesson/aspect-ratio-definition-calculation.html#:~:text=long%2C%20thin%20wings-,Lesson%20Summary,height%3A%20r%20%3D%20w%20h%20.)
 - [Javascript efficiency: 'for' vs 'forEach' \[closed\]](https://stackoverflow.com/questions/43031988/javascript-efficiency-for-vs-foreach) - This made me decide to use readable and maintainable approaches.
+- [Nonzero-Rule Wikipedia](https://en.wikipedia.org/wiki/Nonzero-rule)
+- [`CanvasRenderingContext2D` `clip()`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/clip)
+- [`globalCompositeOperation`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation#examples)
+- [Canvas API - Compositing and clipping](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing)
+- [Semantic Commit Messages](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716)
+- [MDN AI Help](https://developer.mozilla.org/en-US/plus/ai-help)
 
 #### Comments
 

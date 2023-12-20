@@ -611,7 +611,7 @@ class Player {
  * Class representing a gun.
  */
 class Gun {
-  private fireInterval: number;
+  public fireInterval: number;
   public timeSinceLastShot: number = 0;
 
   /**
@@ -668,8 +668,8 @@ class Gun {
 
   /**
    * Updates the time that has passed since the last shot
-   * 
-   * @param timeStep 
+   *
+   * @param timeStep
    */
   update(timeStep: number) {
     this.timeSinceLastShot += timeStep * 1000;
@@ -1289,6 +1289,36 @@ class CanvasDisplay {
 
     this.canvasContext.fillStyle = "white";
     this.canvasContext.fillRect(x, y, w, h);
+    this.drawGunReloadVisualClue(player.gun);
+  }
+
+  private drawGunReloadVisualClue(gun: Gun) {
+    const clueHeight = 20,
+      clueWidth = 1,
+      cluePixelsHeight = this.verPixels(clueHeight),
+      cluePixelsWidth = this.horPixels(clueWidth);
+    const x = 98,
+      y = 50,
+      xPixels = this.horPixels(x),
+      yPixels = this.verPixels(y - clueHeight / 2);
+
+    const loadedPercentage = Math.min(
+      1,
+      gun.timeSinceLastShot / gun.fireInterval
+    );
+
+    this.canvasContext.save();
+    this.canvasContext.translate(xPixels, yPixels);
+
+    this.canvasContext.fillStyle = "#ffffff";
+    this.canvasContext.fillRect(
+      0,
+      (1 - loadedPercentage) * cluePixelsHeight,
+      cluePixelsWidth,
+      loadedPercentage * cluePixelsHeight
+    );
+
+    this.canvasContext.restore();
   }
 
   /**
@@ -1405,7 +1435,9 @@ const keys = keysTracker([
 
 runAnimation((timeStep) => {
   console.log(`${Math.round(1 / timeStep)} fps`);
+  state.update(timeStep, keys);
   canvasDisplay.syncState(state);
+  // console.log(state.bullets);
 
   if (state.status === "lost") {
     console.log("lost");
@@ -1414,7 +1446,6 @@ runAnimation((timeStep) => {
     console.log("won");
     return false;
   } else {
-    state.update(timeStep, keys);
     return true;
   }
 });
