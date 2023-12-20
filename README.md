@@ -401,6 +401,9 @@ class CanvasDisplay {
 - [Canvas API - Compositing and clipping](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing)
 - [Semantic Commit Messages](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716)
 - [MDN AI Help](https://developer.mozilla.org/en-US/plus/ai-help)
+- [How to write a good commit message - Focus on starting verbs](https://www.reddit.com/r/git/comments/f502nz/how_to_write_a_good_commit_message_focus_on/)
+- [subsurface-for-dirk / README](https://github.com/torvalds/subsurface-for-dirk/blob/a48494d2fbed58c751e9b7e8fbff88582f9b2d02/README)
+- [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 #### Comments
 

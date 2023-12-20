@@ -287,9 +287,14 @@ function keysTracker<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
   `(100 - displayPadding.hor * 2)` is the area within the padding edges
   divide it by twenty so that we have 20 steps along the display
 */
-const alienSetXStep = (100 - displayPadding.hor * 2) / 20;
-const alienSetYStep = 5;
-const alienSetMoveTime = 1; // in seconds
+const alienSetUpdateTime = 1; // in seconds
+/**
+ * This is to adjust the step of the alien set when it
+ * is close to the edge of the display. With this, the alien
+ * set will not seem stagnant when there's just a small distance
+ * for it to reach the edge
+ */
+const alienSetStepToEdgeAdjustment = 1.33;
 
 /**
  * The horizontal directions that {@link AlienSet} can move.
@@ -305,6 +310,9 @@ enum HorizontalDirection {
 class AlienSet {
   public pos: Vector;
   public size: Size;
+
+  private yStep = 5;
+  private xStep: number;
 
   public numColumns: number;
   public numRows: number;
@@ -350,6 +358,8 @@ class AlienSet {
     this.size = { w, h };
     this.pos = new Vector(50 - w / 2, displayPadding.ver + 10);
 
+    this.xStep = (100 - displayPadding.hor * 2 - w) / 15;
+
     this.aliens = rows.map((row, y) => {
       return row.map((ch, x) => {
         return Alien.create(ch as TAliens, { x, y });
@@ -365,53 +375,11 @@ class AlienSet {
   public update(timeStep: number) {
     this.timeStepSum += timeStep;
 
-    let movedY = 0;
-
-    /* 
-      if it is going right and it has touched 
-      the padding area and it can update its position
-    */
-    if (
-      this.pos.x + this.size.w >= 100 - displayPadding.hor &&
-      this.timeStepSum >= alienSetMoveTime &&
-      this.direction === HorizontalDirection.Right
-    ) {
-      movedY = alienSetYStep;
-      this.direction = HorizontalDirection.Left;
-    } else if (
-      /* if it is going left and has touched the padding area and can update */
-      this.pos.x <= displayPadding.hor &&
-      this.timeStepSum >= alienSetMoveTime &&
-      this.direction === HorizontalDirection.Left
-    ) {
-      movedY = alienSetYStep;
-      this.direction = HorizontalDirection.Right;
-    }
-
-    let movedX = 0;
-    /* if can update and has not moved down */
-    if (this.timeStepSum >= alienSetMoveTime && movedY === 0) {
-      if (this.direction === HorizontalDirection.Right) {
-        /*
-          here we get either the distance left to reach the inner right padding edge
-          or the normal step to move
-        */
-        movedX = Math.min(
-          alienSetXStep,
-          100 - this.pos.x - displayPadding.hor - this.size.w
-        );
-      } else {
-        /*
-          here we get either the distance left to reach the inner left padding edge
-          or the normal step to move
-        */
-        movedX = Math.min(alienSetXStep, this.pos.x - displayPadding.hor);
-      }
-      movedX *= this.direction;
-    }
+    const movedY = this.moveVertically();
+    const movedX = this.moveHorizontally(movedY);
 
     /* reset */
-    if (this.timeStepSum >= alienSetMoveTime) {
+    if (this.timeStepSum >= alienSetUpdateTime) {
       this.timeStepSum = 0;
     }
 
@@ -419,6 +387,69 @@ class AlienSet {
     for (const alien of this) {
       if (alien) alien.gun.update(timeStep);
     }
+  }
+
+  private moveVertically() {
+    let movedY = 0;
+
+    /* 
+      if it is going right and it has touched 
+      the padding edge and it can update its position
+    */
+    if (
+      this.pos.x + this.size.w >= 100 - displayPadding.hor &&
+      this.timeStepSum >= alienSetUpdateTime &&
+      this.direction === HorizontalDirection.Right
+    ) {
+      movedY = this.yStep;
+      this.direction = HorizontalDirection.Left;
+    } else if (
+      /* if it is going left and has touched the padding edge and can update */
+      this.pos.x <= displayPadding.hor &&
+      this.timeStepSum >= alienSetUpdateTime &&
+      this.direction === HorizontalDirection.Left
+    ) {
+      movedY = this.yStep;
+      this.direction = HorizontalDirection.Right;
+    }
+
+    return movedY;
+  }
+
+  private moveHorizontally(movedY: number) {
+    let movedX = 0;
+    /* if can update and has not moved down */
+    if (this.timeStepSum >= alienSetUpdateTime && movedY === 0) {
+      if (this.direction === HorizontalDirection.Right) {
+        /*
+          get either the distance left to reach the inner right padding edge
+          or the normal step to move
+        */
+        const rightDistance =
+          100 - this.pos.x - displayPadding.hor - this.size.w;
+        if (rightDistance < this.xStep * alienSetStepToEdgeAdjustment) {
+          movedX = rightDistance;
+        } else {
+          movedX = this.xStep;
+        }
+        // movedX = Math.min(this.xStep, rightDistance);
+      } else {
+        /*
+          get either the distance left to reach the inner left padding edge
+          or the normal step to move
+        */
+        const leftDistance = this.pos.x - displayPadding.hor;
+        if (leftDistance < this.xStep * alienSetStepToEdgeAdjustment) {
+          movedX = leftDistance;
+        } else {
+          movedX = this.xStep;
+        }
+        // movedX = Math.min(this.xStep, leftDistance);
+      }
+      movedX *= this.direction;
+    }
+
+    return movedX;
   }
 
   /**
@@ -449,13 +480,13 @@ class AlienSet {
    * The current number of aliens that are alive.
    */
   public get alive() {
-    return this.aliens.reduce((allAliensCount, row) => {
+    return this.aliens.reduce((livingAliensCount, row) => {
       const rowCount = row.reduce((rowCount, alien) => {
         if (alien !== null) return rowCount + 1;
         else return rowCount;
       }, 0);
 
-      return allAliensCount + rowCount;
+      return livingAliensCount + rowCount;
     }, 0);
   }
 

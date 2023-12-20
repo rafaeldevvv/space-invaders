@@ -13,6 +13,9 @@
 - Make initial screen, game over screen
 - commit & update README
 
+- Add animation for alien and player dying
+- commit & update README
+
 - Refactor the code
 - commit & update README
 
