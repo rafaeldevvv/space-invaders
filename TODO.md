@@ -1,14 +1,13 @@
-- Update alien set size depending on how many aliens there are
+- Make alien set go quicker as it approaches the player and decrease the alien set yStep
+  - Decrease the `alienSetUpdateTime` variable (which is a constant now, make it a property of the alien set)
 - commit & update README
 
 - When the alien set hits the wall, break the wall, don't make the player lose.
 - commit & update README
 
-- Implement custom wall
-- commit & update README
+- Make player lose only when the alien set reaches it
 
-- Make alien set go quicker as it approaches the player and decrease the alien set yStep
-  - Decrease the `alienSetUpdateTime` variable (which is a constant now, make it a property of the alien set)
+- Implement custom wall
 - commit & update README
 
 - Implement Controller
@@ -20,12 +19,12 @@
 - Adjust sizes if needed
 - commit & update README
 
+- Make initial screen, game over screen
+- commit & update README
+
 - Make the assets, styles and so on
   - Add images
   - Add sounds
-- commit & update README
-
-- Make initial screen, game over screen
 - commit & update README
 
 - Add animation for alien and player dying

@@ -285,7 +285,6 @@ function trackKeys<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
 /* ==================================================================== */
 /* ===================== Game Components ============================== */
 /* ==================================================================== */
-const alienSetUpdateTime = 1; // in seconds
 /**
  * This is to adjust the step of the alien set when it
  * is close to the edge of the display. With this, the alien
@@ -293,6 +292,7 @@ const alienSetUpdateTime = 1; // in seconds
  * for it to reach the edge
  */
 const alienSetStepToEdgeAdjustment = 1.33;
+const alienSetSpeedIncreaseFactor = .92;
 
 /**
  * The horizontal directions that {@link AlienSet} can move.
@@ -309,7 +309,7 @@ class AlienSet {
   public pos: Vector;
   public size: Size;
 
-  private yStep = 5;
+  private yStep = 3;
   private xStep: number;
 
   public numColumns: number;
@@ -317,6 +317,8 @@ class AlienSet {
 
   public aliens: (Alien | null)[][];
   private direction: HorizontalDirection = 1;
+
+  private updateTime = 1;
 
   /**
    * A variable that manages when the AlienSet's position can update.
@@ -382,8 +384,12 @@ class AlienSet {
     const movedX = this.moveHorizontally(movedY);
 
     /* reset */
-    if (this.timeStepSum >= alienSetUpdateTime) {
+    if (this.timeStepSum >= this.updateTime) {
       this.timeStepSum = 0;
+    }
+
+    if (movedY > 0) {
+      this.updateTime *= alienSetSpeedIncreaseFactor;
     }
 
     this.pos = this.pos.plus(new Vector(movedX, movedY));
@@ -401,7 +407,7 @@ class AlienSet {
     */
     if (
       this.pos.x + this.size.w >= 100 - displayPadding.hor &&
-      this.timeStepSum >= alienSetUpdateTime &&
+      this.timeStepSum >= this.updateTime &&
       this.direction === HorizontalDirection.Right
     ) {
       movedY = this.yStep;
@@ -409,7 +415,7 @@ class AlienSet {
     } else if (
       /* if it is going left and has touched the padding edge and can update */
       this.pos.x <= displayPadding.hor &&
-      this.timeStepSum >= alienSetUpdateTime &&
+      this.timeStepSum >= this.updateTime &&
       this.direction === HorizontalDirection.Left
     ) {
       movedY = this.yStep;
@@ -422,7 +428,7 @@ class AlienSet {
   private moveHorizontally(movedY: number) {
     let movedX = 0;
     /* if can update and has not moved down */
-    if (this.timeStepSum >= alienSetUpdateTime && movedY === 0) {
+    if (this.timeStepSum >= this.updateTime && movedY === 0) {
       if (this.direction === HorizontalDirection.Right) {
         /*
           get either the distance left to reach the inner right padding edge
