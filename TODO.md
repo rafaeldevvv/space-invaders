@@ -1,7 +1,3 @@
-- Make alien set go quicker as it approaches the player and decrease the alien set yStep
-  - Decrease the `alienSetUpdateTime` variable (which is a constant now, make it a property of the alien set)
-- commit & update README
-
 - When the alien set hits the wall, break the wall, don't make the player lose.
 - commit & update README
 

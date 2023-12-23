@@ -292,7 +292,7 @@ function trackKeys<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
  * for it to reach the edge
  */
 const alienSetStepToEdgeAdjustment = 1.33;
-const alienSetSpeedIncreaseFactor = .92;
+const alienSetTimeDecreaseFactor = 0.92;
 
 /**
  * The horizontal directions that {@link AlienSet} can move.
@@ -318,7 +318,7 @@ class AlienSet {
   public aliens: (Alien | null)[][];
   private direction: HorizontalDirection = 1;
 
-  private updateTime = 1;
+  private timeToUpdate = 1;
 
   /**
    * A variable that manages when the AlienSet's position can update.
@@ -357,7 +357,7 @@ class AlienSet {
 
     this.size = { w, h };
     this.pos = new Vector(50 - w / 2, displayPadding.ver + 10);
-    
+
     /*
       `(100 - displayPadding.hor * 2 - w)` is the area within the padding edges,
       divide it by fifteen so that we have 15 steps along the display
@@ -371,7 +371,6 @@ class AlienSet {
     });
   }
 
-
   /**
    * Updates the AlienSet instance.
    *
@@ -384,12 +383,13 @@ class AlienSet {
     const movedX = this.moveHorizontally(movedY);
 
     /* reset */
-    if (this.timeStepSum >= this.updateTime) {
+    if (this.timeStepSum >= this.timeToUpdate) {
       this.timeStepSum = 0;
     }
 
+    // if it moved down, decreases the updateTime
     if (movedY > 0) {
-      this.updateTime *= alienSetSpeedIncreaseFactor;
+      this.timeToUpdate *= alienSetTimeDecreaseFactor;
     }
 
     this.pos = this.pos.plus(new Vector(movedX, movedY));
@@ -407,7 +407,7 @@ class AlienSet {
     */
     if (
       this.pos.x + this.size.w >= 100 - displayPadding.hor &&
-      this.timeStepSum >= this.updateTime &&
+      this.timeStepSum >= this.timeToUpdate &&
       this.direction === HorizontalDirection.Right
     ) {
       movedY = this.yStep;
@@ -415,7 +415,7 @@ class AlienSet {
     } else if (
       /* if it is going left and has touched the padding edge and can update */
       this.pos.x <= displayPadding.hor &&
-      this.timeStepSum >= this.updateTime &&
+      this.timeStepSum >= this.timeToUpdate &&
       this.direction === HorizontalDirection.Left
     ) {
       movedY = this.yStep;
@@ -428,7 +428,7 @@ class AlienSet {
   private moveHorizontally(movedY: number) {
     let movedX = 0;
     /* if can update and has not moved down */
-    if (this.timeStepSum >= this.updateTime && movedY === 0) {
+    if (this.timeStepSum >= this.timeToUpdate && movedY === 0) {
       if (this.direction === HorizontalDirection.Right) {
         /*
           get either the distance left to reach the inner right padding edge
@@ -924,9 +924,9 @@ class BreakableWall {
     public numColumns = 20
   ) {
     /* 
-    the problem with this is that the same array is assined to each row
-    so when i update a piece in a row, i actually update a piece in 
-    all the rows in the same column
+      the problem with this is that the same array is assined to each row
+      so when i update a piece in a row, i actually update a piece in 
+      all the rows in the same column
      */
     /* this.piecesMatrix = new Array(numRows).fill(
       new Array(numColumns).fill(true)
@@ -958,22 +958,30 @@ class BreakableWall {
   }
 
   /**
-   * This method is called when a bullet hits the wall.
-   * It checks which pieces the bullet has hit and removes them,
-   * calling {@link Bullet.collide} if it hits a piece.
+   * This method is called when an object hits the wall.
+   * It checks which pieces the object has hit and removes them,
+   * calling `collide` on the object if it was passed in and it hits a piece.
    *
    * @param state - The state of the game.
-   * @param bullet - The bullet that hit the wall.
+   * @param objPos - The position of the object.
+   * @param objSize - The size of the object.
+   * @param obj - The object itself. The object must have a collide method
+   * that takes the state as the only argument and returns nothing.
    */
-  collide(state: GameState, bullet: Bullet) {
+  collide<State>(
+    state: State,
+    objPos: Coords,
+    objSize: Size,
+    obj?: { collide(state: State): void }
+  ) {
     for (const { row, column, piece } of this) {
       if (!piece) continue;
 
       const piecePos = this.getPiecePos(column, row);
 
-      if (overlap(bullet.pos, bullet.size, piecePos, this.pieceSize)) {
+      if (overlap(objPos, objSize, piecePos, this.pieceSize)) {
         this.piecesMatrix[row][column] = false;
-        bullet.collide(state);
+        obj?.collide(state);
       }
     }
   }
@@ -1022,26 +1030,7 @@ class GameEnv {
     bullet: Bullet,
     wall: BreakableWall | UnbreakableWall
   ): boolean {
-    if (wall instanceof UnbreakableWall) {
-      return overlap(wall.pos, wall.size, bullet.pos, bullet.size);
-    } else {
-      for (const { row, column, piece } of wall) {
-        if (!piece) continue;
-
-        if (
-          overlap(
-            bullet.pos,
-            bullet.size,
-            wall.getPiecePos(column, row),
-            wall.pieceSize
-          )
-        ) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return overlap(wall.pos, wall.size, bullet.pos, bullet.size);
   }
 
   /**
@@ -1059,23 +1048,24 @@ class GameEnv {
    *
    * @returns - A boolean value that says whether the alien set has reached a wall.
    */
-  alienSetReachedPlayer() {
-    return (
-      this.alienSet.pos.y + this.alienSet.size.h >=
-      this.walls[0].pos.y + this.walls[0].size.h
-    );
+  alienSetTouchesPlayer() {
+    return this.alienSet.pos.y + this.alienSet.size.h >= this.player.pos.y;
+  }
+
+  alienSetTouchesWall(wall: BreakableWall | UnbreakableWall) {
+    return this.alienSet.pos.y + this.alienSet.size.h >= wall.pos.y;
   }
 
   /**
    * Checks whether an object in the game has been shot.
    *
    * @param bullet - A bullet that may hit the object.
-   * @param actorPos - The position of the object.
-   * @param actorSize - The size of the object.
+   * @param objPos - The position of the object.
+   * @param objSize - The size of the object.
    * @returns - A boolean value that says whether the object is shot.
    */
-  isActorShot(bullet: Bullet, actorPos: Coords, actorSize: Size) {
-    return overlap(bullet.pos, bullet.size, actorPos, actorSize);
+  bulletTouchesObject(bullet: Bullet, objPos: Coords, objSize: Size) {
+    return overlap(bullet.pos, bullet.size, objPos, objSize);
   }
 }
 
@@ -1120,12 +1110,13 @@ class GameState {
 
     if (this.alienSet.alive === 0) {
       this.alienSet = new AlienSet(basicInvaderPlan);
+      this.env.alienSet = this.alienSet;
       this.player.lives++;
     } else if (this.player.lives < 1) {
       this.status = "lost";
     }
 
-    if (this.env.alienSetReachedPlayer()) {
+    if (this.env.alienSetTouchesPlayer()) {
       this.env.walls = [];
       this.status = "lost";
     }
@@ -1140,7 +1131,7 @@ class GameState {
         if (!this.env.bulletTouchesWall(bullet, wall)) continue;
 
         if (wall instanceof BreakableWall) {
-          wall.collide(this, bullet);
+          wall.collide(this, bullet.pos, bullet.size, bullet);
         } else {
           bullet.collide(this);
         }
@@ -1162,7 +1153,7 @@ class GameState {
         if (!alien) continue;
 
         if (
-          this.env.isActorShot(
+          this.env.bulletTouchesObject(
             playerBullet,
             this.alienSet.getAlienPos(alien.gridPos),
             DIMENSIONS.alien
@@ -1204,7 +1195,7 @@ class GameState {
       is removed and the player resets its position and loses one life 
     */
     alienBullets.forEach((b) => {
-      if (this.env.isActorShot(b, this.player.pos, DIMENSIONS.player)) {
+      if (this.env.bulletTouchesObject(b, this.player.pos, DIMENSIONS.player)) {
         this.player.lives--;
         this.player.resetPos();
         b.collide(this);
@@ -1603,11 +1594,7 @@ const canvasDisplay = new CanvasDisplay(
   document.body
 );
 
-const keys = trackKeys([
-  moveRightActionKey,
-  moveLeftActionKey,
-  fireActionKey,
-]);
+const keys = trackKeys([moveRightActionKey, moveLeftActionKey, fireActionKey]);
 
 runAnimation((timeStep) => {
   state.update(timeStep, keys);
