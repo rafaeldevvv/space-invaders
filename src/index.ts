@@ -64,6 +64,9 @@ type GameKeys = " " | "ArrowLeft" | "ArrowRight";
 // this is for methods that expect a keys tracker
 type KeysTracker = FlagsFromUnion<GameKeys>;
 
+/* helpers */
+type NumOrNull = number | null;
+
 /* ========================== constants ========================= */
 
 /**
@@ -261,7 +264,7 @@ function getElementInnerDimensions(element: HTMLElement): Size {
  * @param keys - An array of strings representing key names.
  * @returns - An object whose property names are the strings within `keys` and values are booleans.
  */
-function keysTracker<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
+function trackKeys<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
   const down = {} as FlagsFromUnion<Type>;
   keys.forEach((key) => (down[key] = false));
 
@@ -282,11 +285,6 @@ function keysTracker<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
 /* ==================================================================== */
 /* ===================== Game Components ============================== */
 /* ==================================================================== */
-
-/*
-  `(100 - displayPadding.hor * 2)` is the area within the padding edges
-  divide it by twenty so that we have 20 steps along the display
-*/
 const alienSetUpdateTime = 1; // in seconds
 /**
  * This is to adjust the step of the alien set when it
@@ -357,7 +355,11 @@ class AlienSet {
 
     this.size = { w, h };
     this.pos = new Vector(50 - w / 2, displayPadding.ver + 10);
-
+    
+    /*
+      `(100 - displayPadding.hor * 2 - w)` is the area within the padding edges,
+      divide it by fifteen so that we have 15 steps along the display
+    */
     this.xStep = (100 - displayPadding.hor * 2 - w) / 15;
 
     this.aliens = rows.map((row, y) => {
@@ -366,6 +368,7 @@ class AlienSet {
       });
     });
   }
+
 
   /**
    * Updates the AlienSet instance.
@@ -453,12 +456,133 @@ class AlienSet {
   }
 
   /**
+   * Adapts the size of the alien set when enough aliens have been removed.
+   */
+  private adaptSize() {
+    let firstLivingAlienRow: NumOrNull = null,
+      lastLivingAlienRow: NumOrNull = null,
+      firstLivingAlienColumn: NumOrNull = null,
+      lastLivingAlienColumn: NumOrNull = null;
+
+    for (const alien of this) {
+      if (!alien) continue;
+      const { x: column, y: row } = alien.gridPos;
+
+      /* 
+        `row < firstLivingAlienRow` isn't needed here because 
+        it will always check top-bottom
+      */
+      if (firstLivingAlienRow === null) {
+        firstLivingAlienRow = row;
+      }
+      lastLivingAlienRow = row;
+
+      /* 
+        if the  first column is null or the current one is less than the previous 
+        one, then this is the first living alien column 
+      */
+      if (firstLivingAlienColumn === null || column < firstLivingAlienColumn) {
+        firstLivingAlienColumn = column;
+      }
+      if (lastLivingAlienColumn === null || column > lastLivingAlienColumn) {
+        lastLivingAlienColumn = column;
+      }
+    }
+
+    if (firstLivingAlienRow !== null) {
+      const newH =
+        // add one because if the living aliens are on the same row, the new height would be zero
+        // same thing for columns
+        (lastLivingAlienRow! - firstLivingAlienRow + 1) * DIMENSIONS.alien.h +
+        (lastLivingAlienRow! - firstLivingAlienRow) * DIMENSIONS.alienSetGap.h;
+      const newW =
+        (lastLivingAlienColumn! - firstLivingAlienColumn! + 1) *
+          DIMENSIONS.alien.w +
+        (lastLivingAlienColumn! - firstLivingAlienColumn!) *
+          DIMENSIONS.alienSetGap.w;
+
+      this.size = {
+        w: newW,
+        h: newH,
+      };
+    }
+  }
+
+  /**
+   * Adapts the position of the alien set when enough aliens have been removed.
+   */
+  private adaptPos(): void {
+    let firstLivingAlienColumn: NumOrNull = null;
+    let firstLivingAlienRow: NumOrNull = null;
+
+    for (const alien of this) {
+      if (!alien) continue;
+
+      const { x, y } = alien.gridPos;
+
+      if (firstLivingAlienColumn === null || x < firstLivingAlienColumn) {
+        firstLivingAlienColumn = x;
+      }
+
+      if (firstLivingAlienRow === null || y < firstLivingAlienRow) {
+        firstLivingAlienRow = y;
+      }
+    }
+
+    if (firstLivingAlienColumn === 0 && firstLivingAlienRow === 0) {
+      return;
+    }
+
+    let newX = this.pos.x;
+    let newY = this.pos.y;
+
+    if (firstLivingAlienColumn !== 0 && firstLivingAlienColumn) {
+      newX = this.getAlienPos({ x: firstLivingAlienColumn, y: 0 }).x;
+    }
+    if (firstLivingAlienRow !== 0 && firstLivingAlienRow) {
+      newY = this.getAlienPos({ x: 0, y: firstLivingAlienRow }).y;
+    }
+
+    this.pos = new Vector(newX, newY);
+  }
+
+  /**
+   * Removes rows or columns that have no living aliens.
+   */
+  private removeUnnecessaryRowsAndColumns() {
+    this.aliens = this.aliens.filter((row, y) => {
+      if (y !== 0 || y !== this.aliens.length - 1) return true;
+      return row.some((alien) => alien !== null);
+    });
+    this.aliens = this.aliens.map((row) => {
+      const deadColumns: number[] = [];
+      row.forEach((_, x) => {
+        if (this.aliens.every((row) => row[x] === null)) deadColumns.push(x);
+      });
+
+      return row.filter((_, x) => !deadColumns.includes(x));
+    });
+  }
+
+  /**
+   * After the unnecessary rows and columns are removed, the grid position of the aliens are going to be messed up.
+   * This ensures that the grid position of the aliens are consistent within the new set.
+   */
+  private syncAliensGridPos() {
+    this.aliens.forEach((row, y) => {
+      row.forEach((alien, x) => {
+        if (alien) alien.gridPos = { x, y };
+      });
+    });
+  }
+
+  /**
    * Gets the position of an alien within the whole game screen.
    *
    * @param param0 - The alien.
    * @returns - The position of the alien.
    */
-  public getAlienPos({ gridPos: { x, y } }: Alien): Vector {
+  public getAlienPos({ x, y }: Coords): Vector {
     return new Vector(
       /* alienSet positions + sizes + gaps */
       this.pos.x + x * DIMENSIONS.alien.w + x * DIMENSIONS.alienSetGap.w,
@@ -474,6 +598,10 @@ class AlienSet {
    */
   public removeAlien(alien: Alien) {
     this.aliens[alien.gridPos.y][alien.gridPos.x] = null;
+    this.adaptSize();
+    this.adaptPos();
+    this.removeUnnecessaryRowsAndColumns();
+    this.syncAliensGridPos();
   }
 
   /**
@@ -517,7 +645,7 @@ class Alien {
    * @param alienType - The type of the alien.
    */
   constructor(
-    public readonly gridPos: Coords,
+    public gridPos: Coords,
     public readonly score: number,
     public readonly gun: Gun,
     public readonly alienType: TAliens
@@ -925,8 +1053,11 @@ class GameEnv {
    *
    * @returns - A boolean value that says whether the alien set has reached a wall.
    */
-  alienSetReachedWall() {
-    return this.alienSet.pos.y + this.alienSet.size.h >= this.walls[0].pos.y;
+  alienSetReachedPlayer() {
+    return (
+      this.alienSet.pos.y + this.alienSet.size.h >=
+      this.walls[0].pos.y + this.walls[0].size.h
+    );
   }
 
   /**
@@ -970,10 +1101,10 @@ class GameState {
    */
   update(timeStep: number, keys: KeysTracker) {
     this.alienSet.update(timeStep);
-    this.fireAliens();
     this.player.update(this, timeStep, keys);
+    this.fireAliens();
 
-    this.handleBulletContactWithWall();
+    this.handleBulletsContactWithWall();
 
     this.bullets.forEach((bullet) => bullet.update(timeStep));
 
@@ -988,7 +1119,7 @@ class GameState {
       this.status = "lost";
     }
 
-    if (this.env.alienSetReachedWall()) {
+    if (this.env.alienSetReachedPlayer()) {
       this.env.walls = [];
       this.status = "lost";
     }
@@ -997,7 +1128,7 @@ class GameState {
   /**
    * Removes the bullets that hit the wall and update the wall if needed.
    */
-  private handleBulletContactWithWall() {
+  private handleBulletsContactWithWall() {
     for (const bullet of this.bullets) {
       for (const wall of this.env.walls) {
         if (!this.env.bulletTouchesWall(bullet, wall)) continue;
@@ -1027,7 +1158,7 @@ class GameState {
         if (
           this.env.isActorShot(
             playerBullet,
-            this.alienSet.getAlienPos(alien),
+            this.alienSet.getAlienPos(alien.gridPos),
             DIMENSIONS.alien
           )
         ) {
@@ -1047,7 +1178,9 @@ class GameState {
       if (!alien) continue;
 
       if (alien.gun.canFire()) {
-        this.bullets.push(alien.fire(this.alienSet.getAlienPos(alien))!);
+        this.bullets.push(
+          alien.fire(this.alienSet.getAlienPos(alien.gridPos))!
+        );
       }
     }
   }
@@ -1158,10 +1291,12 @@ class CanvasDisplay {
     });
   }
 
+  // readonly, cuz there's no setter
   private get canvasWidth() {
     return this.canvas.width;
   }
 
+  // readonly, cuz there's no setter
   private get canvasHeight() {
     return this.canvas.height;
   }
@@ -1246,13 +1381,11 @@ class CanvasDisplay {
   }
 
   private drawAlienSet(alienSet: AlienSet) {
-    const alienSetXPos = alienSet.pos.x;
-
     for (const alien of alienSet) {
       if (!alien) continue;
 
       const xPercentage =
-        alienSetXPos +
+        alienSet.pos.x +
         alien.gridPos.x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
 
       const yPercentage =
@@ -1264,6 +1397,12 @@ class CanvasDisplay {
         y: yPercentage,
       });
     }
+
+    /* this is meant for tests, remove it later */
+    const { x, y } = this.getPixelPos(alienSet.pos);
+    const { w, h } = this.getPixelSize(alienSet.size);
+    this.canvasContext.fillStyle = "rgba(255,255,255,0.4)";
+    this.canvasContext.fillRect(x, y, w, h);
   }
 
   private drawAlien(alien: Alien, pos: Coords) {
@@ -1458,7 +1597,7 @@ const canvasDisplay = new CanvasDisplay(
   document.body
 );
 
-const keys = keysTracker([
+const keys = trackKeys([
   moveRightActionKey,
   moveLeftActionKey,
   fireActionKey,
@@ -1467,7 +1606,6 @@ const keys = keysTracker([
 runAnimation((timeStep) => {
   state.update(timeStep, keys);
   canvasDisplay.syncState(state, timeStep);
-  // console.log(state.bullets);
 
   if (state.status === "lost") {
     console.log("lost");

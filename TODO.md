@@ -1,13 +1,28 @@
-- Increase the steps the alien set takes within the display
+- Update alien set size depending on how many aliens there are
 - commit & update README
 
 - When the alien set hits the wall, break the wall, don't make the player lose.
 - commit & update README
 
+- Implement custom wall
+- commit & update README
+
+- Make alien set go quicker as it approaches the player and decrease the alien set yStep
+  - Decrease the `alienSetUpdateTime` variable (which is a constant now, make it a property of the alien set)
+- commit & update README
+
 - Implement Controller
 - commit & update README
 
+- Implement boss
+- commit & update README
+
+- Adjust sizes if needed
+- commit & update README
+
 - Make the assets, styles and so on
+  - Add images
+  - Add sounds
 - commit & update README
 
 - Make initial screen, game over screen

@@ -378,6 +378,71 @@ class CanvasDisplay {
 }
 ```
 
+#### Goddamn zero
+
+I was just writing a method that had all the correct logic to work, but I naively tested a variable that could be zero instead of testing it against `null`:
+
+```ts
+class AlienSet {
+  public adaptSize() {
+    console.log("adpating size, current is", JSON.stringify(this.size));
+    type NumOrNull = number | null;
+
+    let firstLivingAlienRow: NumOrNull = null,
+      lastLivingAlienRow: NumOrNull = null,
+      firstLivingAlienColumn: NumOrNull = null,
+      lastLivingAlienColumn: NumOrNull = null;
+
+    for (const alien of this) {
+      if (!alien) continue;
+      const { x: column, y: row } = alien.gridPos;
+
+      if (firstLivingAlienRow === null) {
+        firstLivingAlienRow = row;
+      }
+      lastLivingAlienRow = row;
+
+      /* 
+        if the current column is null or is less than the previous 
+        one set, then this is the first living alien column 
+      */
+      if (firstLivingAlienColumn === null || column < firstLivingAlienColumn) {
+        firstLivingAlienColumn = column;
+      }
+      if (lastLivingAlienColumn === null || column > lastLivingAlienColumn) {
+        lastLivingAlienColumn = column;
+      }
+    }
+
+    console.log(`first row is ${firstLivingAlienRow}`);
+    console.log(`first column is ${firstLivingAlienColumn}`);
+    console.log(`last row is ${lastLivingAlienRow}`);
+    console.log(`last column is ${lastLivingAlienColumn}`);
+
+    if (firstLivingAlienRow) {
+      const newH =
+        // add one because if the living aliens are on the same row, the new height would be zero
+        // same thing for columns
+        (lastLivingAlienRow! - firstLivingAlienRow + 1) * DIMENSIONS.alien.h +
+        (lastLivingAlienColumn! - firstLivingAlienRow) *
+          DIMENSIONS.alienSetGap.h;
+      const newW =
+        (lastLivingAlienColumn! - firstLivingAlienColumn! + 1) *
+          DIMENSIONS.alien.w +
+        (lastLivingAlienColumn! - firstLivingAlienRow) *
+          DIMENSIONS.alienSetGap.w;
+      this.size = {
+        w: newW,
+        h: newH,
+      };
+    }
+
+    console.log("new one is", JSON.stringify(this.size));
+  }
+}
+```
+
+As `firstLivingAlienRow` was zero most of the time, and zero is a falsy value, the method didn't work as expected. The correct check here is `if (firstLivingAlienRow !== null) {}`
 
 ### Useful Resources
 
@@ -404,6 +469,7 @@ class CanvasDisplay {
 - [How to write a good commit message - Focus on starting verbs](https://www.reddit.com/r/git/comments/f502nz/how_to_write_a_good_commit_message_focus_on/)
 - [subsurface-for-dirk / README](https://github.com/torvalds/subsurface-for-dirk/blob/a48494d2fbed58c751e9b7e8fbff88582f9b2d02/README)
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+- [Create prototype property](https://stackoverflow.com/questions/70342973/create-prototype-property)
 
 #### Comments
 
