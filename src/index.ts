@@ -530,26 +530,18 @@ class AlienSet {
         firstLivingAlienColumn = x;
       }
 
-      if (firstLivingAlienRow === null || y < firstLivingAlienRow) {
+      if (firstLivingAlienRow === null) {
         firstLivingAlienRow = y;
       }
     }
 
-    if (firstLivingAlienColumn === 0 && firstLivingAlienRow === 0) {
-      return;
+    /* if there is still aliens */
+    if (firstLivingAlienColumn !== null && firstLivingAlienRow !== null) {
+      this.pos = this.getAlienPos({
+        x: firstLivingAlienColumn,
+        y: firstLivingAlienRow,
+      });
     }
-
-    let newX = this.pos.x;
-    let newY = this.pos.y;
-
-    if (firstLivingAlienColumn !== 0 && firstLivingAlienColumn) {
-      newX = this.getAlienPos({ x: firstLivingAlienColumn, y: 0 }).x;
-    }
-    if (firstLivingAlienRow !== 0 && firstLivingAlienRow) {
-      newY = this.getAlienPos({ x: 0, y: firstLivingAlienRow }).y;
-    }
-
-    this.pos = new Vector(newX, newY);
   }
 
   /**
@@ -560,14 +552,41 @@ class AlienSet {
       if (y !== 0 || y !== this.aliens.length - 1) return true;
       return row.some((alien) => alien !== null);
     });
-    this.aliens = this.aliens.map((row) => {
-      const deadColumns: number[] = [];
-      row.forEach((_, x) => {
-        if (this.aliens.every((row) => row[x] === null)) deadColumns.push(x);
-      });
 
-      return row.filter((_, x) => !deadColumns.includes(x));
+    let deadColumnsIndexes: number[];
+    while (
+      (deadColumnsIndexes = this.getDeadColumnsIndexes()).some(
+        (index) => index === 0 || index === this.aliens[0].length - 1
+      )
+    ) {
+      this.aliens = this.aliens.map((row) => {
+        const deadColumns: number[] = [];
+        row.forEach((_, x) => {
+          const isLastOrFirstColumn = x === 0 || x === row.length - 1;
+          if (
+            this.aliens.every((row) => row[x] === null) &&
+            isLastOrFirstColumn
+          ) {
+            deadColumns.push(x);
+          }
+        });
+
+        return row.filter((_, x) => !deadColumns.includes(x));
+      });
+      this.syncAliensGridPos();
+    }
+  }
+
+  private getDeadColumnsIndexes() {
+    const numberOfDeadColumns: number[] = [];
+    this.aliens.forEach((row) => {
+      row.forEach((_, x) => {
+        if (this.aliens.every((row) => row[x] === null)) {
+          numberOfDeadColumns.push(x);
+        }
+      });
     });
+    return numberOfDeadColumns;
   }
 
   /**
@@ -604,10 +623,9 @@ class AlienSet {
    */
   public removeAlien(alien: Alien) {
     this.aliens[alien.gridPos.y][alien.gridPos.x] = null;
-    this.adaptSize();
     this.adaptPos();
+    this.adaptSize();
     this.removeUnnecessaryRowsAndColumns();
-    this.syncAliensGridPos();
   }
 
   /**
