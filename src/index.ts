@@ -737,7 +737,7 @@ class Alien {
    * @param gridPos - The position of the alien within the grid.
    * @returns - A specific alien type.
    */
-  public static create(ch: TAliens | '.', gridPos: Coords) {
+  public static create(ch: TAliens | ".", gridPos: Coords) {
     switch (ch) {
       case "X": {
         return new Alien(
@@ -1026,6 +1026,8 @@ class BreakableWall {
     objSize: Size,
     obj?: { collide(state: State): void }
   ) {
+    if (!overlap(this.pos, this.size, objPos, objSize)) return;
+
     for (const { row, column, piece } of this) {
       if (!piece) continue;
 
@@ -1270,9 +1272,12 @@ class GameState {
 
   private handleAlienContactWithWall() {
     for (const wall of this.env.walls) {
+      if (!(wall instanceof BreakableWall)) continue;
       if (overlap(this.alienSet.pos, this.alienSet.size, wall.pos, wall.size)) {
-        if (wall instanceof BreakableWall) {
-          wall.collide(this, this.alienSet.pos, this.alienSet.size);
+        for (const alien of this.alienSet) {
+          if (!alien) continue;
+          const alienPos = this.alienSet.getAlienPos(alien.gridPos);
+          wall.collide(this, alienPos, DIMENSIONS.alien);
         }
       }
     }
