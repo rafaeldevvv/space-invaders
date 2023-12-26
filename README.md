@@ -442,7 +442,99 @@ class AlienSet {
 }
 ```
 
-As `firstLivingAlienRow` was zero most of the time, and zero is a falsy value, the method didn't work as expected. The correct check here is `if (firstLivingAlienRow !== null) {}`
+As `firstLivingAlienRow` was zero most of the time, and zero is a falsy value, the method didn't work as expected. The correct check here is `if (firstLivingAlienRow !== null) { ... }`
+
+### Stagnant values
+
+I was writing my adaptation logic for the AlienSet, and I had to change a lot if things in the code for that. For example, i went from:
+
+
+```ts
+class AlienSet {
+  public removeAlien(alien: Alien) {
+    this.aliens[alien.gridPos.y][alien.gridPos.x] = null;
+    this.adaptPos();
+    this.adaptSize();
+    this.removeDeadRowsAndColumns();
+  }
+}
+```
+
+```ts
+class GameState {
+  private handleBulletsThatHitAlien() {
+    const playerBullets = this.bullets.filter(
+      (bullet) => bullet.from === "player"
+    );
+
+    for (const playerBullet of playerBullets) {
+      for (const alien of this.alienSet) {
+        if (!alien) continue;
+
+        if (
+          this.env.bulletTouchesObject(
+            playerBullet,
+            this.alienSet.getAlienPos(alien.gridPos),
+            DIMENSIONS.alien
+          )
+        ) {
+          this.player.score += alien.score;
+          this.alienSet.removeAlien(alien);
+          playerBullet.collide(this);
+        }
+      }
+    }
+  }
+}
+```
+
+to:
+
+```ts
+class AlienSet {
+  public adapt() {
+    this.adaptPos();
+    this.adaptSize();
+    this.removeDeadRowsAndColumns();
+  }
+
+  public removeAlien(alien: Alien) {
+    this.aliens[alien.gridPos.y][alien.gridPos.x] = null;
+    this.alive--;
+  }
+}
+```
+
+```ts
+class GameState {
+private handleBulletsThatHitAlien() {
+    const playerBullets = this.bullets.filter(
+      (bullet) => bullet.from === "player"
+    );
+
+    for (const playerBullet of playerBullets) {
+      for (const alien of this.alienSet) {
+        if (!alien) continue;
+
+        if (
+          this.env.bulletTouchesObject(
+            playerBullet,
+            this.alienSet.getAlienPos(alien.gridPos),
+            DIMENSIONS.alien
+          )
+        ) {
+          this.player.score += alien.score;
+          this.alienSet.removeAlien(alien);
+          playerBullet.collide(this);
+        }
+      }
+    }
+    this.alienSet.adapt();
+  }
+}
+```
+
+The problem with the first implementation was that, because I was adapting the alien set every time an alien was removed, the `for... of...` loop was still iterating over the previous version of the alien set, which had a different number of columns and rows. Thus, the iterator was throwing and error like `TypeError: Cannot read properties of undefined (reading '4')`. This was an error that not even TypeScript was able to catch.
 
 ### Useful Resources
 
