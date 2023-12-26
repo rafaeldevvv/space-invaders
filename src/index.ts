@@ -1,4 +1,6 @@
+/* ====================================================================== */
 /* ========================= Interfaces and Types ======================= */
+/* ====================================================================== */
 
 /**
  * A two-dimensional position.
@@ -67,7 +69,9 @@ type KeysTracker = FlagsFromUnion<GameKeys>;
 /* helpers */
 type NumOrNull = number | null;
 
+/* ============================================================== */
 /* ========================== constants ========================= */
+/* ============================================================== */
 
 /**
  * The dimensions of all objects in the game.
@@ -112,7 +116,9 @@ const basicInvaderPlan = `
 .oo..oo.
 ...xx...`;
 
+/* ============================================================== */
 /* ========================== utilities ========================= */
+/* ============================================================== */
 
 /**
  * Class representing a vector.
@@ -282,6 +288,56 @@ function trackKeys<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
   return down;
 }
 
+/* =================== AlienSet utilities ===================== */
+
+/**
+ * Checks whether a particular column in the set has all its aliens dead.
+ *
+ * @param rows - The rows
+ * @param column - The column
+ * @returns
+ */
+function isColumnDead(rows: AlienSet["aliens"], column: number) {
+  return rows.every((row) => row[column] === null);
+}
+
+/**
+ * Same as {@link isColumnDead}, but for a row in the AlienSet.
+ * @param row 
+ * @returns 
+ */
+function isRowDead(row: AlienSet["aliens"][number]) {
+  return row.every((alien) => alien === null);
+}
+
+/**
+ * Gets the first or last column in a set of aliens if either is dead.
+ * The first column takes precedence over the last column.
+ *
+ * @param rows - The same thing that the {@link AlienSet.aliens} property holds.
+ * @returns - The first or last column or null if neither of them is dead.
+ */
+function getFirstOrLastColumnIfDead(rows: AlienSet["aliens"]): number | null {
+  const isFirstColumnDead = isColumnDead(rows, 0);
+  const isLastColumnDead = isColumnDead(rows, rows[0].length - 1);
+
+  if (isFirstColumnDead) return 0;
+  if (isLastColumnDead) return rows[0].length - 1;
+  else return null;
+}
+
+/**
+ * Same as {@link getFirstOrLastColumnIfDead}, but for rows.
+ */
+function getFirstOrLastRowIfDead(rows: AlienSet["aliens"]): number | null {
+  const isFirstRowDead = isRowDead(rows[0]);
+  const isLastRowDead = isRowDead(rows[rows.length - 1]);
+
+  if (isFirstRowDead) return 0;
+  if (isLastRowDead) return rows.length - 1;
+  else return null;
+}
+
 /* ==================================================================== */
 /* ===================== Game Components ============================== */
 /* ==================================================================== */
@@ -316,9 +372,10 @@ class AlienSet {
   public numRows: number;
 
   public aliens: (Alien | null)[][];
-  private direction: HorizontalDirection = 1;
+  public alive: number;
 
   private timeToUpdate = 1;
+  private direction: HorizontalDirection = 1;
 
   /**
    * A variable that manages when the AlienSet's position can update.
@@ -347,6 +404,7 @@ class AlienSet {
 
     this.numColumns = rows[0].length;
     this.numRows = rows.length;
+    this.alive = this.numColumns * this.numRows;
 
     const w =
       this.numColumns * DIMENSIONS.alien.w +
@@ -461,6 +519,12 @@ class AlienSet {
     return movedX;
   }
 
+  public adapt() {
+    this.adaptPos();
+    this.adaptSize();
+    this.removeDeadRowsAndColumns();
+  }
+
   /**
    * Adapts the size of the alien set when enough aliens have been removed.
    */
@@ -547,46 +611,34 @@ class AlienSet {
   /**
    * Removes rows or columns that have no living aliens.
    */
-  private removeUnnecessaryRowsAndColumns() {
-    this.aliens = this.aliens.filter((row, y) => {
-      if (y !== 0 || y !== this.aliens.length - 1) return true;
-      return row.some((alien) => alien !== null);
-    });
-
-    let deadColumnsIndexes: number[];
+  private removeDeadRowsAndColumns() {
+    let rowToRemove: number | null;
     while (
-      (deadColumnsIndexes = this.getDeadColumnsIndexes()).some(
-        (index) => index === 0 || index === this.aliens[0].length - 1
-      )
+      (rowToRemove = getFirstOrLastRowIfDead(this.aliens)) !== null &&
+      this.aliens.length === 0
     ) {
-      this.aliens = this.aliens.map((row) => {
-        const deadColumns: number[] = [];
-        row.forEach((_, x) => {
-          const isLastOrFirstColumn = x === 0 || x === row.length - 1;
-          if (
-            this.aliens.every((row) => row[x] === null) &&
-            isLastOrFirstColumn
-          ) {
-            deadColumns.push(x);
-          }
-        });
-
-        return row.filter((_, x) => !deadColumns.includes(x));
-      });
+      this.aliens = this.aliens.filter((_, y) => y !== rowToRemove);
       this.syncAliensGridPos();
     }
-  }
 
-  private getDeadColumnsIndexes() {
-    const numberOfDeadColumns: number[] = [];
-    this.aliens.forEach((row) => {
-      row.forEach((_, x) => {
-        if (this.aliens.every((row) => row[x] === null)) {
-          numberOfDeadColumns.push(x);
-        }
+    let columnToRemove: number | null;
+    while (
+      (columnToRemove = getFirstOrLastColumnIfDead(this.aliens)) !== null
+    ) {
+      this.aliens = this.aliens.map((row) => {
+        return row.filter((_, x) => x !== columnToRemove);
       });
-    });
-    return numberOfDeadColumns;
+
+      /* 
+        this is totally necessary for this logic to work
+        it ensures that after a row or column is removed, the 
+        this.getFirstOrLastColumnIfDead method will return 0 
+        for the next column to be removed 
+      */
+      this.syncAliensGridPos();
+    }
+
+    this.syncNumOfColsAndRows();
   }
 
   /**
@@ -599,6 +651,11 @@ class AlienSet {
         if (alien) alien.gridPos = { x, y };
       });
     });
+  }
+
+  private syncNumOfColsAndRows() {
+    this.numColumns = this.aliens[0].length;
+    this.numRows = this.aliens.length;
   }
 
   /**
@@ -623,23 +680,7 @@ class AlienSet {
    */
   public removeAlien(alien: Alien) {
     this.aliens[alien.gridPos.y][alien.gridPos.x] = null;
-    this.adaptPos();
-    this.adaptSize();
-    this.removeUnnecessaryRowsAndColumns();
-  }
-
-  /**
-   * The current number of aliens that are alive.
-   */
-  public get alive() {
-    return this.aliens.reduce((livingAliensCount, row) => {
-      const rowCount = row.reduce((rowCount, alien) => {
-        if (alien !== null) return rowCount + 1;
-        else return rowCount;
-      }, 0);
-
-      return livingAliensCount + rowCount;
-    }, 0);
+    this.alive--;
   }
 
   /**
@@ -1183,6 +1224,7 @@ class GameState {
         }
       }
     }
+    this.alienSet.adapt();
   }
 
   /**

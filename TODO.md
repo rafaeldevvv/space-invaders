@@ -12,6 +12,9 @@
 - Implement boss
 - commit & update README
 
+- Implement alien set entrance animation.
+- commit & update README
+
 - Adjust sizes if needed
 - commit & update README
 
