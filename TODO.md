@@ -1,12 +1,21 @@
-- When the alien set hits the wall, break the wall, don't make the player lose.
-- commit & update README
-
-- Make player lose only when the alien set reaches it
-
 - Implement custom wall
 - commit & update README
 
+- Reduce the repetition of properties and method in CustomBreakableWall and BreakableWall
+- commit & update README
+
+- Make player controls
+
 - Implement Controller
+- commit & update README
+
+- Implement game functionalities, such as pause, "press space to start" and so on
+- commit & update README for each one
+
+- Make initial screen, game over screen
+- commit & update README
+
+- make player be able to shoot only when there's no player bullets in the game
 - commit & update README
 
 - Implement boss
@@ -16,9 +25,6 @@
 - commit & update README
 
 - Adjust sizes if needed
-- commit & update README
-
-- Make initial screen, game over screen
 - commit & update README
 
 - Make the assets, styles and so on

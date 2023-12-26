@@ -116,6 +116,45 @@ XXYZZYXX
 XXZYYZXX
 ZXXYYXXZ`;
 
+const customWall1 = `
+........######################################........
+.....############################################.....
+...################################################...
+..##################################################..
+.###################################################..
+.############.......##############.......############.
+.##########...........##########...........##########.
+##########..............######..............##########
+#########......##........####.........##.....#########
+########......##..........##...........##....#########
+########......##.........####..........##.....########
+########......###......#########......###.....########
+########.......#####..####..######..####......########
+########........########......########........########
+########.........#####..........#####.........########
+#########....................................#########
+.#########..................................#########.
+..##########..............................##########..
+`;
+
+const customWall2 = `
+...#...............................................#...
+..###.............................................###..
+..####...........................................####..
+.######....................#....................######.
+.#######..................###..................#######.
+#########................#####................#########
+##########..............#######..............##########
+############.........#############.........############
+##############..#..#################..#..##############
+#######################################################
+.#####################################################.
+...#################################################...
+......###########################################......
+........###########..................##########........
+..........#######......................#######.........
+`;
+
 /* ============================================================== */
 /* ========================== utilities ========================= */
 /* ============================================================== */
@@ -1052,6 +1091,84 @@ class BreakableWall {
   }
 }
 
+class CustomBreakableWall {
+  public piecesMatrix: boolean[][];
+  public pieceSize: Size;
+
+  constructor(
+    public readonly pos: Coords,
+    public readonly size: Size,
+    plan: string
+  ) {
+    this.piecesMatrix = plan
+      .trim()
+      .split("\n")
+      .map((row) => [...row].map((ch) => (ch === "#" ? true : false)));
+    this.pieceSize = {
+      w: this.size.w / this.piecesMatrix[0].length,
+      h: this.size.h / this.piecesMatrix.length,
+    };
+  }
+
+  /**
+   * Gets the position of a piece of the wall within the whole display screen in percentage values.
+   *
+   * @param column - The column in which the piece is.
+   * @param row - The row in which the piece is.
+   * @returns - The position of the piece within the whole display in percentage values.
+   */
+  getPiecePos(column: number, row: number): Coords {
+    return {
+      x: this.pos.x + column * this.pieceSize.w,
+      y: this.pos.y + row * this.pieceSize.h,
+    };
+  }
+
+  /**
+   * This method is called when an object hits the wall.
+   * It checks which pieces the object has hit and removes them,
+   * calling `collide` on the object if it was passed in and it hits a piece.
+   *
+   * @param state - The state of the game.
+   * @param objPos - The position of the object.
+   * @param objSize - The size of the object.
+   * @param obj - The object itself. The object must have a collide method
+   * that takes the state as the only argument and returns nothing.
+   */
+  collide<State>(
+    state: State,
+    objPos: Coords,
+    objSize: Size,
+    obj?: { collide(state: State): void }
+  ) {
+    if (!overlap(this.pos, this.size, objPos, objSize)) return;
+
+    for (const { row, column, piece } of this) {
+      if (!piece) continue;
+
+      const piecePos = this.getPiecePos(column, row);
+
+      if (overlap(objPos, objSize, piecePos, this.pieceSize)) {
+        this.piecesMatrix[row][column] = false;
+        obj?.collide(state);
+      }
+    }
+  }
+
+  *[Symbol.iterator]() {
+    const rows = this.piecesMatrix.length;
+    for (let row = 0; row < rows; row++) {
+      const columnLength = this.piecesMatrix[row].length;
+      for (let column = 0; column < columnLength; column++) {
+        const piece = this.piecesMatrix[row][column];
+        yield { row, column, piece };
+      }
+    }
+  }
+}
+
+type TWalls = BreakableWall | UnbreakableWall | CustomBreakableWall;
+
 /* ========================================================================= */
 /* ========================== Environment and State ======================== */
 /* ========================================================================= */
@@ -1071,7 +1188,7 @@ class GameEnv {
   constructor(
     public alienSet: AlienSet,
     public player: Player,
-    public walls: UnbreakableWall[] | BreakableWall[]
+    public walls: TWalls[]
   ) {}
 
   /**
@@ -1080,10 +1197,7 @@ class GameEnv {
    * @param bullet - The bullet whose position needs to be checked as overlapping a wall.
    * @returns - A boolean value which says whether the bullet touches a wall.
    */
-  bulletTouchesWall(
-    bullet: Bullet,
-    wall: BreakableWall | UnbreakableWall
-  ): boolean {
+  bulletTouchesWall(bullet: Bullet, wall: TWalls): boolean {
     return overlap(wall.pos, wall.size, bullet.pos, bullet.size);
   }
 
@@ -1106,7 +1220,7 @@ class GameEnv {
     return this.alienSet.pos.y + this.alienSet.size.h >= this.player.pos.y;
   }
 
-  alienSetTouchesWall(wall: BreakableWall | UnbreakableWall) {
+  alienSetTouchesWall(wall: TWalls) {
     return this.alienSet.pos.y + this.alienSet.size.h >= wall.pos.y;
   }
 
@@ -1185,10 +1299,10 @@ class GameState {
       for (const wall of this.env.walls) {
         if (!this.env.bulletTouchesWall(bullet, wall)) continue;
 
-        if (wall instanceof BreakableWall) {
-          wall.collide(this, bullet.pos, bullet.size, bullet);
-        } else {
+        if (wall instanceof UnbreakableWall) {
           bullet.collide(this);
+        } else {
+          wall.collide(this, bullet.pos, bullet.size, bullet);
         }
       }
     }
@@ -1272,7 +1386,7 @@ class GameState {
 
   private handleAlienContactWithWall() {
     for (const wall of this.env.walls) {
-      if (!(wall instanceof BreakableWall)) continue;
+      if (wall instanceof UnbreakableWall) continue;
       if (overlap(this.alienSet.pos, this.alienSet.size, wall.pos, wall.size)) {
         for (const alien of this.alienSet) {
           if (!alien) continue;
@@ -1292,9 +1406,9 @@ class GameState {
   static start(plan: string) {
     const alienSet = new AlienSet(plan);
     const player = new Player();
-    const walls: BreakableWall[] = [
-      new BreakableWall({ x: 20, y: 75 }, { w: 20, h: 5 }),
-      new BreakableWall({ x: 60, y: 75 }, { w: 20, h: 5 }),
+    const walls: CustomBreakableWall[] = [
+      new CustomBreakableWall({ x: 20, y: 70 }, { w: 20, h: 15 }, customWall1),
+      new CustomBreakableWall({ x: 60, y: 70 }, { w: 20, h: 15 }, customWall1),
     ];
     const env = new GameEnv(alienSet, player, walls);
 
@@ -1550,12 +1664,12 @@ class CanvasDisplay {
     this.canvasContext.restore();
   }
 
-  private drawWalls(walls: UnbreakableWall[] | BreakableWall[]) {
+  private drawWalls(walls: TWalls[]) {
     for (const wall of walls) {
       if (wall instanceof UnbreakableWall) {
         this.drawUnbreakableWall(wall);
       } else {
-        this.drawBreakableWall(wall);
+        this.drawWallWithPieces(wall);
       }
     }
   }
@@ -1573,7 +1687,7 @@ class CanvasDisplay {
     this.canvasContext.restore();
   }
 
-  private drawBreakableWall(wall: BreakableWall) {
+  private drawWallWithPieces(wall: BreakableWall | CustomBreakableWall) {
     const { x, y } = this.getPixelPos(wall.pos);
 
     this.canvasContext.save();
