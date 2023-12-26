@@ -45,11 +45,11 @@ type TShooters = "player" | "alien";
 /**
  * String characters representing which kind of aliens can be created. These were chosen arbitrarily.
  *
- * `.` represents the lowest level alien.
- * `x` represents the medium level alien.
- * `o` represents the highest level alien.
+ * `X` represents the lowest level alien.
+ * `Y` represents the medium level alien.
+ * `Z` represents the highest level alien.
  */
-const alienTypes = [".", "x", "o"] as const;
+const alienTypes = ["X", "Y", "Z"] as const;
 type TAliens = (typeof alienTypes)[number];
 
 const alienTypesRegExp = new RegExp(`(\\w*(${alienTypes.join("|")})*\\w*)+`);
@@ -112,9 +112,9 @@ const displayMaxWidth = 720;
 const displayAspectRatio = 4 / 3;
 
 const basicInvaderPlan = `
-.xxooxx.
-.oo..oo.
-...xx...`;
+XXYZZYXX
+XXZYYZXX
+ZXXYYXXZ`;
 
 /* ============================================================== */
 /* ========================== utilities ========================= */
@@ -303,8 +303,8 @@ function isColumnDead(rows: AlienSet["aliens"], column: number) {
 
 /**
  * Same as {@link isColumnDead}, but for a row in the AlienSet.
- * @param row 
- * @returns 
+ * @param row
+ * @returns
  */
 function isRowDead(row: AlienSet["aliens"][number]) {
   return row.every((alien) => alien === null);
@@ -737,9 +737,9 @@ class Alien {
    * @param gridPos - The position of the alien within the grid.
    * @returns - A specific alien type.
    */
-  public static create(ch: TAliens, gridPos: Coords) {
+  public static create(ch: TAliens | '.', gridPos: Coords) {
     switch (ch) {
-      case ".": {
+      case "X": {
         return new Alien(
           gridPos,
           20,
@@ -747,7 +747,7 @@ class Alien {
           ch
         );
       }
-      case "x": {
+      case "Y": {
         return new Alien(
           gridPos,
           40,
@@ -755,13 +755,16 @@ class Alien {
           ch
         );
       }
-      case "o": {
+      case "Z": {
         return new Alien(
           gridPos,
           60,
           new Gun("alien", 80, { w: 1.5, h: 3 }, 7000),
           ch
         );
+      }
+      case ".": {
+        return null;
       }
       default: {
         const _never: never = ch;
@@ -957,7 +960,7 @@ class UnbreakableWall {
    * @param pos - The position of the wall.
    * @param size - The size of the wall.
    */
-  constructor(public pos: Coords, public size: Size) {}
+  constructor(public readonly pos: Coords, public readonly size: Size) {}
 }
 
 /**
@@ -967,8 +970,8 @@ class BreakableWall {
   /**
    * The pieces of the wall as a matrix.
    */
-  piecesMatrix: boolean[][];
-  pieceSize: Size;
+  readonly piecesMatrix: boolean[][];
+  readonly pieceSize: Size;
 
   /**
    * @param pos
@@ -977,21 +980,11 @@ class BreakableWall {
    * @param numColumns - The number of columns of breakable pieces.
    */
   constructor(
-    public pos: Coords,
-    public size: Size,
-    public numRows = 6,
-    public numColumns = 20
+    public readonly pos: Coords,
+    public readonly size: Size,
+    public readonly numRows = 6,
+    public readonly numColumns = 20
   ) {
-    /* 
-      the problem with this is that the same array is assined to each row
-      so when i update a piece in a row, i actually update a piece in 
-      all the rows in the same column
-     */
-    /* this.piecesMatrix = new Array(numRows).fill(
-      new Array(numColumns).fill(true)
-    );*/
-
-    /* this works properly */
     this.piecesMatrix = new Array(numRows)
       .fill(undefined)
       .map(() => new Array(numColumns).fill(true));
@@ -1154,7 +1147,7 @@ class GameState {
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
    */
-  update(timeStep: number, keys: KeysTracker) {
+  public update(timeStep: number, keys: KeysTracker) {
     this.alienSet.update(timeStep);
     this.player.update(this, timeStep, keys);
     this.fireAliens();
@@ -1166,6 +1159,7 @@ class GameState {
     this.handleBulletsThatHitAlien();
     this.handleBulletsThatHitPlayer();
     this.removeOutOfBoundsBullets();
+    this.handleAlienContactWithWall();
 
     if (this.alienSet.alive === 0) {
       this.alienSet = new AlienSet(basicInvaderPlan);
@@ -1263,7 +1257,7 @@ class GameState {
     });
   }
 
-  removeOutOfBoundsBullets() {
+  private removeOutOfBoundsBullets() {
     const necessaryBullets = [];
     for (const bullet of this.bullets) {
       if (!this.env.isBulletOutOfBounds(bullet)) {
@@ -1272,6 +1266,16 @@ class GameState {
     }
 
     this.bullets = necessaryBullets;
+  }
+
+  private handleAlienContactWithWall() {
+    for (const wall of this.env.walls) {
+      if (overlap(this.alienSet.pos, this.alienSet.size, wall.pos, wall.size)) {
+        if (wall instanceof BreakableWall) {
+          wall.collide(this, this.alienSet.pos, this.alienSet.size);
+        }
+      }
+    }
   }
 
   /**
@@ -1303,9 +1307,9 @@ class GameState {
 const alienColors: {
   [Key in TAliens]: string;
 } = {
-  ".": "limegreen",
-  x: "orange",
-  o: "pink",
+  X: "limegreen",
+  Y: "orange",
+  Z: "pink",
 };
 
 /**

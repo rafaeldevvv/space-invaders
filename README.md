@@ -305,6 +305,12 @@ class BreakableWall {
     public numRows = 6,
     public numColumns = 20
   ) {
+
+    /* 
+      the problem with this is that the same array is assined to each row
+      so when i update a piece in a row, i actually update a piece in 
+      all the rows in the same column
+     */
     this.piecesMatrix = new Array(numRows).fill(
       new Array(numColumns).fill(true)
     );
