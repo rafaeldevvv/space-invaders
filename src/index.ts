@@ -992,7 +992,7 @@ class Bullet {
 /**
  * Class representing an unbreakable wall.
  */
-class UnbreakableWall {
+class Wall {
   /**
    * Creates an unbreakable wall.
    *
@@ -1002,9 +1002,6 @@ class UnbreakableWall {
   constructor(public readonly pos: Coords, public readonly size: Size) {}
 }
 
-/**
- * Class representing a breakable wall.
- */
 class BreakableWall {
   /**
    * The pieces of the wall as a matrix.
@@ -1015,23 +1012,41 @@ class BreakableWall {
   /**
    * @param pos
    * @param size
+   * @param numColumnsOrPlan - The number of columns of breakable pieces or a string representing how the pieces are arranged.
    * @param numRows - The number of rows of breakable pieces.
-   * @param numColumns - The number of columns of breakable pieces.
    */
+  constructor(pos: Coords, size: Size, plan: string);
+  constructor(pos: Coords, size: Size, numColumns: number, numRows: number);
   constructor(
     public readonly pos: Coords,
     public readonly size: Size,
-    public readonly numRows = 6,
-    public readonly numColumns = 20
+    numColumnsOrPlan: number | string,
+    numRows?: number
   ) {
-    this.piecesMatrix = new Array(numRows)
-      .fill(undefined)
-      .map(() => new Array(numColumns).fill(true));
+    let pieces: boolean[][];
+    let pieceSize: Size;
 
-    this.pieceSize = {
-      w: size.w / numColumns,
-      h: size.h / numRows,
-    };
+    if (typeof numColumnsOrPlan === "string") {
+      pieces = numColumnsOrPlan
+        .trim()
+        .split("\n")
+        .map((row) => [...row].map((ch) => ch === "#"));
+      pieceSize = {
+        w: this.size.w / pieces[0].length,
+        h: this.size.h / pieces.length,
+      };
+    } else {
+      pieces = new Array(numRows!)
+        .fill(undefined)
+        .map(() => new Array(numColumnsOrPlan).fill(true));
+      pieceSize = {
+        w: size.w / numColumnsOrPlan,
+        h: size.h / numRows!,
+      };
+    }
+
+    this.pieceSize = pieceSize;
+    this.piecesMatrix = pieces;
   }
 
   /**
@@ -1079,6 +1094,9 @@ class BreakableWall {
     }
   }
 
+  /**
+   * Iterates over the pieces of the wall.
+   */
   *[Symbol.iterator]() {
     const rows = this.piecesMatrix.length;
     for (let row = 0; row < rows; row++) {
@@ -1091,83 +1109,11 @@ class BreakableWall {
   }
 }
 
-class CustomBreakableWall {
-  public piecesMatrix: boolean[][];
-  public pieceSize: Size;
+/**
+ * Class representing a breakable wall.
+ */
 
-  constructor(
-    public readonly pos: Coords,
-    public readonly size: Size,
-    plan: string
-  ) {
-    this.piecesMatrix = plan
-      .trim()
-      .split("\n")
-      .map((row) => [...row].map((ch) => (ch === "#" ? true : false)));
-    this.pieceSize = {
-      w: this.size.w / this.piecesMatrix[0].length,
-      h: this.size.h / this.piecesMatrix.length,
-    };
-  }
-
-  /**
-   * Gets the position of a piece of the wall within the whole display screen in percentage values.
-   *
-   * @param column - The column in which the piece is.
-   * @param row - The row in which the piece is.
-   * @returns - The position of the piece within the whole display in percentage values.
-   */
-  getPiecePos(column: number, row: number): Coords {
-    return {
-      x: this.pos.x + column * this.pieceSize.w,
-      y: this.pos.y + row * this.pieceSize.h,
-    };
-  }
-
-  /**
-   * This method is called when an object hits the wall.
-   * It checks which pieces the object has hit and removes them,
-   * calling `collide` on the object if it was passed in and it hits a piece.
-   *
-   * @param state - The state of the game.
-   * @param objPos - The position of the object.
-   * @param objSize - The size of the object.
-   * @param obj - The object itself. The object must have a collide method
-   * that takes the state as the only argument and returns nothing.
-   */
-  collide<State>(
-    state: State,
-    objPos: Coords,
-    objSize: Size,
-    obj?: { collide(state: State): void }
-  ) {
-    if (!overlap(this.pos, this.size, objPos, objSize)) return;
-
-    for (const { row, column, piece } of this) {
-      if (!piece) continue;
-
-      const piecePos = this.getPiecePos(column, row);
-
-      if (overlap(objPos, objSize, piecePos, this.pieceSize)) {
-        this.piecesMatrix[row][column] = false;
-        obj?.collide(state);
-      }
-    }
-  }
-
-  *[Symbol.iterator]() {
-    const rows = this.piecesMatrix.length;
-    for (let row = 0; row < rows; row++) {
-      const columnLength = this.piecesMatrix[row].length;
-      for (let column = 0; column < columnLength; column++) {
-        const piece = this.piecesMatrix[row][column];
-        yield { row, column, piece };
-      }
-    }
-  }
-}
-
-type TWalls = BreakableWall | UnbreakableWall | CustomBreakableWall;
+type TWalls = BreakableWall | Wall;
 
 /* ========================================================================= */
 /* ========================== Environment and State ======================== */
@@ -1299,7 +1245,7 @@ class GameState {
       for (const wall of this.env.walls) {
         if (!this.env.bulletTouchesWall(bullet, wall)) continue;
 
-        if (wall instanceof UnbreakableWall) {
+        if (wall instanceof Wall) {
           bullet.collide(this);
         } else {
           wall.collide(this, bullet.pos, bullet.size, bullet);
@@ -1386,7 +1332,7 @@ class GameState {
 
   private handleAlienContactWithWall() {
     for (const wall of this.env.walls) {
-      if (wall instanceof UnbreakableWall) continue;
+      if (wall instanceof Wall) continue;
       if (overlap(this.alienSet.pos, this.alienSet.size, wall.pos, wall.size)) {
         for (const alien of this.alienSet) {
           if (!alien) continue;
@@ -1406,9 +1352,9 @@ class GameState {
   static start(plan: string) {
     const alienSet = new AlienSet(plan);
     const player = new Player();
-    const walls: CustomBreakableWall[] = [
-      new CustomBreakableWall({ x: 20, y: 70 }, { w: 20, h: 15 }, customWall1),
-      new CustomBreakableWall({ x: 60, y: 70 }, { w: 20, h: 15 }, customWall1),
+    const walls: BreakableWall[] = [
+      new BreakableWall({ x: 20, y: 70 }, { w: 20, h: 15 }, customWall1),
+      new BreakableWall({ x: 60, y: 70 }, { w: 20, h: 15 }, customWall1),
     ];
     const env = new GameEnv(alienSet, player, walls);
 
@@ -1666,15 +1612,15 @@ class CanvasDisplay {
 
   private drawWalls(walls: TWalls[]) {
     for (const wall of walls) {
-      if (wall instanceof UnbreakableWall) {
+      if (wall instanceof Wall) {
         this.drawUnbreakableWall(wall);
       } else {
-        this.drawWallWithPieces(wall);
+        this.drawBreakableWall(wall);
       }
     }
   }
 
-  private drawUnbreakableWall(wall: UnbreakableWall) {
+  private drawUnbreakableWall(wall: Wall) {
     const { x, y } = this.getPixelPos(wall.pos);
 
     this.canvasContext.save();
@@ -1687,15 +1633,15 @@ class CanvasDisplay {
     this.canvasContext.restore();
   }
 
-  private drawWallWithPieces(wall: BreakableWall | CustomBreakableWall) {
+  private drawBreakableWall(wall: BreakableWall) {
     const { x, y } = this.getPixelPos(wall.pos);
 
     this.canvasContext.save();
     this.canvasContext.translate(x, y);
 
     const { w, h } = wall.pieceSize;
-    const pieceWPixels = this.horPixels(w),
-      pieceHPixels = this.horPixels(h);
+    const piecePixelWidth = this.horPixels(w),
+      piecePixelHeight = this.verPixels(h);
 
     for (const { row, column, piece } of wall) {
       if (piece) {
@@ -1706,8 +1652,8 @@ class CanvasDisplay {
         this.canvasContext.fillRect(
           xPixels,
           yPixels,
-          pieceWPixels,
-          pieceHPixels
+          piecePixelWidth,
+          piecePixelHeight
         );
       }
     }

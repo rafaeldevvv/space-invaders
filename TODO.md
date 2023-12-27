@@ -1,6 +1,3 @@
-- Implement custom wall
-- commit & update README
-
 - Reduce the repetition of properties and method in CustomBreakableWall and BreakableWall
 - commit & update README
 
