@@ -1,8 +1,3 @@
-- Reduce the repetition of properties and method in CustomBreakableWall and BreakableWall
-- commit & update README
-
-- Make player controls
-
 - Implement Controller
 - commit & update README
 
@@ -24,12 +19,15 @@
 - Adjust sizes if needed
 - commit & update README
 
-- Make the assets, styles and so on
-  - Add images
-  - Add sounds
+- Implement mobile controls
 - commit & update README
 
 - Add animation for alien and player dying
+- commit & update README
+
+- Make the assets, styles and so on (or maybe make something similar to the wall for the pixel art images)
+  - Add images
+  - Add sounds
 - commit & update README
 
 - Refactor the code

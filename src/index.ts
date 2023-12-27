@@ -1385,6 +1385,8 @@ class CanvasDisplay {
   private canvas: HTMLCanvasElement;
   private canvasContext: CanvasRenderingContext2D;
 
+  public keys = {} as KeysTracker;
+
   /**
    * Creates a view component for the game that uses the Canvas API.
    *
@@ -1405,9 +1407,42 @@ class CanvasDisplay {
 
     this.parent.appendChild(this.canvas);
 
-    this.setDisplaySize();
     this.defineEventListeners();
+    this.setDisplaySize();
     this.syncState(state, 0);
+  }
+
+  /**
+   * Sets the size of the canvas based on the size of the its parent element.
+   */
+  public setDisplaySize() {
+    const canvasWidth = Math.min(
+      displayMaxWidth,
+      getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
+    );
+
+    this.canvas.setAttribute("width", canvasWidth.toString());
+    this.canvas.setAttribute(
+      "height",
+      (canvasWidth / displayAspectRatio).toString()
+    );
+  }
+
+  /**
+   * Synchonizes the view with a new model (state).
+   *
+   * @param state - A new game state.
+   */
+  public syncState(state: GameState, timeStep: number) {
+    this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+    this.canvasContext.fillStyle = "black";
+    this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+    this.drawPlayer(state.player);
+    this.drawAlienSet(state.alienSet);
+    this.drawBullets(state.bullets);
+    this.drawWalls(state.env.walls);
+    this.drawMetadata(state, timeStep);
   }
 
   private defineEventListeners() {
@@ -1415,6 +1450,12 @@ class CanvasDisplay {
       this.setDisplaySize();
       this.syncState(this.state, 0);
     });
+
+    this.keys = trackKeys([
+      moveLeftActionKey,
+      moveRightActionKey,
+      fireActionKey,
+    ]);
   }
 
   // readonly, cuz there's no setter
@@ -1471,39 +1512,6 @@ class CanvasDisplay {
       w: this.horPixels(percentageSize.w),
       h: this.verPixels(percentageSize.h),
     };
-  }
-
-  /**
-   * Sets the size of the canvas based on the size of the its parent element.
-   */
-  public setDisplaySize() {
-    const canvasWidth = Math.min(
-      displayMaxWidth,
-      getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
-    );
-
-    this.canvas.setAttribute("width", canvasWidth.toString());
-    this.canvas.setAttribute(
-      "height",
-      (canvasWidth / displayAspectRatio).toString()
-    );
-  }
-
-  /**
-   * Synchonizes the view with a new model (state).
-   *
-   * @param state - A new game state.
-   */
-  public syncState(state: GameState, timeStep: number) {
-    this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-    this.canvasContext.fillStyle = "black";
-    this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-
-    this.drawAlienSet(state.alienSet);
-    this.drawPlayer(state.player);
-    this.drawBullets(state.bullets);
-    this.drawWalls(state.env.walls);
-    this.drawMetadata(state, timeStep);
   }
 
   private drawAlienSet(alienSet: AlienSet) {
@@ -1711,28 +1719,49 @@ class CanvasDisplay {
 /* ========================== Controller =================================== */
 /* ========================================================================= */
 
+interface IView<State> {
+  syncState(state: State, timeStep: number): void;
+  setDisplaySize(): void;
+  keys: KeysTracker;
+}
+
 /**
  * A class responsible for managing the flow of information between model (state) and view (display).
  */
-class GameController {}
+class GameController {
+  state: GameState;
+  view: IView<GameState>;
 
-const state = GameState.start(basicInvaderPlan);
-const canvasDisplay = new CanvasDisplay(
-  state,
-  new GameController(),
-  document.body
-);
+  constructor(
+    State: typeof GameState,
+    Display: {
+      new (
+        state: GameState,
+        controller: GameController,
+        parentElement: HTMLElement
+      ): IView<GameState>;
+    }
+  ) {
+    this.state = State.start(basicInvaderPlan);
+    this.view = new Display(this.state, this, document.body);
+    this.view.syncState(this.state, 0);
 
-const keys = trackKeys([moveRightActionKey, moveLeftActionKey, fireActionKey]);
-
-runAnimation((timeStep) => {
-  state.update(timeStep, keys);
-  canvasDisplay.syncState(state, timeStep);
-
-  if (state.status === "lost") {
-    console.log("lost");
-    return false;
-  } else {
-    return true;
+    this.startAnimation();
   }
-});
+
+  private startAnimation() {
+    runAnimation((timeStep) => {
+      this.state.update(timeStep, this.view.keys);
+      this.view.syncState(this.state, timeStep);
+
+      if (this.state.status === "lost") {
+        console.log("lost");
+        return false;
+      } else {
+        return true;
+      }
+    });
+  }
+}
+
+const c = new GameController(GameState, CanvasDisplay);
