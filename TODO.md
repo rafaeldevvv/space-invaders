@@ -4,7 +4,6 @@
 - Implement game functionalities, such as pause, "press space to start" and so on
 - commit & update README for each one
 
-
 - make player be able to shoot only when there's no player bullets in the game
 - commit & update README
 
@@ -26,6 +25,7 @@
 - Make the assets, styles and so on (or maybe make something similar to the wall for the pixel art images)
   - Add images
   - Add sounds
+  - Add font (vt323) (see htmlwebpackplugin)
 - commit & update README
 
 - Refactor the code

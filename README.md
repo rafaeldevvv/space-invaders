@@ -608,6 +608,8 @@ I hope you found it. If you didn't, it is the `this.aliens.length === 0` check. 
 - [subsurface-for-dirk / README](https://github.com/torvalds/subsurface-for-dirk/blob/a48494d2fbed58c751e9b7e8fbff88582f9b2d02/README)
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 - [Create prototype property](https://stackoverflow.com/questions/70342973/create-prototype-property)
+- [Typescript: accessing an array element does not account for the possibility of undefined return values](https://stackoverflow.com/questions/50647399/typescript-accessing-an-array-element-does-not-account-for-the-possibility-of-u)
+- [Suggestion: option to include undefined in index signatures](https://github.com/Microsoft/TypeScript/issues/13778)
 
 #### Comments
 

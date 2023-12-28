@@ -104,9 +104,10 @@ const displayPadding = {
   ver: 5,
 };
 
-const moveRightActionKey = "ArrowRight";
-const moveLeftActionKey = "ArrowLeft";
-const fireActionKey = " ";
+const moveRightActionKey = "ArrowRight",
+  moveLeftActionKey = "ArrowLeft",
+  fireActionKey = " ",
+  startGameActionKey = " ";
 
 const displayMaxWidth = 720;
 const displayAspectRatio = 4 / 3;
@@ -633,7 +634,6 @@ class AlienSet {
         firstLivingAlienColumn = x;
       }
 
-      console.log("alive is alive at row", y);
       if (firstLivingAlienRow === null) {
         firstLivingAlienRow = y;
       }
@@ -671,8 +671,8 @@ class AlienSet {
 
     let rowToRemove: number | null;
     while (
-      (rowToRemove = getFirstOrLastRowIfDead(this.aliens)) !== null &&
-      this.aliens.length !== 0
+      this.aliens.length !== 0 &&
+      (rowToRemove = getFirstOrLastRowIfDead(this.aliens)) !== null
     ) {
       this.aliens = this.aliens.filter((_, y) => y !== rowToRemove);
       this.syncAliensGridPos();
@@ -694,8 +694,8 @@ class AlienSet {
   }
 
   private syncNumOfColsAndRows() {
-    this.numColumns = this.aliens[0].length;
     this.numRows = this.aliens.length;
+    this.numColumns = this.numRows === 0 ? 0 : this.aliens[0].length;
   }
 
   /**
@@ -1387,6 +1387,7 @@ const alienColors: {
 class CanvasDisplay {
   private canvas: HTMLCanvasElement;
   private canvasContext: CanvasRenderingContext2D;
+  private canvasFontFamily = "monospace";
 
   public keys = {} as KeysTracker;
 
@@ -1697,7 +1698,7 @@ class CanvasDisplay {
     const yPixelsPadding = this.verPixels(displayPadding.ver);
 
     this.canvasContext.fillStyle = "#fff";
-    this.canvasContext.font = `${fontSize}px monospace`;
+    this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
 
     // draw the score of the player
     this.canvasContext.textAlign = "start";
@@ -1732,25 +1733,21 @@ class CanvasDisplay {
 
   private drawTitle() {
     const fontSize = Math.min(65, this.horPixels(15));
-    this.canvasContext.font = `${fontSize}px monospace`;
+    this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
 
     const xPixelPos = this.horPixels(50),
-      yPixelPos = this.verPixels(20);
+      yPixelPos = this.verPixels(30);
 
     this.canvasContext.fillStyle = "white";
     this.canvasContext.textAlign = "center";
     this.canvasContext.fillText("SPACE", xPixelPos, yPixelPos);
-    this.canvasContext.fillText(
-      "INVADERS",
-      xPixelPos,
-      yPixelPos + fontSize + 2
-    );
+    this.canvasContext.fillText("INVADERS", xPixelPos, yPixelPos + fontSize);
   }
 
   private drawPressSpaceToStartMessage() {
     if (Math.round(performance.now() / 800) % 2 === 0) {
       const fontSize = Math.min(30, this.horPixels(6));
-      this.canvasContext.font = `${fontSize}px monospace`;
+      this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
       this.canvasContext.textAlign = "center";
 
       const xPixelPos = this.horPixels(50),
@@ -1802,6 +1799,9 @@ class GameController {
 
   private startAnimation() {
     runAnimation((timeStep) => {
+      if (this.view.keys[startGameActionKey] && this.state.status === "start") {
+        this.state.status = "running";
+      }
       if (this.state.status === "running") {
         this.state.update(timeStep, this.view.keys);
       }
