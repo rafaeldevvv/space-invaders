@@ -1,11 +1,9 @@
-- Fix the vertical position adaptation bug
+- Make initial screen, game over screen
 - commit & update README
 
 - Implement game functionalities, such as pause, "press space to start" and so on
 - commit & update README for each one
 
-- Make initial screen, game over screen
-- commit & update README
 
 - make player be able to shoot only when there's no player bullets in the game
 - commit & update README

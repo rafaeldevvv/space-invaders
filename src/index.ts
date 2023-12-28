@@ -112,9 +112,9 @@ const displayMaxWidth = 720;
 const displayAspectRatio = 4 / 3;
 
 const basicInvaderPlan = `
-X.......
-........
-.......Z`;
+ZZZZZZZZ
+YYYYYYYY
+XXXXXXXX`;
 
 const customWall1 = `
 ........######################################........
@@ -1189,7 +1189,7 @@ class GameEnv {
  */
 class GameState {
   public bullets: Bullet[] = [];
-  public status: "lost" | "running" = "running";
+  public status: "lost" | "running" | "start" | "paused" = "start";
 
   /**
    * Initializes the state.
@@ -1429,6 +1429,8 @@ class CanvasDisplay {
       "height",
       (canvasWidth / displayAspectRatio).toString()
     );
+
+    this.syncState(this.state, 0);
   }
 
   /**
@@ -1441,18 +1443,15 @@ class CanvasDisplay {
     this.canvasContext.fillStyle = "black";
     this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-    this.drawPlayer(state.player);
-    this.drawAlienSet(state.alienSet);
-    this.drawBullets(state.bullets);
-    this.drawWalls(state.env.walls);
-    this.drawMetadata(state, timeStep);
+    if (state.status === "running" || state.status === "paused") {
+      this.drawRunningGame(state, timeStep);
+    } else if (state.status === "start") {
+      this.drawInitialScreen();
+    }
   }
 
   private defineEventListeners() {
-    window.addEventListener("resize", () => {
-      this.setDisplaySize();
-      this.syncState(this.state, 0);
-    });
+    window.addEventListener("resize", () => this.setDisplaySize());
 
     this.keys = trackKeys([
       moveLeftActionKey,
@@ -1508,13 +1507,27 @@ class CanvasDisplay {
    * Calculates the pixel size of an object within the canvas based on a percentage size.
    
    * @param percentagePos - The percentage size.
-   * @returns - The corresponding pixel size.
-   */
+  * @returns - The corresponding pixel size.
+  */
   private getPixelSize(percentageSize: Size): PixelSize {
     return {
       w: this.horPixels(percentageSize.w),
       h: this.verPixels(percentageSize.h),
     };
+  }
+
+  /**
+   * Draws a running game.
+   *
+   * @param state
+   * @param timeStep
+   */
+  private drawRunningGame(state: GameState, timeStep: number) {
+    this.drawPlayer(state.player);
+    this.drawAlienSet(state.alienSet);
+    this.drawBullets(state.bullets);
+    this.drawWalls(state.env.walls);
+    this.drawMetadata(state, timeStep);
   }
 
   private drawAlienSet(alienSet: AlienSet) {
@@ -1680,7 +1693,7 @@ class CanvasDisplay {
   private drawMetadata(state: GameState, timeStep: number) {
     // draw hearts to show player's lives
     // draw score
-    const fontSize = Math.min(30, this.verPixels(8));
+    const fontSize = Math.min(30, this.verPixels(6));
     const yPixelsPadding = this.verPixels(displayPadding.ver);
 
     this.canvasContext.fillStyle = "#fff";
@@ -1710,6 +1723,41 @@ class CanvasDisplay {
       this.horPixels(50),
       fontSize + yPixelsPadding
     );
+  }
+
+  private drawInitialScreen() {
+    this.drawTitle();
+    this.drawPressSpaceToStartMessage();
+  }
+
+  private drawTitle() {
+    const fontSize = Math.min(65, this.horPixels(15));
+    this.canvasContext.font = `${fontSize}px monospace`;
+
+    const xPixelPos = this.horPixels(50),
+      yPixelPos = this.verPixels(20);
+
+    this.canvasContext.fillStyle = "white";
+    this.canvasContext.textAlign = "center";
+    this.canvasContext.fillText("SPACE", xPixelPos, yPixelPos);
+    this.canvasContext.fillText(
+      "INVADERS",
+      xPixelPos,
+      yPixelPos + fontSize + 2
+    );
+  }
+
+  private drawPressSpaceToStartMessage() {
+    if (Math.round(performance.now() / 800) % 2 === 0) {
+      const fontSize = Math.min(30, this.horPixels(6));
+      this.canvasContext.font = `${fontSize}px monospace`;
+      this.canvasContext.textAlign = "center";
+
+      const xPixelPos = this.horPixels(50),
+        yPixelPos = this.verPixels(75);
+
+      this.canvasContext.fillText("Press space to start", xPixelPos, yPixelPos);
+    }
   }
 
   /**
@@ -1754,7 +1802,9 @@ class GameController {
 
   private startAnimation() {
     runAnimation((timeStep) => {
-      this.state.update(timeStep, this.view.keys);
+      if (this.state.status === "running") {
+        this.state.update(timeStep, this.view.keys);
+      }
       this.view.syncState(this.state, timeStep);
 
       if (this.state.status === "lost") {

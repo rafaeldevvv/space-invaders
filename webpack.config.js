@@ -23,6 +23,6 @@ module.exports = {
       extensions: ['.tsx', '.ts', '.js'],
    },
    plugins: [
-      new HtmlWebpackPlugin({ title: "Space Invaders" })
+      new HtmlWebpackPlugin({ title: "Space Invaders By Rafael Maia" })
    ]
 };
