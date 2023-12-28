@@ -542,6 +542,46 @@ private handleBulletsThatHitAlien() {
 
 The problem with the first implementation was that, because I was adapting the alien set every time an alien was removed, the `for... of...` loop was still iterating over the previous version of the alien set, which had a different number of columns and rows. Thus, the iterator was throwing and error like `TypeError: Cannot read properties of undefined (reading '4')`. This was an error that not even TypeScript was able to catch.
 
+#### Silly error
+
+Can you spot the error?
+
+```ts
+class AlienSet {
+  private removeDeadRowsAndColumns() {
+    let columnToRemove: number | null;
+    while (
+      (columnToRemove = getFirstOrLastColumnIfDead(this.aliens)) !== null
+    ) {
+      this.aliens = this.aliens.map((row) => {
+        return row.filter((_, x) => x !== columnToRemove);
+      });
+
+      /* 
+        this is totally necessary for this logic to work
+        it ensures that after a row or column is removed, the 
+        this.getFirstOrLastColumnIfDead method will return 0 
+        for the next column to be removed 
+      */
+      this.syncAliensGridPos();
+    }
+
+    let rowToRemove: number | null;
+    while (
+      (rowToRemove = getFirstOrLastRowIfDead(this.aliens)) !== null &&
+      this.aliens.length === 0
+    ) {
+      this.aliens = this.aliens.filter((_, y) => y !== rowToRemove);
+      this.syncAliensGridPos();
+    }
+
+    this.syncNumOfColsAndRows();
+  }
+}
+```
+
+I hope you found it. If you didn't, it is the `this.aliens.length === 0` check. It should be `this.aliens.length !== 0` instead.
+
 ### Useful Resources
 
 #### General

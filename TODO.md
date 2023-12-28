@@ -1,4 +1,4 @@
-- Implement Controller
+- Fix the vertical position adaptation bug
 - commit & update README
 
 - Implement game functionalities, such as pause, "press space to start" and so on

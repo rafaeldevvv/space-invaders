@@ -112,9 +112,9 @@ const displayMaxWidth = 720;
 const displayAspectRatio = 4 / 3;
 
 const basicInvaderPlan = `
-XXYZZYXX
-XXZYYZXX
-ZXXYYXXZ`;
+X.......
+........
+.......Z`;
 
 const customWall1 = `
 ........######################################........
@@ -633,6 +633,7 @@ class AlienSet {
         firstLivingAlienColumn = x;
       }
 
+      console.log("alive is alive at row", y);
       if (firstLivingAlienRow === null) {
         firstLivingAlienRow = y;
       }
@@ -651,15 +652,6 @@ class AlienSet {
    * Removes rows or columns that have no living aliens.
    */
   private removeDeadRowsAndColumns() {
-    let rowToRemove: number | null;
-    while (
-      (rowToRemove = getFirstOrLastRowIfDead(this.aliens)) !== null &&
-      this.aliens.length === 0
-    ) {
-      this.aliens = this.aliens.filter((_, y) => y !== rowToRemove);
-      this.syncAliensGridPos();
-    }
-
     let columnToRemove: number | null;
     while (
       (columnToRemove = getFirstOrLastColumnIfDead(this.aliens)) !== null
@@ -674,6 +666,15 @@ class AlienSet {
         this.getFirstOrLastColumnIfDead method will return 0 
         for the next column to be removed 
       */
+      this.syncAliensGridPos();
+    }
+
+    let rowToRemove: number | null;
+    while (
+      (rowToRemove = getFirstOrLastRowIfDead(this.aliens)) !== null &&
+      this.aliens.length !== 0
+    ) {
+      this.aliens = this.aliens.filter((_, y) => y !== rowToRemove);
       this.syncAliensGridPos();
     }
 
@@ -1263,6 +1264,7 @@ class GameState {
       (bullet) => bullet.from === "player"
     );
 
+    let isSomeAlienKilled = false;
     for (const playerBullet of playerBullets) {
       for (const alien of this.alienSet) {
         if (!alien) continue;
@@ -1277,10 +1279,11 @@ class GameState {
           this.player.score += alien.score;
           this.alienSet.removeAlien(alien);
           playerBullet.collide(this);
+          isSomeAlienKilled = true;
         }
       }
     }
-    this.alienSet.adapt();
+    if (isSomeAlienKilled) this.alienSet.adapt();
   }
 
   /**
@@ -1764,4 +1767,4 @@ class GameController {
   }
 }
 
-const c = new GameController(GameState, CanvasDisplay);
+new GameController(GameState, CanvasDisplay);
