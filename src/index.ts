@@ -107,7 +107,8 @@ const displayPadding = {
 const moveRightActionKey = "ArrowRight",
   moveLeftActionKey = "ArrowLeft",
   fireActionKey = " ",
-  startGameActionKey = " ";
+  startGameActionKey = " ",
+  restartGameActionKey = " ";
 
 const displayMaxWidth = 720;
 const displayAspectRatio = 4 / 3;
@@ -1211,6 +1212,8 @@ class GameState {
    * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
    */
   public update(timeStep: number, keys: KeysTracker) {
+    if (this.status === "start" || this.status === "lost") return;
+
     this.alienSet.update(timeStep);
     this.player.update(this, timeStep, keys);
     this.fireAliens();
@@ -1228,12 +1231,7 @@ class GameState {
       this.alienSet = new AlienSet(basicInvaderPlan);
       this.env.alienSet = this.alienSet;
       this.player.lives++;
-    } else if (this.player.lives < 1) {
-      this.status = "lost";
-    }
-
-    if (this.env.alienSetTouchesPlayer()) {
-      this.env.walls = [];
+    } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
       this.status = "lost";
     }
   }
@@ -1384,7 +1382,7 @@ const alienColors: {
  * Class represeting a view component used to display the game state.
  * It uses the HTML Canvas API.
  */
-class CanvasDisplay {
+class CanvasView {
   private canvas: HTMLCanvasElement;
   private canvasContext: CanvasRenderingContext2D;
   private canvasFontFamily = "monospace";
@@ -1400,7 +1398,7 @@ class CanvasDisplay {
    */
   constructor(
     public state: GameState,
-    public controller: GameController,
+    public controller: GamePresenter,
     public parent: HTMLElement
   ) {
     this.canvas = document.createElement("canvas");
@@ -1444,10 +1442,24 @@ class CanvasDisplay {
     this.canvasContext.fillStyle = "black";
     this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-    if (state.status === "running" || state.status === "paused") {
-      this.drawRunningGame(state, timeStep);
-    } else if (state.status === "start") {
-      this.drawInitialScreen();
+    switch (state.status) {
+      case "paused":
+      case "running": {
+        this.drawRunningGame(state, timeStep);
+        break;
+      }
+      case "start": {
+        this.drawInitialScreen();
+        break;
+      }
+      case "lost": {
+        this.drawGameOverScreen();
+        break;
+      }
+      default: {
+        const _never: never = state.status;
+        throw new Error("Unexpected state status", _never);
+      }
     }
   }
 
@@ -1728,7 +1740,7 @@ class CanvasDisplay {
 
   private drawInitialScreen() {
     this.drawTitle();
-    this.drawPressSpaceToStartMessage();
+    this.drawTwinkleMessage("Press space to start");
   }
 
   private drawTitle() {
@@ -1744,23 +1756,38 @@ class CanvasDisplay {
     this.canvasContext.fillText("INVADERS", xPixelPos, yPixelPos + fontSize);
   }
 
-  private drawPressSpaceToStartMessage() {
+  private drawTwinkleMessage(message: string) {
     if (Math.round(performance.now() / 800) % 2 === 0) {
       const fontSize = Math.min(30, this.horPixels(6));
       this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
       this.canvasContext.textAlign = "center";
+      this.canvasContext.fillStyle = "#fff";
 
       const xPixelPos = this.horPixels(50),
         yPixelPos = this.verPixels(75);
 
-      this.canvasContext.fillText("Press space to start", xPixelPos, yPixelPos);
+      this.canvasContext.fillText(message, xPixelPos, yPixelPos);
     }
   }
 
   /**
    * Draws a screen for when the game is over.
    */
-  private drawGameOverScreen() {}
+  private drawGameOverScreen() {
+    const fontSize = Math.min(65, this.horPixels(10));
+
+    const xPixelPos = this.horPixels(50),
+      yPixelPos = this.verPixels(30);
+
+    this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
+    this.canvasContext.fillStyle = "#f66";
+    this.canvasContext.textAlign = "center";
+
+    this.canvasContext.fillText("GAME", xPixelPos, yPixelPos);
+    this.canvasContext.fillText("OVER", xPixelPos, yPixelPos + fontSize);
+
+    this.drawTwinkleMessage("Press space to play again");
+  }
 }
 
 /* ========================================================================= */
@@ -1776,22 +1803,24 @@ interface IView<State> {
 /**
  * A class responsible for managing the flow of information between model (state) and view (display).
  */
-class GameController {
+class GamePresenter {
+  State: typeof GameState;
   state: GameState;
   view: IView<GameState>;
 
   constructor(
     State: typeof GameState,
-    Display: {
+    View: {
       new (
         state: GameState,
-        controller: GameController,
+        controller: GamePresenter,
         parentElement: HTMLElement
       ): IView<GameState>;
     }
   ) {
+    this.State = State;
     this.state = State.start(basicInvaderPlan);
-    this.view = new Display(this.state, this, document.body);
+    this.view = new View(this.state, this, document.body);
     this.view.syncState(this.state, 0);
 
     this.startAnimation();
@@ -1801,20 +1830,22 @@ class GameController {
     runAnimation((timeStep) => {
       if (this.view.keys[startGameActionKey] && this.state.status === "start") {
         this.state.status = "running";
-      }
-      if (this.state.status === "running") {
-        this.state.update(timeStep, this.view.keys);
-      }
-      this.view.syncState(this.state, timeStep);
-
-      if (this.state.status === "lost") {
-        console.log("lost");
-        return false;
-      } else {
         return true;
       }
+      if (
+        this.view.keys[restartGameActionKey] &&
+        this.state.status === "lost"
+        ) {
+          this.state = this.State.start(basicInvaderPlan);
+          this.state.status = "running";
+          return true;
+      }
+      this.state.update(timeStep, this.view.keys);
+      this.view.syncState(this.state, timeStep);
+
+      return true;
     });
   }
 }
 
-new GameController(GameState, CanvasDisplay);
+new GamePresenter(GameState, CanvasView);

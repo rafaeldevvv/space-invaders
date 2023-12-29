@@ -610,6 +610,7 @@ I hope you found it. If you didn't, it is the `this.aliens.length === 0` check. 
 - [Create prototype property](https://stackoverflow.com/questions/70342973/create-prototype-property)
 - [Typescript: accessing an array element does not account for the possibility of undefined return values](https://stackoverflow.com/questions/50647399/typescript-accessing-an-array-element-does-not-account-for-the-possibility-of-u)
 - [Suggestion: option to include undefined in index signatures](https://github.com/Microsoft/TypeScript/issues/13778)
+- [Canvas API - Drawing text](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text)
 
 #### Comments
 

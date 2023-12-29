@@ -1,13 +1,14 @@
-- Make initial screen, game over screen
-- commit & update README
-
+- Make initial screen, game over screen, and implement restart option
 - Implement game functionalities, such as pause, "press space to start" and so on
 - commit & update README for each one
 
-- make player be able to shoot only when there's no player bullets in the game
+- Implement boss
 - commit & update README
 
-- Implement boss
+- Add more stuff to gameove screen such as score, aliens killed, bosses killed and so on.
+- commit & update README for each one
+
+- make player be able to shoot only when there's no player bullets in the game
 - commit & update README
 
 - Implement alien set entrance animation.
