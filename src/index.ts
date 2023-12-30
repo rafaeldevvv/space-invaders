@@ -68,6 +68,7 @@ type KeysTracker = FlagsFromUnion<GameKeys>;
 
 /* helpers */
 type NumOrNull = number | null;
+type KeyboardEventHandler = (e: KeyboardEvent) => void;
 
 /* ============================================================== */
 /* ========================== constants ========================= */
@@ -101,14 +102,15 @@ const DIMENSIONS: {
  */
 const displayPadding = {
   hor: 3,
-  ver: 5,
+  ver: 3,
 };
 
 const moveRightActionKey = "ArrowRight",
   moveLeftActionKey = "ArrowLeft",
   fireActionKey = " ",
   startGameActionKey = " ",
-  restartGameActionKey = " ";
+  restartGameActionKey = " ",
+  pauseGameActionKey = "Escape";
 
 const displayMaxWidth = 720;
 const displayAspectRatio = 4 / 3;
@@ -1387,7 +1389,8 @@ class CanvasView {
   private canvasContext: CanvasRenderingContext2D;
   private canvasFontFamily = "monospace";
 
-  public keys = {} as KeysTracker;
+  public trackedKeys = {} as KeysTracker;
+  private keysHandlers: Map<string, KeyboardEventHandler[]> = new Map();
 
   /**
    * Creates a view component for the game that uses the Canvas API.
@@ -1463,10 +1466,25 @@ class CanvasView {
     }
   }
 
+  public addKeyHandler(key: string, handler: KeyboardEventHandler) {
+    if (this.keysHandlers.has(key)) {
+      const handlers = this.keysHandlers.get(key)!;
+      this.keysHandlers.set(key, [...handlers, handler]);
+    } else {
+      this.keysHandlers.set(key, [handler]);
+    }
+  }
+
   private defineEventListeners() {
     window.addEventListener("resize", () => this.setDisplaySize());
+    window.addEventListener("keydown", (e) => {
+      if (this.keysHandlers.has(e.key)) {
+        const handlers = this.keysHandlers.get(e.key)!;
+        handlers.forEach((h) => h(e));
+      }
+    });
 
-    this.keys = trackKeys([
+    this.trackedKeys = trackKeys([
       moveLeftActionKey,
       moveRightActionKey,
       fireActionKey,
@@ -1541,6 +1559,7 @@ class CanvasView {
     this.drawBullets(state.bullets);
     this.drawWalls(state.env.walls);
     this.drawMetadata(state, timeStep);
+    this.drawPressEscMessage();
   }
 
   private drawAlienSet(alienSet: AlienSet) {
@@ -1788,6 +1807,23 @@ class CanvasView {
 
     this.drawTwinkleMessage("Press space to play again");
   }
+
+  private drawPressEscMessage() {
+    const fontSize = Math.min(18, this.horPixels(2));
+
+    const xPixelPos = this.horPixels(displayPadding.hor),
+      yPixelPos = this.verPixels(12);
+
+    this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
+    this.canvasContext.fillStyle = "#fff";
+    this.canvasContext.textAlign = "left";
+
+    this.canvasContext.fillText(
+      'Press "Esc" to pause/unpause',
+      xPixelPos,
+      yPixelPos
+    );
+  }
 }
 
 /* ========================================================================= */
@@ -1797,7 +1833,8 @@ class CanvasView {
 interface IView<State> {
   syncState(state: State, timeStep: number): void;
   setDisplaySize(): void;
-  keys: KeysTracker;
+  trackedKeys: KeysTracker;
+  addKeyHandler(key: string, handler: KeyboardEventHandler): void;
 }
 
 /**
@@ -1807,6 +1844,7 @@ class GamePresenter {
   State: typeof GameState;
   state: GameState;
   view: IView<GameState>;
+  paused: boolean = false;
 
   constructor(
     State: typeof GameState,
@@ -1823,28 +1861,45 @@ class GamePresenter {
     this.view = new View(this.state, this, document.body);
     this.view.syncState(this.state, 0);
 
-    this.startAnimation();
+    this.runGame();
+    this.addEventHandlers();
   }
 
-  private startAnimation() {
-    runAnimation((timeStep) => {
-      if (this.view.keys[startGameActionKey] && this.state.status === "start") {
-        this.state.status = "running";
-        return true;
-      }
-      if (
-        this.view.keys[restartGameActionKey] &&
-        this.state.status === "lost"
-        ) {
-          this.state = this.State.start(basicInvaderPlan);
-          this.state.status = "running";
-          return true;
-      }
-      this.state.update(timeStep, this.view.keys);
-      this.view.syncState(this.state, timeStep);
+  private addEventHandlers() {
+    this.view.addKeyHandler(pauseGameActionKey, () => {
+      if (this.state.status !== "running") return;
 
-      return true;
+      if (this.paused) {
+        this.paused = false;
+        this.runGame();
+      } else {
+        this.paused = true;
+      }
     });
+    this.view.addKeyHandler(startGameActionKey, () => {
+      if (this.state.status === "start") {
+        this.state.status = "running";
+      }
+    });
+    this.view.addKeyHandler(restartGameActionKey, () => {
+      if (this.state.status === "lost") {
+        this.state = this.State.start(basicInvaderPlan);
+        this.state.status = "running";
+      }
+    });
+  }
+
+  private runGame(this: GamePresenter) {
+    runAnimation((timeStep) => this.frame(timeStep));
+  }
+
+  private frame(this: GamePresenter, timeStep: number) {
+    if (this.paused && this.state.status === "running") return false;
+
+    this.state.update(timeStep, this.view.trackedKeys);
+    this.view.syncState(this.state, timeStep);
+
+    return true;
   }
 }
 
