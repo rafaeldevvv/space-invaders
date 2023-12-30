@@ -88,8 +88,8 @@ const DIMENSIONS: {
     h: 6, // 6% of the display height
   },
   player: {
-    w: 5, // 5% of the display width
-    h: 7, // 7% of the display height
+    w: 4, // 5% of the display width
+    h: 6, // 7% of the display height
   },
   alienSetGap: {
     w: 1, // 1% of the display width
@@ -112,13 +112,16 @@ const moveRightActionKey = "ArrowRight",
   restartGameActionKey = " ",
   pauseGameActionKey = "Escape";
 
-const displayMaxWidth = 720;
+const displayMaxWidth = 920;
 const displayAspectRatio = 4 / 3;
 
 const basicInvaderPlan = `
-ZZZZZZZZ
-YYYYYYYY
-XXXXXXXX`;
+ZZZZZZZZZZ
+YYYYYYYYYY
+YYYYYYYYYY
+XXXXXXXXXX
+XXXXXXXXXX
+`;
 
 const customWall1 = `
 ........######################################........
@@ -320,6 +323,7 @@ function trackKeys<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
   function onPressKey(e: KeyboardEvent) {
     for (const key of keys) {
       if (e.key === key) {
+        e.preventDefault();
         down[e.key as Type] = e.type === "keydown";
       }
     }
@@ -1866,7 +1870,8 @@ class GamePresenter {
   }
 
   private addEventHandlers() {
-    this.view.addKeyHandler(pauseGameActionKey, () => {
+    this.view.addKeyHandler(pauseGameActionKey, (e) => {
+      e.preventDefault();
       if (this.state.status !== "running") return;
 
       if (this.paused) {
@@ -1876,12 +1881,16 @@ class GamePresenter {
         this.paused = true;
       }
     });
-    this.view.addKeyHandler(startGameActionKey, () => {
+    this.view.addKeyHandler(startGameActionKey, (e) => {
+      e.preventDefault();
+
       if (this.state.status === "start") {
         this.state.status = "running";
       }
     });
-    this.view.addKeyHandler(restartGameActionKey, () => {
+    this.view.addKeyHandler(restartGameActionKey, (e) => {
+      e.preventDefault();
+
       if (this.state.status === "lost") {
         this.state = this.State.start(basicInvaderPlan);
         this.state.status = "running";

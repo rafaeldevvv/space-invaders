@@ -1,7 +1,3 @@
-- Make initial screen, game over screen, and implement restart option
-- Implement game functionalities, such as pause, "press space to start" and so on
-- commit & update README for each one
-
 - Implement boss
 - commit & update README
 
