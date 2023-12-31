@@ -80,18 +80,23 @@ const DIMENSIONS: {
   readonly alien: Size;
   readonly player: Size;
   readonly alienSetGap: Size;
+  readonly boss: Size;
 } = {
   alien: {
-    w: 3.5, // 4% of the display width
-    h: 5, // 6% of the display height
+    w: 3.5, // 3.5% of the display width
+    h: 5, // 5% of the display height
   },
   player: {
-    w: 4, // 5% of the display width
-    h: 6, // 7% of the display height
+    w: 4,
+    h: 6,
   },
   alienSetGap: {
-    w: 1, // 1% of the display width
-    h: 1.5, // 1.5% of the display height
+    w: 1,
+    h: 1.5,
+  },
+  boss: {
+    w: 7,
+    h: 7.5,
   },
 };
 
@@ -1906,32 +1911,44 @@ class GamePresenter {
   }
 
   private addEventHandlers() {
-    this.view.addKeyHandler(pauseGameActionKey, (e) => {
-      e.preventDefault();
-      if (this.state.status !== "running") return;
+    this.view.addKeyHandler(pauseGameActionKey, this.handlePause.bind(this));
+    this.view.addKeyHandler(
+      startGameActionKey,
+      this.handleStartGame.bind(this)
+    );
+    this.view.addKeyHandler(
+      restartGameActionKey,
+      this.handleRestartGame.bind(this)
+    );
+  }
 
-      if (this.paused) {
-        this.paused = false;
-        this.runGame();
-      } else {
-        this.paused = true;
-      }
-    });
-    this.view.addKeyHandler(startGameActionKey, (e) => {
-      e.preventDefault();
+  private handlePause(this: GamePresenter, e: KeyboardEvent) {
+    e.preventDefault();
+    if (this.state.status !== "running") return;
 
-      if (this.state.status === "start") {
-        this.state.status = "running";
-      }
-    });
-    this.view.addKeyHandler(restartGameActionKey, (e) => {
-      e.preventDefault();
+    if (this.paused) {
+      this.paused = false;
+      this.runGame();
+    } else {
+      this.paused = true;
+    }
+  }
 
-      if (this.state.status === "lost") {
-        this.state = this.State.start(basicInvaderPlan);
-        this.state.status = "running";
-      }
-    });
+  private handleStartGame(this: GamePresenter, e: KeyboardEvent) {
+    e.preventDefault();
+
+    if (this.state.status === "start") {
+      this.state.status = "running";
+    }
+  }
+
+  private handleRestartGame(this: GamePresenter, e: KeyboardEvent) {
+    e.preventDefault();
+
+    if (this.state.status === "lost") {
+      this.state = this.State.start(basicInvaderPlan);
+      this.state.status = "running";
+    }
   }
 
   private runGame(this: GamePresenter) {
