@@ -1,4 +1,10 @@
-- Implement boss
+- Refactor the state management class completely
+- commit & update README
+
+- Put the global variables into namespaces or something like that for better organization
+- commit & update README
+
+- Tweak the boss configuration a little bit, change size, score(make it random in steps of 10) and so on
 - commit & update README
 
 - Add more stuff to gameove screen such as score, aliens killed, bosses killed and so on.

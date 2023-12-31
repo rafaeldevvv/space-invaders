@@ -847,6 +847,22 @@ class Alien {
   }
 }
 
+const bossBaseYPos = 5;
+const speedX = 10;
+const baseBossAppearanceInterval = 30;
+const bossScore = 150;
+
+class Boss {
+  pos: Vector;
+  constructor() {
+    this.pos = new Vector(-DIMENSIONS.boss.w, bossBaseYPos);
+  }
+
+  update(timeStep: number) {
+    this.pos = this.pos.plus(new Vector(speedX * timeStep, 0));
+  }
+}
+
 const playerXSpeed = 30;
 
 /**
@@ -1217,12 +1233,22 @@ class GameEnv {
   }
 }
 
+function generateRandomBossAppearanceInterval() {
+  return randomNum(
+    0.8 * baseBossAppearanceInterval,
+    1.2 * baseBossAppearanceInterval
+  );
+}
+
 /**
  * Class that manages the state of a running game.
  */
 class GameState {
   public bullets: Bullet[] = [];
   public status: "lost" | "running" | "start" | "paused" = "start";
+  public boss: Boss | null = null;
+  private timeSinceBossLastAppearance = 0;
+  private bossAppearanceInterval = generateRandomBossAppearanceInterval();
 
   /**
    * Initializes the state.
@@ -1256,6 +1282,7 @@ class GameState {
 
     this.handleBulletsThatHitAlien();
     this.handleBulletsThatHitPlayer();
+    this.handleBoss(timeStep);
     this.removeOutOfBoundsBullets();
     this.handleAlienContactWithWall();
 
@@ -1372,6 +1399,29 @@ class GameState {
           const alienPos = this.alienSet.getAlienPos(alien.gridPos);
           wall.collide(this, alienPos, DIMENSIONS.alien);
         }
+      }
+    }
+  }
+
+  private handleBoss(timeStep: number) {
+    if (this.boss) this.boss.update(timeStep);
+    if (this.boss === null) this.timeSinceBossLastAppearance += timeStep;
+
+    if (this.timeSinceBossLastAppearance >= this.bossAppearanceInterval) {
+      this.boss = new Boss();
+      this.timeSinceBossLastAppearance = 0;
+    }
+
+    if (this.boss === null) return;
+    if (this.boss.pos.x >= 100) this.boss = null;
+
+    const playerBullets = this.bullets.filter((b) => b.from === "player");
+    for (const b of playerBullets) {
+      if (this.env.bulletTouchesObject(b, this.boss!.pos, DIMENSIONS.boss)) {
+        this.player.score += bossScore;
+        this.boss = null;
+        this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
+        break;
       }
     }
   }
@@ -1604,6 +1654,7 @@ class CanvasView {
     this.drawBullets(state.bullets);
     this.drawWalls(state.env.walls);
     this.drawMetadata(state, timeStep);
+    if (state.boss !== null) this.drawBoss(state.boss);
     this.drawPressEscMessage();
   }
 
@@ -1662,6 +1713,14 @@ class CanvasView {
     this.canvasContext.fillStyle = "white";
     this.canvasContext.fillRect(x, y, w, h);
     this.drawPlayerGunReloadVisualClue(player);
+  }
+
+  private drawBoss(boss: Boss) {
+    const { x, y } = this.getPixelPos(boss.pos);
+    const { w, h } = this.getPixelSize(DIMENSIONS.boss);
+
+    this.canvasContext.fillStyle = "#f77";
+    this.canvasContext.fillRect(x, y, w, h);
   }
 
   private drawPlayerGunReloadVisualClue(player: Player) {
