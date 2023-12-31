@@ -635,6 +635,9 @@ I hope you found it. If you didn't, it is the `this.aliens.length === 0` check. 
 - [`package.json` file](https://docs.npmjs.com/cli/v10/configuring-npm/package-json)
 - [html-webpack-plugin](https://webpack.js.org/plugins/html-webpack-plugin/)
 - [html-webpack-plugin options](https://github.com/jantimon/html-webpack-plugin#options)
+- [Webpack loaders](https://webpack.js.org/loaders/)
+- [style-loader](https://webpack.js.org/loaders/style-loader/)
+- [css-loader](https://webpack.js.org/loaders/css-loader/)
 
 ## Author
 

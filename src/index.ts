@@ -1458,17 +1458,20 @@ class CanvasView {
    * Sets the size of the canvas based on the size of the its parent element.
    */
   public setDisplaySize() {
-    const canvasWidth = Math.min(
+    let canvasWidth = Math.min(
       displayMaxWidth,
       getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
     );
 
-    this.canvas.setAttribute("width", canvasWidth.toString());
-    this.canvas.setAttribute(
-      "height",
-      (canvasWidth / displayAspectRatio).toString()
-    );
+    let canvasHeight = canvasWidth / displayAspectRatio;
 
+    if (canvasHeight > innerHeight) {
+      canvasHeight = innerHeight;
+      canvasWidth = canvasHeight * displayAspectRatio;
+    }
+
+    this.canvas.setAttribute("width", canvasWidth.toString());
+    this.canvas.setAttribute("height", canvasHeight.toString());
     this.syncState(this.state, 0);
   }
 
