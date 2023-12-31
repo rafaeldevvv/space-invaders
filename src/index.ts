@@ -1,3 +1,5 @@
+import "./index.css";
+
 /* ====================================================================== */
 /* ========================= Interfaces and Types ======================= */
 /* ====================================================================== */
@@ -17,10 +19,6 @@ interface Coords {
  * @extends - Interface representing percentage coordinates.
  */
 interface PixelCoords extends Coords {}
-
-interface Display {
-  syncState(state: GameState): void;
-}
 
 /**
  * A two-dimensional size
