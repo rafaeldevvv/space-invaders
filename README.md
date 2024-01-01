@@ -17,6 +17,12 @@ This is an implementation of the classic Space Invaders game using [TypeScript](
   - [Aliens](#aliens)
   - [Display](#display)
   - [Comments](#comments)
+  - [`Array.prototpe.fill()` sucks](#arrayprototpefill-sucks)
+  - [Canvas `clip()` and `globalCompositeOperation` misunderstanding](#canvas-clip-and-globalcompositeoperation-misunderstanding)
+  - [Goddamn zero](#goddamn-zero)
+  - [Stagnant values](#stagnant-values)
+  - [Silly error](#silly-error)
+  - [The miracle of separation of concerns](#the-miracle-of-separation-of-concerns)
   - [Useful Resources](#useful-resources)
 - [Author](#author)
 
