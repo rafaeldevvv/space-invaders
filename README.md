@@ -11,13 +11,13 @@ This is an implementation of the classic Space Invaders game using [TypeScript](
   - [Screenshot](#screenshot)
   - [Built with](#built-with)
 - [Process](#process)
-   - [Objects Positions Problem](#objects-positions-problem)
-   - [Sizes](#sizes)
-   - [Collisions](#collisions)
-   - [Aliens](#aliens)
-   - [Display](#display)
-   - [Comments](#comments)
-   - [Useful Resources](#useful-resources)
+  - [Objects Positions Problem](#objects-positions-problem)
+  - [Sizes](#sizes)
+  - [Collisions](#collisions)
+  - [Aliens](#aliens)
+  - [Display](#display)
+  - [Comments](#comments)
+  - [Useful Resources](#useful-resources)
 - [Author](#author)
 
 ## Overview
@@ -305,7 +305,6 @@ class BreakableWall {
     public numRows = 6,
     public numColumns = 20
   ) {
-
     /* 
       the problem with this is that the same array is assined to each row
       so when i update a piece in a row, i actually update a piece in 
@@ -325,7 +324,7 @@ class BreakableWall {
 }
 ```
 
-At first glance you might think that the code is okay, like I am just creating an array of arrays of boolean values, but this code is extremely faulty. 
+At first glance you might think that the code is okay, like I am just creating an array of arrays of boolean values, but this code is extremely faulty.
 
 The thing is that all of the arrays in the `piecesMatrix` property refer to the same array. So all rows are the same! Gee-whiz! And when I updated a piece in a row, I was actually updating the same piece in all rows, which would update a whole column!
 
@@ -333,7 +332,7 @@ So be aware that the `fill()` method assigns the value you pass in to all elemen
 
 ### Canvas `clip()` and `globalCompositeOperation` misunderstanding
 
-I was reading [Compositing and clipping on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing) and I thought about implementing the player's gun reloaxd clue using the `clip()` method and `globalCompositeOperation` property. I started doing it and I tried really hard to make it work, but it didn't because those properties don't interact directly. 
+I was reading [Compositing and clipping on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing) and I thought about implementing the player's gun reloaxd clue using the `clip()` method and `globalCompositeOperation` property. I started doing it and I tried really hard to make it work, but it didn't because those properties don't interact directly.
 
 I was trying to make a rectangle be drawn outside the clipping path, which was also a rectangle. But the `clip()` method makes the current path into a clipping region inside of which new shapes are drawn.
 
@@ -350,41 +349,36 @@ class CanvasDisplay {
       y = 50,
       xPixels = this.horPixels(x),
       yPixels = this.verPixels(y - clueHeight / 2);
-  
+
     const loadedPercentage = Math.min(
       1,
       gun.timeSinceLastShot / gun.fireInterval
     );
-  
+
     this.canvasContext.save();
     this.canvasContext.translate(xPixels, yPixels);
 
     const clueRegion = new Path2D();
     clueRegion.rect(
-      0, 
-      0, 
-      cluePixelsWidth, 
+      0,
+      0,
+      cluePixelsWidth,
       cluePixelsHeight - loadedPercentage * cluePixelsHeight
     );
     this.canvasContext.clip();
 
     this.canvasContext.globalCompositeOperation = "source-out";
-  
+
     this.canvasContext.fillStyle = "#ffffff";
-    this.canvasContext.fillRect(
-      0,
-      0,
-      cluePixelsWidth,
-      cluePixelsHeight
-    );
-  
+    this.canvasContext.fillRect(0, 0, cluePixelsWidth, cluePixelsHeight);
+
     this.canvasContext.globalCompositeOperation = "source-over";
     this.canvasContext.restore();
   }
 }
 ```
 
-#### Goddamn zero
+### Goddamn zero
 
 I was just writing a method that had all the correct logic to work, but I naively tested a variable that could be zero instead of testing it against `null`:
 
@@ -454,7 +448,6 @@ As `firstLivingAlienRow` was zero most of the time, and zero is a falsy value, t
 
 I was writing my adaptation logic for the AlienSet, and I had to change a lot if things in the code for that. For example, i went from:
 
-
 ```ts
 class AlienSet {
   public removeAlien(alien: Alien) {
@@ -513,7 +506,7 @@ class AlienSet {
 
 ```ts
 class GameState {
-private handleBulletsThatHitAlien() {
+  private handleBulletsThatHitAlien() {
     const playerBullets = this.bullets.filter(
       (bullet) => bullet.from === "player"
     );
@@ -542,7 +535,7 @@ private handleBulletsThatHitAlien() {
 
 The problem with the first implementation was that, because I was adapting the alien set every time an alien was removed, the `for... of...` loop was still iterating over the previous version of the alien set, which had a different number of columns and rows. Thus, the iterator was throwing and error like `TypeError: Cannot read properties of undefined (reading '4')`. This was an error that not even TypeScript was able to catch.
 
-#### Silly error
+### Silly error
 
 Can you spot the error?
 
@@ -582,6 +575,451 @@ class AlienSet {
 
 I hope you found it. If you didn't, it is the `this.aliens.length === 0` check. It should be `this.aliens.length !== 0` instead.
 
+### The miracle of separation of concerns
+
+I had written the `GameState` class and it was too complex, so I decided to refactor it and change how it worked inside.
+
+I went from:
+
+```ts
+class GameState {
+  public bullets: Bullet[] = [];
+  public status: "lost" | "running" | "start" | "paused" = "start";
+  public boss: Boss | null = null;
+  private timeSinceBossLastAppearance = 0;
+  private bossAppearanceInterval = generateRandomBossAppearanceInterval();
+
+  /**
+   * Initializes the state.
+   *
+   * @param alienSet - The aliens.
+   * @param player - The player.
+   * @param env - The game environment.
+   */
+  constructor(
+    public alienSet: AlienSet,
+    public player: Player,
+    public env: GameEnv
+  ) {}
+
+  /**
+   * Updates the state of the game, including player, bullets, walls and aliens.
+   *
+   * @param timeStep - The time in seconds that has passed since the last update.
+   * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
+   */
+  public update(timeStep: number, keys: KeysTracker) {
+    if (this.status === "start" || this.status === "lost") return;
+
+    this.alienSet.update(timeStep);
+    this.player.update(this, timeStep, keys);
+    this.fireAliens();
+
+    this.handleBulletsContactWithWall();
+
+    this.bullets.forEach((bullet) => bullet.update(timeStep));
+
+    this.handleBulletsThatHitAlien();
+    this.handleBulletsThatHitPlayer();
+    this.handleBoss(timeStep);
+    this.removeOutOfBoundsBullets();
+    this.handleAlienContactWithWall();
+
+    if (this.alienSet.alive === 0) {
+      this.alienSet = new AlienSet(basicInvaderPlan);
+      this.env.alienSet = this.alienSet;
+      this.player.lives++;
+    } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
+      this.status = "lost";
+    }
+  }
+
+  /**
+   * Removes the bullets that hit the wall and update the wall if needed.
+   */
+  private handleBulletsContactWithWall() {
+    for (const bullet of this.bullets) {
+      for (const wall of this.env.walls) {
+        if (!this.env.bulletTouchesWall(bullet, wall)) continue;
+
+        if (wall instanceof Wall) {
+          bullet.collide(this);
+        } else {
+          wall.collide(this, bullet.pos, bullet.size, bullet);
+        }
+      }
+    }
+  }
+
+  /**
+   * Checks if any alien is hit by a player bullet, removes the bullet
+   * and the alien and increases player's score by the score of the alien.
+   */
+  private handleBulletsThatHitAlien() {
+    const playerBullets = this.bullets.filter(
+      (bullet) => bullet.from === "player"
+    );
+
+    let isSomeAlienKilled = false;
+    for (const playerBullet of playerBullets) {
+      for (const alien of this.alienSet) {
+        if (!alien) continue;
+
+        if (
+          this.env.bulletTouchesObject(
+            playerBullet,
+            this.alienSet.getAlienPos(alien.gridPos),
+            DIMENSIONS.alien
+          )
+        ) {
+          this.player.score += alien.score;
+          this.alienSet.removeAlien(alien);
+          playerBullet.collide(this);
+          isSomeAlienKilled = true;
+        }
+      }
+    }
+    if (isSomeAlienKilled) this.alienSet.adapt();
+  }
+
+  /**
+   * Fires the aliens that can fire.
+   */
+  private fireAliens() {
+    for (const alien of this.alienSet) {
+      if (!alien) continue;
+
+      if (alien.gun.canFire()) {
+        this.bullets.push(
+          alien.fire(this.alienSet.getAlienPos(alien.gridPos))!
+        );
+      }
+    }
+  }
+
+  /**
+   * Checks which bullets hit the player, removes them and decreases the player's lives.
+   */
+  private handleBulletsThatHitPlayer() {
+    const alienBullets = this.bullets.filter(
+      (bullet) => bullet.from === "alien"
+    );
+
+    /* 
+      check if any alien bullet hits the player and if it does, the bullet
+      is removed and the player resets its position and loses one life 
+    */
+    alienBullets.forEach((b) => {
+      if (this.env.bulletTouchesObject(b, this.player.pos, DIMENSIONS.player)) {
+        this.player.lives--;
+        this.player.resetPos();
+        b.collide(this);
+      }
+    });
+  }
+
+  private removeOutOfBoundsBullets() {
+    const necessaryBullets = [];
+    for (const bullet of this.bullets) {
+      if (!this.env.isBulletOutOfBounds(bullet)) {
+        necessaryBullets.push(bullet);
+      }
+    }
+
+    this.bullets = necessaryBullets;
+  }
+
+  private handleAlienContactWithWall() {
+    for (const wall of this.env.walls) {
+      if (wall instanceof Wall) continue;
+      if (overlap(this.alienSet.pos, this.alienSet.size, wall.pos, wall.size)) {
+        for (const alien of this.alienSet) {
+          if (!alien) continue;
+          const alienPos = this.alienSet.getAlienPos(alien.gridPos);
+          wall.collide(this, alienPos, DIMENSIONS.alien);
+        }
+      }
+    }
+  }
+
+  private handleBoss(timeStep: number) {
+    if (this.boss) this.boss.update(timeStep);
+    if (this.boss === null) this.timeSinceBossLastAppearance += timeStep;
+
+    if (this.timeSinceBossLastAppearance >= this.bossAppearanceInterval) {
+      this.boss = new Boss();
+      this.timeSinceBossLastAppearance = 0;
+    }
+
+    if (this.boss === null) return;
+    if (this.boss.pos.x >= 100) this.boss = null;
+
+    const playerBullets = this.bullets.filter((b) => b.from === "player");
+    for (const b of playerBullets) {
+      if (this.env.bulletTouchesObject(b, this.boss!.pos, DIMENSIONS.boss)) {
+        this.player.score += bossScore;
+        this.boss = null;
+        this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
+        break;
+      }
+    }
+  }
+
+  /**
+   * Creates a basic initial game state.
+   *
+   * @param plan - A string represeting an arranged set of aliens.
+   * @returns - A initial state for the game.
+   */
+  static start(plan: string) {
+    const alienSet = new AlienSet(plan);
+    const player = new Player();
+
+    const numWalls = 4;
+    const wallWidth = 12;
+    const wallHeight = 10;
+    const gap = (100 - wallWidth * numWalls) / 5;
+
+    const walls: BreakableWall[] = new Array(numWalls)
+      .fill(undefined)
+      .map((_, i) => {
+        return new BreakableWall(
+          { x: (i + 1) * gap + wallWidth * i, y: 75 },
+          { w: wallWidth, h: wallHeight },
+          customWall3
+        );
+      });
+
+    const env = new GameEnv(alienSet, player, walls);
+
+    return new GameState(alienSet, player, env);
+  }
+}
+```
+
+to
+
+```ts
+class GameState {
+  public bullets: Bullet[] = [];
+  public status: "lost" | "running" | "start" | "paused" = "start";
+  public boss: Boss | null = null;
+  private timeSinceBossLastAppearance = 0;
+  private bossAppearanceInterval = generateRandomBossAppearanceInterval();
+
+  /**
+   * Initializes the state.
+   *
+   * @param alienSet - The aliens.
+   * @param player - The player.
+   * @param env - The game environment.
+   */
+  constructor(
+    public alienSet: AlienSet,
+    public player: Player,
+    public env: GameEnv
+  ) {}
+
+  /**
+   * Updates the state of the game, including player, bullets, walls and aliens.
+   *
+   * @param timeStep - The time in seconds that has passed since the last update.
+   * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
+   */
+  public update(timeStep: number, keys: KeysTracker) {
+    if (this.status === "start" || this.status === "lost") return;
+
+    this.alienSet.update(timeStep);
+    this.player.update(this, timeStep, keys);
+
+    this.fireAliens();
+    this.bullets.forEach((bullet) => bullet.update(timeStep));
+
+    this.handleBullets();
+    this.handleBoss(timeStep);
+
+    if (this.alienSet.alive === 0) {
+      this.alienSet = new AlienSet(basicInvaderPlan);
+      this.env.alienSet = this.alienSet;
+      this.player.lives++;
+    } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
+      this.status = "lost";
+    }
+  }
+
+  /**
+   * Handles all bullets in the game, using GameEnv to check collision, removing out of bounds bullets and so on.
+   */
+  handleBullets() {
+    const newBullets: Bullet[] = [];
+
+    let isSomeAlienKilled = false;
+    for (const b of this.bullets) {
+      const outOfBounds = this.env.isBulletOutOfBounds(b);
+      if (outOfBounds) continue;
+
+      if (b.from === "alien") {
+        const touchedPlayer = this.handleBulletContactWithPlayer(
+          b as AlienBullet
+        );
+        if (touchedPlayer) continue;
+      } else {
+        const touchedAlien = this.handleBulletContactWithAlien(
+          b as PlayerBullet
+        );
+        const touchedBoss = this.handleBulletContactWithBoss(b as PlayerBullet);
+
+        if (!isSomeAlienKilled) isSomeAlienKilled = touchedAlien;
+        if (touchedAlien || touchedBoss) continue;
+      }
+
+      const touchedWall = this.handleBulletContactWithWall(b);
+      if (touchedWall) continue;
+
+      newBullets.push(b);
+    }
+
+    if (isSomeAlienKilled) this.alienSet.adapt();
+    this.bullets = newBullets;
+  }
+
+  /**
+   * Checks whether the bullet touches the player, and, if it does,
+   * the player loses one life and resets it position.
+   *
+   * @param b - A bullet from an alien.
+   * @returns - A boolean that tells whether the bullet touched the player
+   */
+  private handleBulletContactWithPlayer(b: AlienBullet) {
+    /* 
+      if the bullet hits the player, the it
+      is removed and the player resets its 
+      position and loses one life 
+    */
+    if (this.env.bulletTouchesObject(b, this.player.pos, DIMENSIONS.player)) {
+      this.player.lives--;
+      this.player.resetPos();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether a player bullet touches an alien, and, if it does,
+   * the player score increases and the touched alien is removed from the set.
+   *
+   * @param b - A bullet from the player.
+   * @returns - A boolean value that tells whether the bullet touches an alien in the set.
+   */
+  private handleBulletContactWithAlien(b: PlayerBullet) {
+    for (const alien of this.alienSet) {
+      if (alien === null) continue;
+
+      const alienPos = this.alienSet.getAlienPos(alien.gridPos);
+      if (this.env.bulletTouchesObject(b, alienPos, DIMENSIONS.alien)) {
+        this.player.score += alien.score;
+        this.alienSet.removeAlien(alien);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether the bullet touches a wall, and if so, calls
+   * the collide method on the wall if available.
+   *
+   * @param b - A bullet.
+   * @returns - A boolean value that tells whether the bullet touches a wall.
+   */
+  private handleBulletContactWithWall(b: Bullet) {
+    for (const wall of this.env.walls) {
+      if (this.env.bulletTouchesWall(b, wall)) {
+        if (wall instanceof BreakableWall) wall.collide(this, b.pos, b.size);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private handleBulletContactWithBoss(b: PlayerBullet) {
+    if (this.boss === null) return false;
+    if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
+      this.player.score += bossScore;
+      this.boss = null;
+      this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
+      return true;
+    }
+  }
+
+  /**
+   * Fires the aliens that can fire.
+   */
+  private fireAliens() {
+    const newBullets: Bullet[] = [];
+
+    for (const alien of this.alienSet) {
+      if (!alien) continue;
+
+      if (alien.gun.canFire()) {
+        const alienPos = this.alienSet.getAlienPos(alien.gridPos);
+        const b = alien.fire(alienPos)!;
+        newBullets.push(b);
+      }
+    }
+
+    this.bullets.push(...newBullets);
+  }
+
+  private handleBoss(timeStep: number) {
+    if (this.boss !== null) this.boss.update(timeStep);
+    else this.timeSinceBossLastAppearance += timeStep;
+
+    if (this.timeSinceBossLastAppearance >= this.bossAppearanceInterval) {
+      this.boss = new Boss();
+      this.timeSinceBossLastAppearance = 0;
+    }
+
+    if (this.boss && this.boss.pos.x >= 100) {
+      this.boss = null;
+    }
+  }
+
+  /**
+   * Creates a basic initial game state.
+   *
+   * @param plan - A string represeting an arranged set of aliens.
+   * @returns - A initial state for the game.
+   */
+  static start(plan: string) {
+    const alienSet = new AlienSet(plan);
+    const player = new Player();
+
+    const numWalls = 4;
+    const wallWidth = 12;
+    const wallHeight = 10;
+    const gap = (100 - wallWidth * numWalls) / 5;
+
+    const walls: BreakableWall[] = new Array(numWalls)
+      .fill(undefined)
+      .map((_, i) => {
+        return new BreakableWall(
+          { x: (i + 1) * gap + wallWidth * i, y: 75 },
+          { w: wallWidth, h: wallHeight },
+          customWall3
+        );
+      });
+
+    const env = new GameEnv(alienSet, player, walls);
+
+    return new GameState(alienSet, player, env);
+  }
+}
+```
+
+What amazed me and inspired me to talk about it here is that I only had to change the GameState class and I didn't have to mess with anything except that. I guess that's a good sign that I am applying the Single Responsibility Principle and Separation of Concerns well.
+
 ### Useful Resources
 
 #### General
@@ -618,7 +1056,7 @@ I hope you found it. If you didn't, it is the `this.aliens.length === 0` check. 
 - [JSDoc Reference](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#param-and-returns)
 - [What is TSDoc?](https://tsdoc.org/) - very effective way of adding comments in `.ts` files.
 - [TSDoc | Play](https://tsdoc.org/play/) - Playground for TSDoc comments.
-- [`@microsoft/tsdoc`](https://www.npmjs.com/package/@microsoft/tsdoc) 
+- [`@microsoft/tsdoc`](https://www.npmjs.com/package/@microsoft/tsdoc)
 - [TypeDoc](https://typedoc.org/) - It generates a documentation for TSCode.
 - [`typedoc` NPM package](https://www.npmjs.com/package/typedoc)
 - [TS: What is TSDoc?](https://medium.com/suyeonme/ts-what-is-tsdoc-6e11427c9704)
