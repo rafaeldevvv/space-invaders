@@ -1417,11 +1417,13 @@ class GameState {
 
     const playerBullets = this.bullets.filter((b) => b.from === "player");
     for (const b of playerBullets) {
-      if (this.env.bulletTouchesObject(b, this.boss!.pos, DIMENSIONS.boss)) {
+      // boss can be null because we might have removed the boss in the previous iteration
+      if (this.boss === null) break;
+      if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
         this.player.score += bossScore;
         this.boss = null;
         this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
-        break;
+        b.collide(this);
       }
     }
   }
