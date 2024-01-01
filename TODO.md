@@ -7,8 +7,15 @@
 - Tweak the boss configuration a little bit, change size, score(make it random in steps of 10) and so on
 - commit & update README
 
+- Add paused hint to view
+- commit & update README
+
 - Add more stuff to gameove screen such as score, aliens killed, bosses killed and so on.
 - commit & update README for each one
+
+- Adjust the aliens fire interval (increase it)
+  - Adjust the random fire intervals (in `Gun.fire`)
+- commit & update README
 
 - make player be able to shoot only when there's no player bullets in the game
 - commit & update README

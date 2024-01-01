@@ -948,7 +948,6 @@ class Gun {
     this.fireInterval = randomNum(0.9 * baseFireInterval, baseFireInterval);
     this.timeSinceLastShot = randomNum(0, this.fireInterval);
   }
-
   /**
    * Fires a bullet from a position.
    *
@@ -983,7 +982,7 @@ class Gun {
   }
 
   /**
-   * Updates the time that has passed since the last shot
+   * Updates the time that has passed since the last shot.
    *
    * @param timeStep
    */
@@ -1000,7 +999,6 @@ class Gun {
     return this.timeSinceLastShot >= this.fireInterval;
   }
 }
-
 /**
  * Class representing a bullet.
  */
@@ -1038,6 +1036,9 @@ class Bullet {
     state.bullets = state.bullets.filter((bullet) => bullet !== this);
   }
 }
+
+type AlienBullet = Bullet & { from: "alien" };
+type PlayerBullet = Bullet & { from: "player" };
 
 /**
  * Class representing an unbreakable wall.
@@ -1274,17 +1275,12 @@ class GameState {
 
     this.alienSet.update(timeStep);
     this.player.update(this, timeStep, keys);
+
     this.fireAliens();
-
-    this.handleBulletsContactWithWall();
-
     this.bullets.forEach((bullet) => bullet.update(timeStep));
 
-    this.handleBulletsThatHitAlien();
-    this.handleBulletsThatHitPlayer();
+    this.handleBullets();
     this.handleBoss(timeStep);
-    this.removeOutOfBoundsBullets();
-    this.handleAlienContactWithWall();
 
     if (this.alienSet.alive === 0) {
       this.alienSet = new AlienSet(basicInvaderPlan);
@@ -1296,135 +1292,141 @@ class GameState {
   }
 
   /**
-   * Removes the bullets that hit the wall and update the wall if needed.
+   * Handles all bullets in the game, using GameEnv to check collision, removing out of bounds bullets and so on.
    */
-  private handleBulletsContactWithWall() {
-    for (const bullet of this.bullets) {
-      for (const wall of this.env.walls) {
-        if (!this.env.bulletTouchesWall(bullet, wall)) continue;
+  handleBullets() {
+    const newBullets: Bullet[] = [];
 
-        if (wall instanceof Wall) {
-          bullet.collide(this);
-        } else {
-          wall.collide(this, bullet.pos, bullet.size, bullet);
-        }
+    let isSomeAlienKilled = false;
+    for (const b of this.bullets) {
+      const outOfBounds = this.env.isBulletOutOfBounds(b);
+      if (outOfBounds) continue;
+
+      if (b.from === "alien") {
+        const touchedPlayer = this.handleBulletContactWithPlayer(
+          b as AlienBullet
+        );
+        if (touchedPlayer) continue;
+      } else {
+        const touchedAlien = this.handleBulletContactWithAlien(
+          b as PlayerBullet
+        );
+        const touchedBoss = this.handleBulletContactWithBoss(b as PlayerBullet);
+
+        if (!isSomeAlienKilled) isSomeAlienKilled = touchedAlien;
+        if (touchedAlien || touchedBoss) continue;
       }
+
+      const touchedWall = this.handleBulletContactWithWall(b);
+      if (touchedWall) continue;
+
+      newBullets.push(b);
     }
+
+    if (isSomeAlienKilled) this.alienSet.adapt();
+    this.bullets = newBullets;
   }
 
   /**
-   * Checks if any alien is hit by a player bullet, removes the bullet
-   * and the alien and increases player's score by the score of the alien.
+   * Checks whether the bullet touches the player, and, if it does,
+   * the player loses one life and resets it position.
+   *
+   * @param b - A bullet from an alien.
+   * @returns - A boolean that tells whether the bullet touched the player
    */
-  private handleBulletsThatHitAlien() {
-    const playerBullets = this.bullets.filter(
-      (bullet) => bullet.from === "player"
-    );
+  private handleBulletContactWithPlayer(b: AlienBullet) {
+    /* 
+      if the bullet hits the player, the it
+      is removed and the player resets its 
+      position and loses one life 
+    */
+    if (this.env.bulletTouchesObject(b, this.player.pos, DIMENSIONS.player)) {
+      this.player.lives--;
+      this.player.resetPos();
+      return true;
+    }
+    return false;
+  }
 
-    let isSomeAlienKilled = false;
-    for (const playerBullet of playerBullets) {
-      for (const alien of this.alienSet) {
-        if (!alien) continue;
+  /**
+   * Checks whether a player bullet touches an alien, and, if it does,
+   * the player score increases and the touched alien is removed from the set.
+   *
+   * @param b - A bullet from the player.
+   * @returns - A boolean value that tells whether the bullet touches an alien in the set.
+   */
+  private handleBulletContactWithAlien(b: PlayerBullet) {
+    for (const alien of this.alienSet) {
+      if (alien === null) continue;
 
-        if (
-          this.env.bulletTouchesObject(
-            playerBullet,
-            this.alienSet.getAlienPos(alien.gridPos),
-            DIMENSIONS.alien
-          )
-        ) {
-          this.player.score += alien.score;
-          this.alienSet.removeAlien(alien);
-          playerBullet.collide(this);
-          isSomeAlienKilled = true;
-        }
+      const alienPos = this.alienSet.getAlienPos(alien.gridPos);
+      if (this.env.bulletTouchesObject(b, alienPos, DIMENSIONS.alien)) {
+        this.player.score += alien.score;
+        this.alienSet.removeAlien(alien);
+        return true;
       }
     }
-    if (isSomeAlienKilled) this.alienSet.adapt();
+    return false;
+  }
+
+  /**
+   * Checks whether the bullet touches a wall, and if so, calls
+   * the collide method on the wall if available.
+   *
+   * @param b - A bullet.
+   * @returns - A boolean value that tells whether the bullet touches a wall.
+   */
+  private handleBulletContactWithWall(b: Bullet) {
+    for (const wall of this.env.walls) {
+      if (this.env.bulletTouchesWall(b, wall)) {
+        if (wall instanceof BreakableWall) wall.collide(this, b.pos, b.size);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private handleBulletContactWithBoss(b: PlayerBullet) {
+    if (this.boss === null) return false;
+    if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
+      this.player.score += bossScore;
+      this.boss = null;
+      this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
+      return true;
+    }
   }
 
   /**
    * Fires the aliens that can fire.
    */
   private fireAliens() {
+    const newBullets: Bullet[] = [];
+
     for (const alien of this.alienSet) {
       if (!alien) continue;
 
       if (alien.gun.canFire()) {
-        this.bullets.push(
-          alien.fire(this.alienSet.getAlienPos(alien.gridPos))!
-        );
-      }
-    }
-  }
-
-  /**
-   * Checks which bullets hit the player, removes them and decreases the player's lives.
-   */
-  private handleBulletsThatHitPlayer() {
-    const alienBullets = this.bullets.filter(
-      (bullet) => bullet.from === "alien"
-    );
-
-    /* 
-      check if any alien bullet hits the player and if it does, the bullet
-      is removed and the player resets its position and loses one life 
-    */
-    alienBullets.forEach((b) => {
-      if (this.env.bulletTouchesObject(b, this.player.pos, DIMENSIONS.player)) {
-        this.player.lives--;
-        this.player.resetPos();
-        b.collide(this);
-      }
-    });
-  }
-
-  private removeOutOfBoundsBullets() {
-    const necessaryBullets = [];
-    for (const bullet of this.bullets) {
-      if (!this.env.isBulletOutOfBounds(bullet)) {
-        necessaryBullets.push(bullet);
+        const alienPos = this.alienSet.getAlienPos(alien.gridPos);
+        const b = alien.fire(alienPos)!;
+        newBullets.push(b);
       }
     }
 
-    this.bullets = necessaryBullets;
-  }
-
-  private handleAlienContactWithWall() {
-    for (const wall of this.env.walls) {
-      if (wall instanceof Wall) continue;
-      if (overlap(this.alienSet.pos, this.alienSet.size, wall.pos, wall.size)) {
-        for (const alien of this.alienSet) {
-          if (!alien) continue;
-          const alienPos = this.alienSet.getAlienPos(alien.gridPos);
-          wall.collide(this, alienPos, DIMENSIONS.alien);
-        }
-      }
-    }
+    this.bullets.push(...newBullets);
   }
 
   private handleBoss(timeStep: number) {
-    if (this.boss) this.boss.update(timeStep);
-    if (this.boss === null) this.timeSinceBossLastAppearance += timeStep;
+    if (this.boss !== null) this.boss.update(timeStep);
+    else this.timeSinceBossLastAppearance += timeStep;
 
     if (this.timeSinceBossLastAppearance >= this.bossAppearanceInterval) {
       this.boss = new Boss();
       this.timeSinceBossLastAppearance = 0;
     }
 
-    if (this.boss === null) return;
-    if (this.boss.pos.x >= 100) this.boss = null;
-
-    const playerBullets = this.bullets.filter((b) => b.from === "player");
-    for (const b of playerBullets) {
-      // boss can be null because we might have removed the boss in the previous iteration
-      if (this.boss === null) break;
-      if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
-        this.player.score += bossScore;
-        this.boss = null;
-        this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
-        b.collide(this);
-      }
+    if (this.boss && this.boss.pos.x >= 100) {
+      this.boss = null;
     }
   }
 
