@@ -101,9 +101,9 @@ const DIMENSIONS: {
 };
 
 /**
- * Describes the layout of the game for the model.
+ * Describes the layout of the game.
  */
-const MODEL_LAYOUT = {
+const LAYOUT = {
   padding: {
     hor: 3,
     ver: 3,
@@ -125,15 +125,10 @@ const ACTION_KEYS = {
   pauseGame: "Escape",
 } as const;
 
-const GAME_DISPLAY_SETTINGS = {
-  maxWidth: 920,
-  aspectRatio: 4 / 3,
-};
-
 const BOSS_CONFIG = {
-  yPos: 5,
-  speedX: 10,
-  baseAppearanceInterval: 30,
+  yPos: 6,
+  speedX: 13,
+  baseAppearanceInterval: 25,
   score: 150,
 };
 
@@ -327,16 +322,6 @@ function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
  * @returns - The size of the element excluding padding, border and margin
  */
 function getElementInnerDimensions(element: HTMLElement): Size {
-  /* ############################################################################################################################################ */
-  /* ############################################################################################################################################ */
-  /* ############################################################################################################################################ */
-  /* ############################################################################################################################################ */
-  /* ############################################################################################################################################ */
-  /* ############################################################################################################################################ */
-  /* ############################################################################################################################################ */
-  // if you have problems with the canvas width or canvas height, check this
-  // because there might be something going wrong in here
-
   const cs = getComputedStyle(element);
 
   const paddingY =
@@ -506,13 +491,13 @@ class AlienSet {
       (this.numRows - 1) * DIMENSIONS.alienSetGap.h;
 
     this.size = { w, h };
-    this.pos = new Vector(50 - w / 2, MODEL_LAYOUT.padding.ver + 12);
+    this.pos = new Vector(50 - w / 2, LAYOUT.padding.ver + 12);
 
     /*
       `(100 - SCENERY.padding.hor * 2 - w)` is the area within the padding edges,
       divide it by fifteen so that we have 15 steps along the display
     */
-    this.xStep = (100 - MODEL_LAYOUT.padding.hor * 2 - w) / 15;
+    this.xStep = (100 - LAYOUT.padding.hor * 2 - w) / 15;
 
     this.aliens = rows.map((row, y) => {
       return row.map((ch, x) => {
@@ -556,7 +541,7 @@ class AlienSet {
       the padding edge and it can update its position
     */
     if (
-      this.pos.x + this.size.w >= 100 - MODEL_LAYOUT.padding.hor &&
+      this.pos.x + this.size.w >= 100 - LAYOUT.padding.hor &&
       this.timeStepSum >= this.timeToUpdate &&
       this.direction === HorizontalDirection.Right
     ) {
@@ -564,7 +549,7 @@ class AlienSet {
       this.direction = HorizontalDirection.Left;
     } else if (
       /* if it is going left and has touched the padding edge and can update */
-      this.pos.x <= MODEL_LAYOUT.padding.hor &&
+      this.pos.x <= LAYOUT.padding.hor &&
       this.timeStepSum >= this.timeToUpdate &&
       this.direction === HorizontalDirection.Left
     ) {
@@ -585,7 +570,7 @@ class AlienSet {
           or the normal step to move
         */
         const rightDistance =
-          100 - this.pos.x - MODEL_LAYOUT.padding.hor - this.size.w;
+          100 - this.pos.x - LAYOUT.padding.hor - this.size.w;
         if (rightDistance < this.xStep * alienSetStepToEdgeAdjustment) {
           movedX = rightDistance;
         } else {
@@ -597,7 +582,7 @@ class AlienSet {
           get either the distance left to reach the inner left padding edge
           or the normal step to move
         */
-        const leftDistance = this.pos.x - MODEL_LAYOUT.padding.hor;
+        const leftDistance = this.pos.x - LAYOUT.padding.hor;
         if (leftDistance < this.xStep * alienSetStepToEdgeAdjustment) {
           movedX = leftDistance;
         } else {
@@ -834,7 +819,7 @@ class Alien {
       case "X": {
         return new Alien(
           gridPos,
-          20,
+          10,
           new Gun("alien", 40, { w: 0.5, h: 3 }, 4000),
           ch
         );
@@ -842,7 +827,7 @@ class Alien {
       case "Y": {
         return new Alien(
           gridPos,
-          40,
+          20,
           new Gun("alien", 60, { w: 1, h: 3 }, 6000),
           ch
         );
@@ -850,7 +835,7 @@ class Alien {
       case "Z": {
         return new Alien(
           gridPos,
-          60,
+          30,
           new Gun("alien", 80, { w: 1.5, h: 3 }, 7000),
           ch
         );
@@ -887,7 +872,7 @@ class Player {
 
   private baseXPos = 50 - DIMENSIONS.player.w / 2;
 
-  public pos: Vector = new Vector(this.baseXPos, MODEL_LAYOUT.playerYPos);
+  public pos: Vector = new Vector(this.baseXPos, LAYOUT.playerYPos);
 
   public readonly gun: Gun = new Gun("player", 70, { w: 0.5, h: 3 }, 400);
 
@@ -908,11 +893,11 @@ class Player {
   }
 
   public resetPos() {
-    this.pos = new Vector(this.baseXPos, MODEL_LAYOUT.playerYPos);
+    this.pos = new Vector(this.baseXPos, LAYOUT.playerYPos);
   }
 
   /**
-   * Updates the Player and pushes a new bullet into the state 
+   * Updates the Player and pushes a new bullet into the state
    * if {@link ACTION_KEYS.fire} is pressed and player can fire.
    *
    * @param timeStep - The time in seconds that has passed since the last update.
@@ -921,11 +906,11 @@ class Player {
   public update(state: GameState, timeStep: number, keys: KeysTracker) {
     const movedX = new Vector(timeStep * playerXSpeed, 0);
 
-    if (keys[ACTION_KEYS.moveLeft] && this.pos.x > MODEL_LAYOUT.padding.hor) {
+    if (keys[ACTION_KEYS.moveLeft] && this.pos.x > LAYOUT.padding.hor) {
       this.pos = this.pos.minus(movedX);
     } else if (
       keys[ACTION_KEYS.moveRight] &&
-      this.pos.x + DIMENSIONS.player.w < 100 - MODEL_LAYOUT.padding.hor
+      this.pos.x + DIMENSIONS.player.w < 100 - LAYOUT.padding.hor
     ) {
       this.pos = this.pos.plus(movedX);
     }
@@ -1418,14 +1403,14 @@ class GameState {
     const alienSet = new AlienSet(plan);
     const player = new Player();
 
-    const gap = (100 - MODEL_LAYOUT.wallsSize.w * MODEL_LAYOUT.numWalls) / 5;
+    const gap = (100 - LAYOUT.wallsSize.w * LAYOUT.numWalls) / 5;
 
-    const walls: Wall[] = new Array(MODEL_LAYOUT.numWalls)
+    const walls: Wall[] = new Array(LAYOUT.numWalls)
       .fill(undefined)
       .map((_, i) => {
         return new Wall(
-          { x: (i + 1) * gap + MODEL_LAYOUT.wallsSize.w * i, y: 75 },
-          MODEL_LAYOUT.wallsSize,
+          { x: (i + 1) * gap + LAYOUT.wallsSize.w * i, y: 75 },
+          LAYOUT.wallsSize,
           customWall3
         );
       });
@@ -1449,6 +1434,11 @@ const alienColors: {
   X: "limegreen",
   Y: "orange",
   Z: "pink",
+};
+
+const GAME_DISPLAY_SETTINGS = {
+  maxWidth: 920,
+  aspectRatio: 4 / 3,
 };
 
 /**
@@ -1792,7 +1782,7 @@ class CanvasView {
     // draw hearts to show player's lives
     // draw score
     const fontSize = Math.min(30, this.verPixels(6));
-    const yPixelsPadding = this.verPixels(MODEL_LAYOUT.padding.ver);
+    const yPixelsPadding = this.verPixels(LAYOUT.padding.ver);
 
     this.canvasContext.fillStyle = "#fff";
     this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
@@ -1801,7 +1791,7 @@ class CanvasView {
     this.canvasContext.textAlign = "start";
     this.canvasContext.fillText(
       `SCORE ${state.player.score}`,
-      this.horPixels(MODEL_LAYOUT.padding.hor),
+      this.horPixels(LAYOUT.padding.hor),
       fontSize + yPixelsPadding
     );
 
@@ -1809,7 +1799,7 @@ class CanvasView {
     this.canvasContext.textAlign = "end";
     this.canvasContext.fillText(
       `Lives ${state.player.lives}`,
-      this.horPixels(100 - MODEL_LAYOUT.padding.hor),
+      this.horPixels(100 - LAYOUT.padding.hor),
       fontSize + yPixelsPadding
     );
 
@@ -1877,7 +1867,7 @@ class CanvasView {
   private drawPressEscMessage() {
     const fontSize = Math.min(18, this.horPixels(2));
 
-    const xPixelPos = this.horPixels(MODEL_LAYOUT.padding.hor),
+    const xPixelPos = this.horPixels(LAYOUT.padding.hor),
       yPixelPos = this.verPixels(12);
 
     this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
