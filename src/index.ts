@@ -101,22 +101,41 @@ const DIMENSIONS: {
 };
 
 /**
- * the padding within the display.
+ * Describes the layout of the game for the model.
  */
-const displayPadding = {
-  hor: 3,
-  ver: 3,
+const MODEL_LAYOUT = {
+  padding: {
+    hor: 3,
+    ver: 3,
+  },
+  numWalls: 4,
+  wallsSize: {
+    w: 12,
+    h: 10,
+  },
+  playerYPos: 90,
+} as const;
+
+const ACTION_KEYS = {
+  moveRight: "ArrowRight",
+  moveLeft: "ArrowLeft",
+  fire: " ",
+  startGame: " ",
+  restartGame: " ",
+  pauseGame: "Escape",
+} as const;
+
+const GAME_DISPLAY_SETTINGS = {
+  maxWidth: 920,
+  aspectRatio: 4 / 3,
 };
 
-const moveRightActionKey = "ArrowRight",
-  moveLeftActionKey = "ArrowLeft",
-  fireActionKey = " ",
-  startGameActionKey = " ",
-  restartGameActionKey = " ",
-  pauseGameActionKey = "Escape";
-
-const displayMaxWidth = 920;
-const displayAspectRatio = 4 / 3;
+const BOSS_CONFIG = {
+  yPos: 5,
+  speedX: 10,
+  baseAppearanceInterval: 30,
+  score: 150,
+};
 
 const basicInvaderPlan = `
 ZZZZZZZZZZ
@@ -487,13 +506,13 @@ class AlienSet {
       (this.numRows - 1) * DIMENSIONS.alienSetGap.h;
 
     this.size = { w, h };
-    this.pos = new Vector(50 - w / 2, displayPadding.ver + 12);
+    this.pos = new Vector(50 - w / 2, MODEL_LAYOUT.padding.ver + 12);
 
     /*
-      `(100 - displayPadding.hor * 2 - w)` is the area within the padding edges,
+      `(100 - SCENERY.padding.hor * 2 - w)` is the area within the padding edges,
       divide it by fifteen so that we have 15 steps along the display
     */
-    this.xStep = (100 - displayPadding.hor * 2 - w) / 15;
+    this.xStep = (100 - MODEL_LAYOUT.padding.hor * 2 - w) / 15;
 
     this.aliens = rows.map((row, y) => {
       return row.map((ch, x) => {
@@ -537,7 +556,7 @@ class AlienSet {
       the padding edge and it can update its position
     */
     if (
-      this.pos.x + this.size.w >= 100 - displayPadding.hor &&
+      this.pos.x + this.size.w >= 100 - MODEL_LAYOUT.padding.hor &&
       this.timeStepSum >= this.timeToUpdate &&
       this.direction === HorizontalDirection.Right
     ) {
@@ -545,7 +564,7 @@ class AlienSet {
       this.direction = HorizontalDirection.Left;
     } else if (
       /* if it is going left and has touched the padding edge and can update */
-      this.pos.x <= displayPadding.hor &&
+      this.pos.x <= MODEL_LAYOUT.padding.hor &&
       this.timeStepSum >= this.timeToUpdate &&
       this.direction === HorizontalDirection.Left
     ) {
@@ -566,7 +585,7 @@ class AlienSet {
           or the normal step to move
         */
         const rightDistance =
-          100 - this.pos.x - displayPadding.hor - this.size.w;
+          100 - this.pos.x - MODEL_LAYOUT.padding.hor - this.size.w;
         if (rightDistance < this.xStep * alienSetStepToEdgeAdjustment) {
           movedX = rightDistance;
         } else {
@@ -578,7 +597,7 @@ class AlienSet {
           get either the distance left to reach the inner left padding edge
           or the normal step to move
         */
-        const leftDistance = this.pos.x - displayPadding.hor;
+        const leftDistance = this.pos.x - MODEL_LAYOUT.padding.hor;
         if (leftDistance < this.xStep * alienSetStepToEdgeAdjustment) {
           movedX = leftDistance;
         } else {
@@ -847,19 +866,14 @@ class Alien {
   }
 }
 
-const bossBaseYPos = 5;
-const speedX = 10;
-const baseBossAppearanceInterval = 30;
-const bossScore = 150;
-
 class Boss {
   pos: Vector;
   constructor() {
-    this.pos = new Vector(-DIMENSIONS.boss.w, bossBaseYPos);
+    this.pos = new Vector(-DIMENSIONS.boss.w, BOSS_CONFIG.yPos);
   }
 
   update(timeStep: number) {
-    this.pos = this.pos.plus(new Vector(speedX * timeStep, 0));
+    this.pos = this.pos.plus(new Vector(BOSS_CONFIG.speedX * timeStep, 0));
   }
 }
 
@@ -872,9 +886,8 @@ class Player {
   public readonly actorType = "player" as const;
 
   private baseXPos = 50 - DIMENSIONS.player.w / 2;
-  private baseYPos = 90;
 
-  public pos: Vector = new Vector(this.baseXPos, this.baseYPos);
+  public pos: Vector = new Vector(this.baseXPos, MODEL_LAYOUT.playerYPos);
 
   public readonly gun: Gun = new Gun("player", 70, { w: 0.5, h: 3 }, 400);
 
@@ -895,7 +908,7 @@ class Player {
   }
 
   public resetPos() {
-    this.pos = new Vector(this.baseXPos, this.baseYPos);
+    this.pos = new Vector(this.baseXPos, MODEL_LAYOUT.playerYPos);
   }
 
   /**
@@ -907,17 +920,17 @@ class Player {
   public update(state: GameState, timeStep: number, keys: KeysTracker) {
     const movedX = new Vector(timeStep * playerXSpeed, 0);
 
-    if (keys[moveLeftActionKey] && this.pos.x > displayPadding.hor) {
+    if (keys[ACTION_KEYS.moveLeft] && this.pos.x > MODEL_LAYOUT.padding.hor) {
       this.pos = this.pos.minus(movedX);
     } else if (
-      keys[moveRightActionKey] &&
-      this.pos.x + DIMENSIONS.player.w < 100 - displayPadding.hor
+      keys[ACTION_KEYS.moveRight] &&
+      this.pos.x + DIMENSIONS.player.w < 100 - MODEL_LAYOUT.padding.hor
     ) {
       this.pos = this.pos.plus(movedX);
     }
 
     this.gun.update(timeStep);
-    if (keys[fireActionKey] && this.gun.canFire()) {
+    if (keys[ACTION_KEYS.fire] && this.gun.canFire()) {
       state.bullets.push(this.fire()!);
     }
   }
@@ -948,6 +961,7 @@ class Gun {
     this.fireInterval = randomNum(0.9 * baseFireInterval, baseFireInterval);
     this.timeSinceLastShot = randomNum(0, this.fireInterval);
   }
+
   /**
    * Fires a bullet from a position.
    *
@@ -999,6 +1013,7 @@ class Gun {
     return this.timeSinceLastShot >= this.fireInterval;
   }
 }
+
 /**
  * Class representing a bullet.
  */
@@ -1012,10 +1027,10 @@ class Bullet {
    * @param size - The size of the bullet.
    */
   constructor(
-    public from: TShooters,
+    public readonly from: TShooters,
     public pos: Vector,
-    public speed: Vector,
-    public size: Size
+    public readonly speed: Vector,
+    public readonly size: Size
   ) {}
 
   /**
@@ -1236,8 +1251,8 @@ class GameEnv {
 
 function generateRandomBossAppearanceInterval() {
   return randomNum(
-    0.8 * baseBossAppearanceInterval,
-    1.2 * baseBossAppearanceInterval
+    0.8 * BOSS_CONFIG.baseAppearanceInterval,
+    1.2 * BOSS_CONFIG.baseAppearanceInterval
   );
 }
 
@@ -1390,7 +1405,7 @@ class GameState {
   private handleBulletContactWithBoss(b: PlayerBullet) {
     if (this.boss === null) return false;
     if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
-      this.player.score += bossScore;
+      this.player.score += BOSS_CONFIG.score;
       this.boss = null;
       this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
       return true;
@@ -1440,17 +1455,14 @@ class GameState {
     const alienSet = new AlienSet(plan);
     const player = new Player();
 
-    const numWalls = 4;
-    const wallWidth = 12;
-    const wallHeight = 10;
-    const gap = (100 - wallWidth * numWalls) / 5;
+    const gap = (100 - MODEL_LAYOUT.wallsSize.w * MODEL_LAYOUT.numWalls) / 5;
 
-    const walls: BreakableWall[] = new Array(numWalls)
+    const walls: BreakableWall[] = new Array(MODEL_LAYOUT.numWalls)
       .fill(undefined)
       .map((_, i) => {
         return new BreakableWall(
-          { x: (i + 1) * gap + wallWidth * i, y: 75 },
-          { w: wallWidth, h: wallHeight },
+          { x: (i + 1) * gap + MODEL_LAYOUT.wallsSize.w * i, y: 75 },
+          MODEL_LAYOUT.wallsSize,
           customWall3
         );
       });
@@ -1518,15 +1530,15 @@ class CanvasView {
    */
   public setDisplaySize() {
     let canvasWidth = Math.min(
-      displayMaxWidth,
+      GAME_DISPLAY_SETTINGS.maxWidth,
       getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
     );
 
-    let canvasHeight = canvasWidth / displayAspectRatio;
+    let canvasHeight = canvasWidth / GAME_DISPLAY_SETTINGS.aspectRatio;
 
     if (canvasHeight > innerHeight) {
       canvasHeight = innerHeight;
-      canvasWidth = canvasHeight * displayAspectRatio;
+      canvasWidth = canvasHeight * GAME_DISPLAY_SETTINGS.aspectRatio;
     }
 
     this.canvas.setAttribute("width", canvasWidth.toString());
@@ -1584,9 +1596,9 @@ class CanvasView {
     });
 
     this.trackedKeys = trackKeys([
-      moveLeftActionKey,
-      moveRightActionKey,
-      fireActionKey,
+      ACTION_KEYS.moveLeft,
+      ACTION_KEYS.moveRight,
+      ACTION_KEYS.fire,
     ]);
   }
 
@@ -1834,7 +1846,7 @@ class CanvasView {
     // draw hearts to show player's lives
     // draw score
     const fontSize = Math.min(30, this.verPixels(6));
-    const yPixelsPadding = this.verPixels(displayPadding.ver);
+    const yPixelsPadding = this.verPixels(MODEL_LAYOUT.padding.ver);
 
     this.canvasContext.fillStyle = "#fff";
     this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
@@ -1843,7 +1855,7 @@ class CanvasView {
     this.canvasContext.textAlign = "start";
     this.canvasContext.fillText(
       `SCORE ${state.player.score}`,
-      this.horPixels(displayPadding.hor),
+      this.horPixels(MODEL_LAYOUT.padding.hor),
       fontSize + yPixelsPadding
     );
 
@@ -1851,7 +1863,7 @@ class CanvasView {
     this.canvasContext.textAlign = "end";
     this.canvasContext.fillText(
       `Lives ${state.player.lives}`,
-      this.horPixels(100 - displayPadding.hor),
+      this.horPixels(100 - MODEL_LAYOUT.padding.hor),
       fontSize + yPixelsPadding
     );
 
@@ -1919,7 +1931,7 @@ class CanvasView {
   private drawPressEscMessage() {
     const fontSize = Math.min(18, this.horPixels(2));
 
-    const xPixelPos = this.horPixels(displayPadding.hor),
+    const xPixelPos = this.horPixels(MODEL_LAYOUT.padding.hor),
       yPixelPos = this.verPixels(12);
 
     this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
@@ -1974,13 +1986,13 @@ class GamePresenter {
   }
 
   private addEventHandlers() {
-    this.view.addKeyHandler(pauseGameActionKey, this.handlePause.bind(this));
+    this.view.addKeyHandler(ACTION_KEYS.pauseGame, this.handlePause.bind(this));
     this.view.addKeyHandler(
-      startGameActionKey,
+      ACTION_KEYS.startGame,
       this.handleStartGame.bind(this)
     );
     this.view.addKeyHandler(
-      restartGameActionKey,
+      ACTION_KEYS.restartGame,
       this.handleRestartGame.bind(this)
     );
   }
