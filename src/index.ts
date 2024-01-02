@@ -912,7 +912,8 @@ class Player {
   }
 
   /**
-   * Updates the Player.
+   * Updates the Player and pushes a new bullet into the state 
+   * if {@link ACTION_KEYS.fire} is pressed and player can fire.
    *
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys are currently held down.
@@ -1055,20 +1056,7 @@ class Bullet {
 type AlienBullet = Bullet & { from: "alien" };
 type PlayerBullet = Bullet & { from: "player" };
 
-/**
- * Class representing an unbreakable wall.
- */
 class Wall {
-  /**
-   * Creates an unbreakable wall.
-   *
-   * @param pos - The position of the wall.
-   * @param size - The size of the wall.
-   */
-  constructor(public readonly pos: Coords, public readonly size: Size) {}
-}
-
-class BreakableWall {
   /**
    * The pieces of the wall as a matrix.
    */
@@ -1130,24 +1118,17 @@ class BreakableWall {
   }
 
   /**
-   * This method is called when an object hits the wall.
-   * It checks which pieces the object has hit and removes them,
-   * calling `collide` on the object if it was passed in and it hits a piece.
+   * This method is called when an object might touch the wall.
+   * It checks which pieces the object has touched and removes them.
    *
-   * @param state - The state of the game.
    * @param objPos - The position of the object.
    * @param objSize - The size of the object.
-   * @param obj - The object itself. The object must have a collide method
-   * that takes the state as the only argument and returns nothing.
+   * @returns - A boolean that tells whether the object touches a piece of the wall.
    */
-  collide<State>(
-    state: State,
-    objPos: Coords,
-    objSize: Size,
-    obj?: { collide(state: State): void }
-  ) {
-    if (!overlap(this.pos, this.size, objPos, objSize)) return;
+  collide(objPos: Coords, objSize: Size) {
+    if (!overlap(this.pos, this.size, objPos, objSize)) return false;
 
+    let touchedPiece = false;
     for (const { row, column, piece } of this) {
       if (!piece) continue;
 
@@ -1155,9 +1136,11 @@ class BreakableWall {
 
       if (overlap(objPos, objSize, piecePos, this.pieceSize)) {
         this.piecesMatrix[row][column] = false;
-        obj?.collide(state);
+        if (!touchedPiece) touchedPiece = true;
       }
     }
+
+    return touchedPiece;
   }
 
   /**
@@ -1174,12 +1157,6 @@ class BreakableWall {
     }
   }
 }
-
-/**
- * Class representing a breakable wall.
- */
-
-type TWalls = BreakableWall | Wall;
 
 /* ========================================================================= */
 /* ========================== Environment and State ======================== */
@@ -1200,18 +1177,8 @@ class GameEnv {
   constructor(
     public alienSet: AlienSet,
     public player: Player,
-    public walls: TWalls[]
+    public walls: Wall[]
   ) {}
-
-  /**
-   * Checks whether a bullet touches a wall.
-   *
-   * @param bullet - The bullet whose position needs to be checked as overlapping a wall.
-   * @returns - A boolean value which says whether the bullet touches a wall.
-   */
-  bulletTouchesWall(bullet: Bullet, wall: TWalls): boolean {
-    return overlap(wall.pos, wall.size, bullet.pos, bullet.size);
-  }
 
   /**
    * Checks whether the bullet is outside the boundaries of the screen.
@@ -1230,10 +1197,6 @@ class GameEnv {
    */
   alienSetTouchesPlayer() {
     return this.alienSet.pos.y + this.alienSet.size.h >= this.player.pos.y;
-  }
-
-  alienSetTouchesWall(wall: TWalls) {
-    return this.alienSet.pos.y + this.alienSet.size.h >= wall.pos.y;
   }
 
   /**
@@ -1292,9 +1255,8 @@ class GameState {
     this.player.update(this, timeStep, keys);
 
     this.fireAliens();
-    this.bullets.forEach((bullet) => bullet.update(timeStep));
 
-    this.handleBullets();
+    this.handleBullets(timeStep);
     this.handleBoss(timeStep);
 
     if (this.alienSet.alive === 0) {
@@ -1309,7 +1271,9 @@ class GameState {
   /**
    * Handles all bullets in the game, using GameEnv to check collision, removing out of bounds bullets and so on.
    */
-  handleBullets() {
+  handleBullets(timeStep: number) {
+    this.bullets.forEach((bullet) => bullet.update(timeStep));
+
     const newBullets: Bullet[] = [];
 
     let isSomeAlienKilled = false;
@@ -1332,7 +1296,7 @@ class GameState {
         if (touchedAlien || touchedBoss) continue;
       }
 
-      const touchedWall = this.handleBulletContactWithWall(b);
+      const touchedWall = this.handleBulletContactWithWalls(b);
       if (touchedWall) continue;
 
       newBullets.push(b);
@@ -1391,15 +1355,14 @@ class GameState {
    * @param b - A bullet.
    * @returns - A boolean value that tells whether the bullet touches a wall.
    */
-  private handleBulletContactWithWall(b: Bullet) {
+  private handleBulletContactWithWalls(b: Bullet) {
+    let touchedPiece = false;
     for (const wall of this.env.walls) {
-      if (this.env.bulletTouchesWall(b, wall)) {
-        if (wall instanceof BreakableWall) wall.collide(this, b.pos, b.size);
-        return true;
-      }
+      touchedPiece = wall.collide(b.pos, b.size);
+      if (touchedPiece) break;
     }
 
-    return false;
+    return touchedPiece;
   }
 
   private handleBulletContactWithBoss(b: PlayerBullet) {
@@ -1457,10 +1420,10 @@ class GameState {
 
     const gap = (100 - MODEL_LAYOUT.wallsSize.w * MODEL_LAYOUT.numWalls) / 5;
 
-    const walls: BreakableWall[] = new Array(MODEL_LAYOUT.numWalls)
+    const walls: Wall[] = new Array(MODEL_LAYOUT.numWalls)
       .fill(undefined)
       .map((_, i) => {
-        return new BreakableWall(
+        return new Wall(
           { x: (i + 1) * gap + MODEL_LAYOUT.wallsSize.w * i, y: 75 },
           MODEL_LAYOUT.wallsSize,
           customWall3
@@ -1786,30 +1749,13 @@ class CanvasView {
     this.canvasContext.restore();
   }
 
-  private drawWalls(walls: TWalls[]) {
+  private drawWalls(walls: Wall[]) {
     for (const wall of walls) {
-      if (wall instanceof Wall) {
-        this.drawUnbreakableWall(wall);
-      } else {
-        this.drawBreakableWall(wall);
-      }
+      this.drawWall(wall);
     }
   }
 
-  private drawUnbreakableWall(wall: Wall) {
-    const { x, y } = this.getPixelPos(wall.pos);
-
-    this.canvasContext.save();
-    this.canvasContext.translate(x, y);
-
-    const { w, h } = this.getPixelSize(wall.size);
-    this.canvasContext.fillStyle = "#ffffff";
-    this.canvasContext.fillRect(0, 0, w, h);
-
-    this.canvasContext.restore();
-  }
-
-  private drawBreakableWall(wall: BreakableWall) {
+  private drawWall(wall: Wall) {
     const { x, y } = this.getPixelPos(wall.pos);
 
     this.canvasContext.save();

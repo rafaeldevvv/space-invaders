@@ -1,9 +1,3 @@
-- Put the global variables into namespaces or something like that for better organization
-  - Create an object called 'scenery' or something, and put everything
-  regarding the game interface organization into there (like number of walls, walls base y pos, player base y pos,
-  padding, metadata y pos, and so on)
-- commit & update README
-
 - Tweak the boss configuration a little bit, change size, score(make it random in steps of 10) and so on
 - commit & update README
 
