@@ -1,10 +1,10 @@
-- Tweak the boss configuration a little bit, change size, score(make it random in steps of 10) and so on
-- commit & update README
-
 - Add paused hint to view
 - commit & update README
 
 - Add more stuff to gameove screen such as score, aliens killed, bosses killed and so on.
+- commit & update README for each one
+
+- change boss score(make it random in steps of 10)
 - commit & update README for each one
 
 - Adjust the aliens fire interval (increase it)

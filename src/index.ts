@@ -106,7 +106,7 @@ const DIMENSIONS: {
 const LAYOUT = {
   padding: {
     hor: 3,
-    ver: 3,
+    ver: 1,
   },
   numWalls: 4,
   wallsSize: {
@@ -1234,7 +1234,7 @@ class GameState {
    * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
    */
   public update(timeStep: number, keys: KeysTracker) {
-    if (this.status === "start" || this.status === "lost") return;
+    if (this.status !== "running") return;
 
     this.alienSet.update(timeStep);
     this.player.update(this, timeStep, keys);
@@ -1510,9 +1510,13 @@ class CanvasView {
     this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
     switch (state.status) {
-      case "paused":
       case "running": {
         this.drawRunningGame(state, timeStep);
+        break;
+      }
+      case "paused": {
+        this.drawRunningGame(state, timeStep);
+        this.drawPauseHint();
         break;
       }
       case "start": {
@@ -1785,6 +1789,7 @@ class CanvasView {
     const yPixelsPadding = this.verPixels(LAYOUT.padding.ver);
 
     this.canvasContext.fillStyle = "#fff";
+    this.canvasContext.textBaseline = "top";
     this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
 
     // draw the score of the player
@@ -1810,6 +1815,28 @@ class CanvasView {
       `${fps} FPS`,
       this.horPixels(50),
       fontSize + yPixelsPadding
+    );
+  }
+
+  private drawPauseHint() {
+    const hintWidth = this.horPixels(20),
+      hintHeight = this.verPixels(8);
+    const hintXPos = this.horPixels(50) - hintWidth / 2,
+      hintYPos = this.verPixels(50) - hintHeight / 2;
+
+    this.canvasContext.fillStyle = "#fff";
+    // the `- 3` part is just an adjustment
+    this.canvasContext.fillRect(hintXPos, hintYPos - 3, hintWidth, hintHeight);
+
+    const fontSize = this.horPixels(5);
+    this.canvasContext.fillStyle = "#000";
+    this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
+    this.canvasContext.textAlign = "center";
+    this.canvasContext.textBaseline = "middle";
+    this.canvasContext.fillText(
+      "PAUSED",
+      this.horPixels(50),
+      this.verPixels(50)
     );
   }
 
@@ -1900,7 +1927,6 @@ class GamePresenter {
   State: typeof GameState;
   state: GameState;
   view: IView<GameState>;
-  paused: boolean = false;
 
   constructor(
     State: typeof GameState,
@@ -1935,13 +1961,15 @@ class GamePresenter {
 
   private handlePause(this: GamePresenter, e: KeyboardEvent) {
     e.preventDefault();
-    if (this.state.status !== "running") return;
+    if (this.state.status !== "running" && this.state.status !== "paused") {
+      return;
+    }
 
-    if (this.paused) {
-      this.paused = false;
+    if (this.state.status === "paused") {
+      this.state.status = "running";
       this.runGame();
     } else {
-      this.paused = true;
+      this.state.status = "paused";
     }
   }
 
@@ -1967,7 +1995,10 @@ class GamePresenter {
   }
 
   private frame(this: GamePresenter, timeStep: number) {
-    if (this.paused && this.state.status === "running") return false;
+    if (this.state.status === "paused") {
+      this.view.syncState(this.state, timeStep);
+      return false;
+    }
 
     this.state.update(timeStep, this.view.trackedKeys);
     this.view.syncState(this.state, timeStep);
