@@ -1,7 +1,9 @@
-- Add paused hint to view
-- commit & update README
+- Improve view
+  - Implement a more consistent font size system
+  - Add more stuff to gameove screen such as score, aliens killed, bosses killed and so on.
+- commit & update README for each one
 
-- Add more stuff to gameove screen such as score, aliens killed, bosses killed and so on.
+- Implement alien collision with wall (you already did it, but you removed this feature without meaning to)
 - commit & update README for each one
 
 - change boss score(make it random in steps of 10)

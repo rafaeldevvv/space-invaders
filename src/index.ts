@@ -106,7 +106,7 @@ const DIMENSIONS: {
 const LAYOUT = {
   padding: {
     hor: 3,
-    ver: 1,
+    ver: 3,
   },
   numWalls: 4,
   wallsSize: {
@@ -1211,6 +1211,8 @@ class GameState {
   public bullets: Bullet[] = [];
   public status: "lost" | "running" | "start" | "paused" = "start";
   public boss: Boss | null = null;
+  public bossesKilled = 0;
+  public aliensKilled = 0;
   private timeSinceBossLastAppearance = 0;
   private bossAppearanceInterval = generateRandomBossAppearanceInterval();
 
@@ -1326,6 +1328,7 @@ class GameState {
       const alienPos = this.alienSet.getAlienPos(alien.gridPos);
       if (this.env.bulletTouchesObject(b, alienPos, DIMENSIONS.alien)) {
         this.player.score += alien.score;
+        this.aliensKilled++;
         this.alienSet.removeAlien(alien);
         return true;
       }
@@ -1355,6 +1358,7 @@ class GameState {
     if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
       this.player.score += BOSS_CONFIG.score;
       this.boss = null;
+      this.bossesKilled++;
       this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
       return true;
     }
@@ -1441,6 +1445,8 @@ const GAME_DISPLAY_SETTINGS = {
   aspectRatio: 4 / 3,
 };
 
+type FontSizes = "sm" | "md" | "lg" | "xl" | "2xl";
+
 /**
  * Class represeting a view component used to display the game state.
  * It uses the HTML Canvas API.
@@ -1496,7 +1502,7 @@ class CanvasView {
 
     this.canvas.setAttribute("width", canvasWidth.toString());
     this.canvas.setAttribute("height", canvasHeight.toString());
-    this.syncState(this.state, 0);
+    this.syncState(this.state, 1 / 60);
   }
 
   /**
@@ -1524,7 +1530,7 @@ class CanvasView {
         break;
       }
       case "lost": {
-        this.drawGameOverScreen();
+        this.drawGameOverScreen(state);
         break;
       }
       default: {
@@ -1613,6 +1619,30 @@ class CanvasView {
       w: this.horPixels(percentageSize.w),
       h: this.verPixels(percentageSize.h),
     };
+  }
+
+  private getFontSize(size: FontSizes) {
+    switch (size) {
+      case "sm": {
+        return this.horPixels(2);
+      }
+      case "md": {
+        return this.verPixels(4);
+      }
+      case "lg": {
+        return this.horPixels(6);
+      }
+      case "xl": {
+        return this.horPixels(8);
+      }
+      case "2xl": {
+        return this.horPixels(10);
+      }
+      default: {
+        const _never: never = size;
+        throw new Error("Unexpected font size:", _never);
+      }
+    }
   }
 
   /**
@@ -1785,7 +1815,7 @@ class CanvasView {
   private drawMetadata(state: GameState, timeStep: number) {
     // draw hearts to show player's lives
     // draw score
-    const fontSize = Math.min(30, this.verPixels(6));
+    const fontSize = this.getFontSize("md");
     const yPixelsPadding = this.verPixels(LAYOUT.padding.ver);
 
     this.canvasContext.fillStyle = "#fff";
@@ -1797,7 +1827,7 @@ class CanvasView {
     this.canvasContext.fillText(
       `SCORE ${state.player.score}`,
       this.horPixels(LAYOUT.padding.hor),
-      fontSize + yPixelsPadding
+      yPixelsPadding
     );
 
     // draw how many lives the player has
@@ -1805,7 +1835,7 @@ class CanvasView {
     this.canvasContext.fillText(
       `Lives ${state.player.lives}`,
       this.horPixels(100 - LAYOUT.padding.hor),
-      fontSize + yPixelsPadding
+      yPixelsPadding
     );
 
     // draw how many fps the game is running at
@@ -1814,7 +1844,7 @@ class CanvasView {
     this.canvasContext.fillText(
       `${fps} FPS`,
       this.horPixels(50),
-      fontSize + yPixelsPadding
+      yPixelsPadding
     );
   }
 
@@ -1846,7 +1876,7 @@ class CanvasView {
   }
 
   private drawTitle() {
-    const fontSize = Math.min(65, this.horPixels(15));
+    const fontSize = this.getFontSize("2xl");
     this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
 
     const xPixelPos = this.horPixels(50),
@@ -1860,7 +1890,7 @@ class CanvasView {
 
   private drawTwinkleMessage(message: string) {
     if (Math.round(performance.now() / 800) % 2 === 0) {
-      const fontSize = Math.min(30, this.horPixels(6));
+      const fontSize = this.getFontSize('lg');
       this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
       this.canvasContext.textAlign = "center";
       this.canvasContext.fillStyle = "#fff";
@@ -1875,8 +1905,8 @@ class CanvasView {
   /**
    * Draws a screen for when the game is over.
    */
-  private drawGameOverScreen() {
-    const fontSize = Math.min(65, this.horPixels(10));
+  private drawGameOverScreen(state: GameState) {
+    const fontSize = this.getFontSize("2xl");
 
     const xPixelPos = this.horPixels(50),
       yPixelPos = this.verPixels(30);
@@ -1892,14 +1922,15 @@ class CanvasView {
   }
 
   private drawPressEscMessage() {
-    const fontSize = Math.min(18, this.horPixels(2));
+    const fontSize = this.getFontSize("sm");
 
     const xPixelPos = this.horPixels(LAYOUT.padding.hor),
-      yPixelPos = this.verPixels(12);
+      yPixelPos = this.verPixels(8);
 
     this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
     this.canvasContext.fillStyle = "#fff";
     this.canvasContext.textAlign = "left";
+    this.canvasContext.textBaseline = "top";
 
     this.canvasContext.fillText(
       'Press "Esc" to pause/unpause',

@@ -1056,6 +1056,9 @@ What amazed me and inspired me to talk about it here is that I only had to chang
 - [Suggestion: option to include undefined in index signatures](https://github.com/Microsoft/TypeScript/issues/13778)
 - [Canvas API - Drawing text](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text)
 - [Difference between Single Responsibility Principle and Separation of Concerns](https://stackoverflow.com/questions/1724469/difference-between-single-responsibility-principle-and-separation-of-concerns)
+- [Enums](https://www.typescriptlang.org/docs/handbook/enums.html)
+- [Property accessors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Property_accessors)
+- [What are enums and why are they useful?](https://stackoverflow.com/questions/4709175/what-are-enums-and-why-are-they-useful)
 
 #### Comments
 
