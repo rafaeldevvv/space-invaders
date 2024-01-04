@@ -56,13 +56,14 @@ const alienTypesRegExp = new RegExp(`(\\w*(${alienTypes.join("|")})*\\w*)+`);
  * It takes a union of strings and generate an object type whose
  * property names are the strings passed in and whose property values are booleans.
  */
-type FlagsFromUnion<Keys extends string> = {
-  [Key in Keys]: boolean;
+
+type MappedObjectFromUnion<Keys extends string, Type> = {
+  [Key in Keys]: Type;
 };
 
 type GameKeys = " " | "ArrowLeft" | "ArrowRight";
 // this is for methods that expect a keys tracker
-type KeysTracker = FlagsFromUnion<GameKeys>;
+type KeysTracker = MappedObjectFromUnion<GameKeys, boolean>;
 
 /* helpers */
 type NumOrNull = number | null;
@@ -346,8 +347,10 @@ function getElementInnerDimensions(element: HTMLElement): Size {
  * @param keys - An array of strings representing key names.
  * @returns - An object whose property names are the strings within `keys` and values are booleans.
  */
-function trackKeys<Type extends string>(keys: Type[]): FlagsFromUnion<Type> {
-  const down = {} as FlagsFromUnion<Type>;
+function trackKeys<Type extends string>(
+  keys: Type[]
+): MappedObjectFromUnion<Type, boolean> {
+  const down = {} as MappedObjectFromUnion<Type, boolean>;
   keys.forEach((key) => (down[key] = false));
 
   function onPressKey(e: KeyboardEvent) {
@@ -1445,7 +1448,19 @@ const GAME_DISPLAY_SETTINGS = {
   aspectRatio: 4 / 3,
 };
 
-type FontSizes = "sm" | "md" | "lg" | "xl" | "2xl";
+type FontSizes = "sm" | "md" | "lg" | "xl";
+
+/**
+ * Object representing standard font sizes.
+ * The property names are font size names, and the values are percentages
+ * of the width of the canvas.
+ */
+const fontSizes: MappedObjectFromUnion<FontSizes, number> = {
+  sm: 2.5,
+  md: 4,
+  lg: 6,
+  xl: 10,
+};
 
 /**
  * Class represeting a view component used to display the game state.
@@ -1622,27 +1637,7 @@ class CanvasView {
   }
 
   private getFontSize(size: FontSizes) {
-    switch (size) {
-      case "sm": {
-        return this.horPixels(2);
-      }
-      case "md": {
-        return this.verPixels(4);
-      }
-      case "lg": {
-        return this.horPixels(6);
-      }
-      case "xl": {
-        return this.horPixels(8);
-      }
-      case "2xl": {
-        return this.horPixels(10);
-      }
-      default: {
-        const _never: never = size;
-        throw new Error("Unexpected font size:", _never);
-      }
-    }
+    return this.horPixels(fontSizes[size]);
   }
 
   /**
@@ -1849,16 +1844,16 @@ class CanvasView {
   }
 
   private drawPauseHint() {
-    const hintWidth = this.horPixels(20),
-      hintHeight = this.verPixels(8);
+    const hintWidth = this.horPixels(24),
+      hintHeight = this.verPixels(10);
     const hintXPos = this.horPixels(50) - hintWidth / 2,
       hintYPos = this.verPixels(50) - hintHeight / 2;
 
     this.canvasContext.fillStyle = "#fff";
     // the `- 3` part is just an adjustment
-    this.canvasContext.fillRect(hintXPos, hintYPos - 3, hintWidth, hintHeight);
+    this.canvasContext.fillRect(hintXPos, hintYPos - 4, hintWidth, hintHeight);
 
-    const fontSize = this.horPixels(5);
+    const fontSize = this.getFontSize("lg");
     this.canvasContext.fillStyle = "#000";
     this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
     this.canvasContext.textAlign = "center";
@@ -1876,7 +1871,7 @@ class CanvasView {
   }
 
   private drawTitle() {
-    const fontSize = this.getFontSize("2xl");
+    const fontSize = this.getFontSize("xl");
     this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
 
     const xPixelPos = this.horPixels(50),
@@ -1890,7 +1885,8 @@ class CanvasView {
 
   private drawTwinkleMessage(message: string) {
     if (Math.round(performance.now() / 800) % 2 === 0) {
-      const fontSize = this.getFontSize('lg');
+      const fontSize = this.getFontSize("md");
+      console.log(fontSize);
       this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
       this.canvasContext.textAlign = "center";
       this.canvasContext.fillStyle = "#fff";
@@ -1906,7 +1902,7 @@ class CanvasView {
    * Draws a screen for when the game is over.
    */
   private drawGameOverScreen(state: GameState) {
-    const fontSize = this.getFontSize("2xl");
+    const fontSize = this.getFontSize("xl");
 
     const xPixelPos = this.horPixels(50),
       yPixelPos = this.verPixels(30);
