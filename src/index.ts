@@ -1902,17 +1902,42 @@ class CanvasView {
    * Draws a screen for when the game is over.
    */
   private drawGameOverScreen(state: GameState) {
-    const fontSize = this.getFontSize("xl");
+    const titleFontSize = this.getFontSize("xl");
+
+    const {
+      bossesKilled,
+      aliensKilled,
+      player: { score },
+    } = state;
 
     const xPixelPos = this.horPixels(50),
-      yPixelPos = this.verPixels(30);
+      yPixelPos = this.verPixels(16);
 
-    this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
-    this.canvasContext.fillStyle = "#f66";
+    this.canvasContext.font = `${titleFontSize}px ${this.canvasFontFamily}`;
+    this.canvasContext.fillStyle = "#f77";
     this.canvasContext.textAlign = "center";
+    this.canvasContext.textBaseline = "top";
 
     this.canvasContext.fillText("GAME", xPixelPos, yPixelPos);
-    this.canvasContext.fillText("OVER", xPixelPos, yPixelPos + fontSize);
+    this.canvasContext.fillText("OVER", xPixelPos, this.verPixels(27));
+
+    const subtitleFontSize = this.getFontSize("md");
+
+    this.canvasContext.font = `${subtitleFontSize}px ${this.canvasFontFamily}`;
+    this.canvasContext.fillStyle = "#fff";
+
+    const aliens = aliensKilled === 1 ? "alien" : "aliens";
+    const bosses = bossesKilled === 1 ? "boss" : "bosses";
+    this.canvasContext.fillText(
+      `You killed ${aliensKilled} ${aliens} and ${bossesKilled} ${bosses}`,
+      this.horPixels(50),
+      this.verPixels(50)
+    );
+    this.canvasContext.fillText(
+      `Your score is ${score}`,
+      this.horPixels(50),
+      this.verPixels(57)
+    );
 
     this.drawTwinkleMessage("Press space to play again");
   }
