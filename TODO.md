@@ -1,8 +1,3 @@
-- Improve view
-  - Implement a more consistent font size system
-  - Add more stuff to gameove screen such as score, aliens killed, bosses killed and so on.
-- commit & update README for each one
-
 - Implement alien collision with wall (you already did it, but you removed this feature without meaning to)
 - commit & update README for each one
 
@@ -23,10 +18,16 @@
 - commit & update README
 
 - Implement mobile controls
+  - You might need to change your approach regarding the keys
+    - Idea 1: Actions instead of keys.
 - commit & update README
 
 - Add animation for alien and player dying
 - commit & update README
+
+- Improve view
+  - Refactor it
+- commit & update README for each one
 
 - Make the assets, styles and so on (or maybe make something similar to the wall for the pixel art images)
   - Add images

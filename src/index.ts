@@ -1152,7 +1152,7 @@ class Wall {
 
 /**
  * Class representing the Game Environment responsible
- * for managing colision.
+ * for managing collision.
  */
 class GameEnv {
   /**
@@ -1174,7 +1174,7 @@ class GameEnv {
    * @param bullet
    * @returns
    */
-  isBulletOutOfBounds(bullet: Bullet) {
+  public isBulletOutOfBounds(bullet: Bullet) {
     return bullet.pos.y >= 100 || bullet.pos.y + bullet.size.h <= 0;
   }
 
@@ -1183,7 +1183,7 @@ class GameEnv {
    *
    * @returns - A boolean value that says whether the alien set has reached a wall.
    */
-  alienSetTouchesPlayer() {
+  public alienSetTouchesPlayer() {
     return this.alienSet.pos.y + this.alienSet.size.h >= this.player.pos.y;
   }
 
@@ -1195,8 +1195,20 @@ class GameEnv {
    * @param objSize - The size of the object.
    * @returns - A boolean value that says whether the object is shot.
    */
-  bulletTouchesObject(bullet: Bullet, objPos: Coords, objSize: Size) {
+  public bulletTouchesObject(bullet: Bullet, objPos: Coords, objSize: Size) {
     return overlap(bullet.pos, bullet.size, objPos, objSize);
+  }
+
+  public handleAlienSetContactWithWall() {
+    for (const wall of this.walls) {
+      for (const alien of this.alienSet) {
+        if (alien === null) continue;
+
+        const alienPos = this.alienSet.getAlienPos(alien.gridPos);
+        wall.collide(alienPos, DIMENSIONS.alien);
+      }
+    }
+    return false;
   }
 }
 
@@ -1248,6 +1260,7 @@ class GameState {
 
     this.handleBullets(timeStep);
     this.handleBoss(timeStep);
+    this.env.handleAlienSetContactWithWall();
 
     if (this.alienSet.alive === 0) {
       this.alienSet = new AlienSet(basicInvaderPlan);
