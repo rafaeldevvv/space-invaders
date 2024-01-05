@@ -130,7 +130,7 @@ const BOSS_CONFIG = {
   yPos: 6,
   speedX: 13,
   baseAppearanceInterval: 25,
-  score: 150,
+  score: 200,
 };
 
 const basicInvaderPlan = `
@@ -1515,7 +1515,7 @@ class CanvasView {
   /**
    * Sets the size of the canvas based on the size of the its parent element.
    */
-  public setDisplaySize() {
+  public setDisplaySize(this: CanvasView) {
     let canvasWidth = Math.min(
       GAME_DISPLAY_SETTINGS.maxWidth,
       getElementInnerDimensions(this.canvas.parentNode as HTMLElement).w
@@ -1538,7 +1538,7 @@ class CanvasView {
    *
    * @param state - A new game state.
    */
-  public syncState(state: GameState, timeStep: number) {
+  public syncState(this: CanvasView, state: GameState, timeStep: number) {
     this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.canvasContext.fillStyle = "black";
     this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -1568,7 +1568,7 @@ class CanvasView {
     }
   }
 
-  public addKeyHandler(key: string, handler: KeyboardEventHandler) {
+  public addKeyHandler(this: CanvasView, key: string, handler: KeyboardEventHandler) {
     if (this.keysHandlers.has(key)) {
       const handlers = this.keysHandlers.get(key)!;
       this.keysHandlers.set(key, [...handlers, handler]);
@@ -1899,7 +1899,6 @@ class CanvasView {
   private drawTwinkleMessage(message: string) {
     if (Math.round(performance.now() / 800) % 2 === 0) {
       const fontSize = this.getFontSize("md");
-      console.log(fontSize);
       this.canvasContext.font = `${fontSize}px ${this.canvasFontFamily}`;
       this.canvasContext.textAlign = "center";
       this.canvasContext.fillStyle = "#fff";

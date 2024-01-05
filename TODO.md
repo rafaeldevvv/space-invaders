@@ -1,6 +1,3 @@
-- Implement alien collision with wall (you already did it, but you removed this feature without meaning to)
-- commit & update README for each one
-
 - change boss score(make it random in steps of 10)
 - commit & update README for each one
 
@@ -14,6 +11,9 @@
 - Implement alien set entrance animation.
 - commit & update README
 
+- Add animation for alien and player dying
+- commit & update README
+
 - Adjust sizes if needed
 - commit & update README
 
@@ -22,8 +22,6 @@
     - Idea 1: Actions instead of keys.
 - commit & update README
 
-- Add animation for alien and player dying
-- commit & update README
 
 - Improve view
   - Refactor it

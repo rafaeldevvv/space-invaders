@@ -1059,6 +1059,7 @@ What amazed me and inspired me to talk about it here is that I only had to chang
 - [Enums](https://www.typescriptlang.org/docs/handbook/enums.html)
 - [Property accessors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Property_accessors)
 - [What are enums and why are they useful?](https://stackoverflow.com/questions/4709175/what-are-enums-and-why-are-they-useful)
+- [Space Invaders game rules](https://users.cs.northwestern.edu/~etm453/Gaming/SpaceInvadersRules.htm)
 
 #### Comments
 
