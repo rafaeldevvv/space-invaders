@@ -439,6 +439,20 @@ function getFirstOrLastRowIfDead(rows: AlienSet["aliens"]): number | null {
   else return null;
 }
 
+/**
+ * Generates a number which is a random number between
+ * the given number multiplied by `1 - factor` and the given
+ * number multiplied by `1 + factor`.
+ *
+ * @param n - A number
+ * @param factor - The number that will be subtracted from and
+ * added to 1 to generate a random number between the resulting
+ * range.
+ */
+function randomNumberInFactorRange(n: number, factor: number) {
+  return randomNum((1 - factor) * n, (1 + factor) * n);
+}
+
 /* ==================================================================== */
 /* ===================== Game Components ============================== */
 /* ==================================================================== */
@@ -941,7 +955,8 @@ class Gun {
     private baseFireInterval: number
   ) {
     // to give a random initial fireInterval
-    this.fireInterval = randomNum(0.9 * baseFireInterval, baseFireInterval);
+    this.fireInterval = randomNumberInFactorRange(baseFireInterval, 0.2);
+    // for the first bullet to be really random
     this.timeSinceLastShot = randomNum(0, this.fireInterval);
   }
 
@@ -958,10 +973,7 @@ class Gun {
       this.timeSinceLastShot = 0;
 
       /* generate random fire interval for dynamic gameplay */
-      this.fireInterval = randomNum(
-        0.9 * this.baseFireInterval,
-        this.baseFireInterval
-      );
+      this.fireInterval = randomNumberInFactorRange(this.baseFireInterval, 0.2);
 
       return new Bullet(
         this.owner,
