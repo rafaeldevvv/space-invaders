@@ -446,10 +446,10 @@ function getFirstOrLastRowIfDead(rows: AlienSet["aliens"]): number | null {
  *
  * @param n - A number.
  * @param subtractingFactor - The number that will be subtracted from 1.
- * The result of the subtraction is multiplied by n and the result is the 
+ * The result of the subtraction is multiplied by n and the result is the
  * minimum value of the range.
  * @param addingFactor - The number that will be added to 1.
- * The result of the addition is multiplied by n and the result is the 
+ * The result of the addition is multiplied by n and the result is the
  * maximum value of the range.
  * @returns - A random number between the resulting range.
  */
@@ -893,7 +893,7 @@ class Player {
 
   public pos: Vector = new Vector(this.baseXPos, LAYOUT.playerYPos);
 
-  public readonly gun: Gun = new Gun("player", 70, { w: 0.5, h: 3 }, 400);
+  public readonly gun: Gun = new Gun("player", 70, { w: 0.5, h: 3 }, 0);
 
   public lives = 3;
   public score = 0;
@@ -935,8 +935,9 @@ class Player {
     }
 
     this.gun.update(timeStep);
-    if (keys[ACTION_KEYS.fire] && this.gun.canFire()) {
+    if (keys[ACTION_KEYS.fire] && !state.isPlayerBulletPresent) {
       state.bullets.push(this.fire()!);
+      state.isPlayerBulletPresent = true;
     }
   }
 }
@@ -1013,6 +1014,7 @@ class Gun {
    * @returns - A boolean value saying whether the gun can fire.
    */
   canFire() {
+    if (this.baseFireInterval === 0) return true;
     return this.timeSinceLastShot >= this.fireInterval;
   }
 }
@@ -1242,6 +1244,7 @@ class GameState {
   public boss: Boss | null = null;
   public bossesKilled = 0;
   public aliensKilled = 0;
+  public isPlayerBulletPresent = false;
   private timeSinceBossLastAppearance = 0;
   private bossAppearanceInterval = generateRandomBossAppearanceInterval();
 
@@ -1296,7 +1299,10 @@ class GameState {
     let isSomeAlienKilled = false;
     for (const b of this.bullets) {
       const outOfBounds = this.env.isBulletOutOfBounds(b);
-      if (outOfBounds) continue;
+      if (outOfBounds) {
+        if (b.from === "player") this.isPlayerBulletPresent = false;
+        continue;
+      }
 
       if (b.from === "alien") {
         const touchedPlayer = this.handleBulletContactWithPlayer(
@@ -1310,11 +1316,17 @@ class GameState {
         const touchedBoss = this.handleBulletContactWithBoss(b as PlayerBullet);
 
         if (!isSomeAlienKilled) isSomeAlienKilled = touchedAlien;
-        if (touchedAlien || touchedBoss) continue;
+        if (touchedAlien || touchedBoss) {
+          this.isPlayerBulletPresent = false;
+          continue;
+        }
       }
 
       const touchedWall = this.handleBulletContactWithWalls(b);
-      if (touchedWall) continue;
+      if (touchedWall) {
+        if (b.from === "player") this.isPlayerBulletPresent = false;
+        continue;
+      }
 
       newBullets.push(b);
     }
@@ -1741,7 +1753,6 @@ class CanvasView {
 
     this.canvasContext.fillStyle = "white";
     this.canvasContext.fillRect(x, y, w, h);
-    this.drawPlayerGunReloadVisualClue(player);
   }
 
   private drawBoss(boss: Boss) {
@@ -1750,53 +1761,6 @@ class CanvasView {
 
     this.canvasContext.fillStyle = "#f77";
     this.canvasContext.fillRect(x, y, w, h);
-  }
-
-  private drawPlayerGunReloadVisualClue(player: Player) {
-    const { gun, pos } = player;
-
-    const extraWidth = DIMENSIONS.player.w * 0.15;
-    const gap = DIMENSIONS.player.h * 0.1;
-
-    // Calculate the size of the clue
-    const clueHeight = 1,
-      clueWidth = DIMENSIONS.player.w + extraWidth,
-      cluePixelsHeight = this.verPixels(clueHeight),
-      cluePixelsWidth = this.horPixels(clueWidth);
-
-    // Calculate the position of the clue within the display
-    const x = pos.x - extraWidth / 2,
-      y = pos.y + DIMENSIONS.player.h + gap,
-      xPixels = this.horPixels(x),
-      yPixels = this.verPixels(y);
-
-    const loadedPercentage = Math.min(
-      1,
-      gun.timeSinceLastShot / gun.fireInterval
-    );
-
-    this.canvasContext.save();
-    this.canvasContext.translate(xPixels, yPixels);
-
-    // draw how much the gun is reloaded (green)
-    this.canvasContext.fillStyle = "#0f0";
-    this.canvasContext.fillRect(
-      0 - extraWidth / 2,
-      0,
-      loadedPercentage * cluePixelsWidth,
-      cluePixelsHeight
-    );
-
-    // draw how much the gun is not reloaded (gray)
-    this.canvasContext.fillStyle = "#999";
-    this.canvasContext.fillRect(
-      loadedPercentage * cluePixelsWidth - extraWidth / 2,
-      0,
-      cluePixelsWidth - loadedPercentage * cluePixelsWidth,
-      cluePixelsHeight
-    );
-
-    this.canvasContext.restore();
   }
 
   private drawWalls(walls: Wall[]) {
