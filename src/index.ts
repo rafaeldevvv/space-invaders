@@ -60,6 +60,7 @@ const alienTypesRegExp = new RegExp(`(\\w*(${alienTypes.join("|")})*\\w*)+`);
 type MappedObjectFromUnion<Keys extends string, Type> = {
   [Key in Keys]: Type;
 };
+type RemoveFirstElement<Type> = Type extends [infer A, ...infer R] ? R : never;
 
 type GameKeys = " " | "ArrowLeft" | "ArrowRight";
 // this is for methods that expect a keys tracker
@@ -133,7 +134,27 @@ const BOSS_CONFIG = {
   score: 200,
 };
 
-const basicInvaderPlan = `
+interface AlienTypeConfig {
+  score: number;
+  gunConfig: RemoveFirstElement<ConstructorParameters<typeof Gun>>;
+}
+
+const alienTypesConfig: MappedObjectFromUnion<TAliens, AlienTypeConfig> = {
+  X: {
+    score: 10,
+    gunConfig: [40, { w: 0.5, h: 3 }, 20000],
+  },
+  Y: {
+    score: 20,
+    gunConfig: [60, { w: 1, h: 3 }, 30000],
+  },
+  Z: {
+    score: 30,
+    gunConfig: [80, { w: 1.5, h: 3 }, 40000],
+  },
+};
+
+const aliensPlan = `
 ZZZZZZZZZZ
 YYYYYYYYYY
 YYYYYYYYYY
@@ -818,38 +839,11 @@ class Alien {
    * @returns - A specific alien type.
    */
   public static create(ch: TAliens | ".", gridPos: Coords) {
-    switch (ch) {
-      case "X": {
-        return new Alien(
-          gridPos,
-          10,
-          new Gun("alien", 40, { w: 0.5, h: 3 }, 4000),
-          ch
-        );
-      }
-      case "Y": {
-        return new Alien(
-          gridPos,
-          20,
-          new Gun("alien", 60, { w: 1, h: 3 }, 6000),
-          ch
-        );
-      }
-      case "Z": {
-        return new Alien(
-          gridPos,
-          30,
-          new Gun("alien", 80, { w: 1.5, h: 3 }, 7000),
-          ch
-        );
-      }
-      case ".": {
-        return null;
-      }
-      default: {
-        const _never: never = ch;
-        throw new Error("Unexpected character: " + _never);
-      }
+    if (ch === ".") {
+      return null;
+    } else {
+      const { score, gunConfig } = alienTypesConfig[ch];
+      return new Alien(gridPos, score, new Gun("alien", ...gunConfig), ch);
     }
   }
 }
@@ -1263,7 +1257,7 @@ class GameState {
     this.env.handleAlienSetContactWithWall();
 
     if (this.alienSet.alive === 0) {
-      this.alienSet = new AlienSet(basicInvaderPlan);
+      this.alienSet = new AlienSet(aliensPlan);
       this.env.alienSet = this.alienSet;
       this.player.lives++;
     } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
@@ -1568,7 +1562,11 @@ class CanvasView {
     }
   }
 
-  public addKeyHandler(this: CanvasView, key: string, handler: KeyboardEventHandler) {
+  public addKeyHandler(
+    this: CanvasView,
+    key: string,
+    handler: KeyboardEventHandler
+  ) {
     if (this.keysHandlers.has(key)) {
       const handlers = this.keysHandlers.get(key)!;
       this.keysHandlers.set(key, [...handlers, handler]);
@@ -2003,7 +2001,7 @@ class GamePresenter {
     }
   ) {
     this.State = State;
-    this.state = State.start(basicInvaderPlan);
+    this.state = State.start(aliensPlan);
     this.view = new View(this.state, this, document.body);
     this.view.syncState(this.state, 0);
 
@@ -2049,7 +2047,7 @@ class GamePresenter {
     e.preventDefault();
 
     if (this.state.status === "lost") {
-      this.state = this.State.start(basicInvaderPlan);
+      this.state = this.State.start(aliensPlan);
       this.state.status = "running";
     }
   }

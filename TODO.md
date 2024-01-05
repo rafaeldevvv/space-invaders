@@ -1,11 +1,11 @@
-- change boss score(make it random in steps of 10)
-- commit & update README for each one
-
 - Adjust the aliens fire interval (increase it)
   - Adjust the random fire intervals (in `Gun.fire`)
 - commit & update README
 
 - make player be able to shoot only when there's no player bullets in the game
+- commit & update README
+
+- Make boss go from either side of the scene
 - commit & update README
 
 - Implement alien set entrance animation.
@@ -21,7 +21,6 @@
   - You might need to change your approach regarding the keys
     - Idea 1: Actions instead of keys.
 - commit & update README
-
 
 - Improve view
   - Refactor it
