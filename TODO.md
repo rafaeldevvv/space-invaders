@@ -1,6 +1,3 @@
-- Implement alien set entrance animation.
-- commit & update README
-
 - Add animation for alien and player dying
 - commit & update README
 
@@ -12,7 +9,7 @@
 - commit & update README
 
 - Improve controller
-  - Make it take objects instead of constructor
+  - Make it take objects instead of constructors
   - Make it possible to pass the parent element to the controller
 - commit & update README
 

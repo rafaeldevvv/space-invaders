@@ -1347,6 +1347,7 @@ class GameState {
 
     if (this.alienSet.alive === 0) {
       this.alienSet = new AlienSet(aliensPlan);
+      this.bullets = [];
       this.env.alienSet = this.alienSet;
       this.player.lives++;
     } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
