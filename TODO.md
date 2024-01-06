@@ -1,7 +1,3 @@
-- Adjust the aliens fire interval (increase it)
-  - Adjust the random fire intervals (in `Gun.fire`)
-- commit & update README
-
 - make player be able to shoot only when there's no player bullets in the game
 - commit & update README
 

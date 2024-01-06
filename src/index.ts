@@ -899,16 +899,16 @@ class Player {
   public score = 0;
 
   /**
-   * Fires a player's bullet.
+   * Fires a player bullet.
    *
-   * @returns - The fired bullet or null if the fun wasn't able to fire.
+   * @returns - A player bullet.
    */
-  public fire(): Bullet | null {
+  public fire(): Bullet {
     /* from the center of the player */
     const bulletPosX =
       this.pos.x + DIMENSIONS.player.w / 2 - this.gun.bulletSize.w / 2;
 
-    return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up");
+    return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up")!;
   }
 
   public resetPos() {
@@ -917,7 +917,8 @@ class Player {
 
   /**
    * Updates the Player and pushes a new bullet into the state
-   * if {@link ACTION_KEYS.fire} is pressed and player can fire.
+   * if {@link ACTION_KEYS.fire} is pressed and there's no player 
+   * bullet present in the game.
    *
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys are currently held down.
@@ -934,9 +935,8 @@ class Player {
       this.pos = this.pos.plus(movedX);
     }
 
-    this.gun.update(timeStep);
     if (keys[ACTION_KEYS.fire] && !state.isPlayerBulletPresent) {
-      state.bullets.push(this.fire()!);
+      state.bullets.push(this.fire());
       state.isPlayerBulletPresent = true;
     }
   }
@@ -977,6 +977,20 @@ class Gun {
    * @returns - A bullet or null if the gun wasn't able to fire.
    */
   fire(pos: Vector, direction: "up" | "down") {
+    const bullet = new Bullet(
+      this.owner,
+      pos,
+      new Vector(
+        0,
+        direction === "up" ? -this.bulletSpeed : this.bulletSpeed
+      ),
+      this.bulletSize
+    );
+
+    if (this.baseFireInterval === 0) {
+      return bullet;
+    }
+
     if (this.canFire()) {
       /* update lastFire prop to track the time of the last shot */
       this.timeSinceLastShot = 0;
@@ -984,15 +998,7 @@ class Gun {
       /* generate random fire interval for dynamic gameplay */
       this.fireInterval = randomNumberInFactorRange(this.baseFireInterval, 0.2);
 
-      return new Bullet(
-        this.owner,
-        pos,
-        new Vector(
-          0,
-          direction === "up" ? -this.bulletSpeed : this.bulletSpeed
-        ),
-        this.bulletSize
-      );
+      return bullet;
     }
 
     /* it returns null if it wasn't able to fire */
