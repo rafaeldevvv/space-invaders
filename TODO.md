@@ -1,7 +1,10 @@
-- make player be able to shoot only when there's no player bullets in the game
+- Make the game available on github pages
+- Remove the html webpack plugin
+
+- Make boss go from either side of the screen
 - commit & update README
 
-- Make boss go from either side of the scene
+- Adjust sizes if needed
 - commit & update README
 
 - Implement alien set entrance animation.
@@ -10,12 +13,14 @@
 - Add animation for alien and player dying
 - commit & update README
 
-- Adjust sizes if needed
-- commit & update README
-
 - Implement mobile controls
   - You might need to change your approach regarding the keys
     - Idea 1: Actions instead of keys.
+- commit & update README
+
+- Improve controller
+  - Make it take objects instead of constructor
+  - Make it possible to pass the parent element to the controller
 - commit & update README
 
 - Improve view
@@ -47,6 +52,9 @@
 
 - Generate TSDoc docs
   - npx typedoc _path_
+- commit & update README
+
+- Add screenshots
 - commit & update README
 
 - Update the code snippets of `README.md` file
