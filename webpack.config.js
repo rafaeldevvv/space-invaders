@@ -1,5 +1,4 @@
 const path = require('path');
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
    mode: "development",
@@ -26,8 +25,5 @@ module.exports = {
    },
    resolve: {
       extensions: ['.tsx', '.ts', '.js'],
-   },
-   plugins: [
-      new HtmlWebpackPlugin({ title: "Space Invaders By Rafael Maia" })
-   ]
+   }
 };

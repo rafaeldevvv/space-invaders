@@ -1063,6 +1063,7 @@ What amazed me and inspired me to talk about it here is that I only had to chang
 - [Removing Entries from Tuple Types in Typescript](https://copyprogramming.com/howto/typescript-remove-entries-from-tuple-type)
 - [Semantic Commit Messages](https://sparkbox.com/foundry/semantic_commit_messages)
 - [pokenode-ts](https://github.com/Gabb-c/pokenode-ts) - I used it as an example of commits.
+- [<link>: The External Resource Link element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link)
 
 #### Comments
 
@@ -1090,6 +1091,7 @@ What amazed me and inspired me to talk about it here is that I only had to chang
 - [Webpack loaders](https://webpack.js.org/loaders/)
 - [style-loader](https://webpack.js.org/loaders/style-loader/)
 - [css-loader](https://webpack.js.org/loaders/css-loader/)
+- [Can I use webpack to generate CSS and JS separately?](https://stackoverflow.com/questions/35322958/can-i-use-webpack-to-generate-css-and-js-separately)
 
 ## Author
 

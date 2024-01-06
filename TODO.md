@@ -16,6 +16,8 @@
 - Implement mobile controls
   - You might need to change your approach regarding the keys
     - Idea 1: Actions instead of keys.
+  - When you implement the styles for the mobile buttons, put them into 
+  a css file inside src and import it into the ts file, so that the code is contained within one file.
 - commit & update README
 
 - Improve controller
