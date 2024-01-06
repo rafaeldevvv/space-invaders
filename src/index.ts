@@ -870,12 +870,28 @@ class Alien {
 
 class Boss {
   pos: Vector;
+  direction: HorizontalDirection = Math.random() > 0.5 ? 1 : -1;
+
   constructor() {
-    this.pos = new Vector(-DIMENSIONS.boss.w, BOSS_CONFIG.yPos);
+    if (this.direction === HorizontalDirection.Left) {
+      this.pos = new Vector(100, BOSS_CONFIG.yPos);
+    } else {
+      this.pos = new Vector(-DIMENSIONS.boss.w, BOSS_CONFIG.yPos);
+    }
   }
 
   update(timeStep: number) {
-    this.pos = this.pos.plus(new Vector(BOSS_CONFIG.speedX * timeStep, 0));
+    this.pos = this.pos.plus(
+      new Vector(this.direction * BOSS_CONFIG.speedX * timeStep, 0)
+    );
+  }
+
+  isOutOfBounds() {
+    if (this.direction === HorizontalDirection.Right) {
+      return this.pos.x >= 100;
+    } else {
+      return this.pos.x <= -DIMENSIONS.boss.w;
+    }
   }
 }
 
@@ -915,7 +931,7 @@ class Player {
 
   /**
    * Updates the Player and pushes a new bullet into the state
-   * if {@link ACTION_KEYS.fire} is pressed and there's no player 
+   * if {@link ACTION_KEYS.fire} is pressed and there's no player
    * bullet present in the game.
    *
    * @param timeStep - The time in seconds that has passed since the last update.
@@ -978,10 +994,7 @@ class Gun {
     const bullet = new Bullet(
       this.owner,
       pos,
-      new Vector(
-        0,
-        direction === "up" ? -this.bulletSpeed : this.bulletSpeed
-      ),
+      new Vector(0, direction === "up" ? -this.bulletSpeed : this.bulletSpeed),
       this.bulletSize
     );
 
@@ -1438,7 +1451,7 @@ class GameState {
       this.timeSinceBossLastAppearance = 0;
     }
 
-    if (this.boss && this.boss.pos.x >= 100) {
+    if (this.boss && this.boss.isOutOfBounds()) {
       this.boss = null;
     }
   }

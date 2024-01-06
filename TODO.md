@@ -1,6 +1,3 @@
-- Make the game available on github pages
-- Remove the html webpack plugin
-
 - Make boss go from either side of the screen
 - commit & update README
 
