@@ -483,6 +483,8 @@ function randomNumberInFactorRange(
  */
 const alienSetStepToEdgeAdjustment = 1.33;
 const alienSetTimeDecreaseFactor = 0.92;
+const alienSetBaseYPos = LAYOUT.padding.ver + 12;
+const alienSetEntranceSpeed = 30;
 
 /**
  * The horizontal directions that {@link AlienSet} can move.
@@ -510,6 +512,11 @@ class AlienSet {
 
   private timeToUpdate = 1;
   private direction: HorizontalDirection = 1;
+
+  /**
+   * Tracks the alien entrance animation.
+   */
+  public entering = true;
 
   /**
    * A variable that manages when the AlienSet's position can update.
@@ -548,7 +555,7 @@ class AlienSet {
       (this.numRows - 1) * DIMENSIONS.alienSetGap.h;
 
     this.size = { w, h };
-    this.pos = new Vector(50 - w / 2, LAYOUT.padding.ver + 12);
+    this.pos = new Vector(50 - w / 2, -h * 1.5);
 
     /*
       `(100 - SCENERY.padding.hor * 2 - w)` is the area within the padding edges,
@@ -569,12 +576,23 @@ class AlienSet {
    * @param timeStep - The time that has passed since the last update.
    */
   public update(timeStep: number) {
+    if (this.entering) {
+      this.pos = this.pos.plus(new Vector(0, alienSetEntranceSpeed * timeStep));
+
+      /* if it is in the place where it is supposed to be initially */
+      if (this.pos.y >= alienSetBaseYPos) {
+        this.entering = false;
+        /* adjustment */
+        this.pos.y = alienSetBaseYPos;
+      } else return;
+    }
+
     this.timeStepSum += timeStep;
 
     const movedY = this.moveVertically();
     const movedX = this.moveHorizontally(movedY);
 
-    /* reset */
+    // reset
     if (this.timeStepSum >= this.timeToUpdate) {
       this.timeStepSum = 0;
     }
@@ -584,7 +602,10 @@ class AlienSet {
       this.timeToUpdate *= alienSetTimeDecreaseFactor;
     }
 
+    // update position
     this.pos = this.pos.plus(new Vector(movedX, movedY));
+
+    // update alien guns
     for (const alien of this) {
       if (alien) alien.gun.update(timeStep);
     }
@@ -962,7 +983,11 @@ class Player {
       this.pos = this.pos.plus(movedX);
     }
 
-    if (keys[ACTION_KEYS.fire] && !state.isPlayerBulletPresent) {
+    if (
+      keys[ACTION_KEYS.fire] &&
+      !state.isPlayerBulletPresent &&
+      !state.alienSet.entering // the player can only fire when the alien set is not entering into the view
+    ) {
       state.bullets.push(this.fire());
       state.isPlayerBulletPresent = true;
     }
@@ -1305,6 +1330,14 @@ class GameState {
 
     this.alienSet.update(timeStep);
     this.player.update(this, timeStep, keys);
+
+    /* 
+      If the alien set is entering into the view,
+      we don't want any of the things below here to happen
+    */
+    if (this.alienSet.entering) {
+      return;
+    }
 
     this.fireAliens();
 
