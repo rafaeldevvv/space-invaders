@@ -73,6 +73,25 @@ type KeyboardEventHandler = (e: KeyboardEvent) => void;
 /* ============================================================== */
 
 /**
+ * Describes the layout of the game.
+ */
+const LAYOUT = {
+  padding: {
+    hor: 3,
+    ver: 3,
+  },
+  numWalls: 4,
+  wallsSize: {
+    w: 12,
+    h: 10,
+  },
+  wallYPos: 70,
+  playerYPos: 86,
+  floorYPos: 97,
+  bossYPos: 6,
+} as const;
+
+/**
  * The dimensions of all objects in the game.
  * The sizes are percentages within the display, from 0 to 100.
  */
@@ -81,6 +100,7 @@ const DIMENSIONS: {
   readonly player: Size;
   readonly alienSetGap: Size;
   readonly boss: Size;
+  readonly floorHeight: number;
 } = {
   alien: {
     w: 3.5, // 3.5% of the display width
@@ -98,23 +118,8 @@ const DIMENSIONS: {
     w: 7,
     h: 7.5,
   },
+  floorHeight: 1,
 };
-
-/**
- * Describes the layout of the game.
- */
-const LAYOUT = {
-  padding: {
-    hor: 3,
-    ver: 3,
-  },
-  numWalls: 4,
-  wallsSize: {
-    w: 12,
-    h: 10,
-  },
-  playerYPos: 90,
-} as const;
 
 const ACTION_KEYS = {
   moveRight: "ArrowRight",
@@ -125,18 +130,26 @@ const ACTION_KEYS = {
   pauseGame: "Escape",
 } as const;
 
+/**
+ * The configuration of the boss.
+ */
 const BOSS_CONFIG = {
-  yPos: 6,
   speedX: 13,
   baseAppearanceInterval: 25,
   score: 200,
 };
 
+/**
+ * An alien type configuration interface.
+ */
 interface AlienTypeConfig {
   score: number;
   gunConfig: RemoveFirstElement<ConstructorParameters<typeof Gun>>;
 }
 
+/**
+ * Configurations for each alien type.
+ */
 const alienTypesConfig: MappedObjectFromUnion<TAliens, AlienTypeConfig> = {
   X: {
     score: 10,
@@ -486,7 +499,7 @@ class AlienSet {
   public pos: Vector;
   public size: Size;
 
-  private yStep = 3;
+  private yStep = 2;
   private xStep: number;
 
   public numColumns: number;
@@ -874,9 +887,9 @@ class Boss {
 
   constructor() {
     if (this.direction === HorizontalDirection.Left) {
-      this.pos = new Vector(100, BOSS_CONFIG.yPos);
+      this.pos = new Vector(100, LAYOUT.bossYPos);
     } else {
-      this.pos = new Vector(-DIMENSIONS.boss.w, BOSS_CONFIG.yPos);
+      this.pos = new Vector(-DIMENSIONS.boss.w, LAYOUT.bossYPos);
     }
   }
 
@@ -1208,7 +1221,10 @@ class GameEnv {
    * @returns
    */
   public isBulletOutOfBounds(bullet: Bullet) {
-    return bullet.pos.y >= 100 || bullet.pos.y + bullet.size.h <= 0;
+    return (
+      bullet.pos.y + bullet.size.h >= LAYOUT.floorYPos ||
+      bullet.pos.y + bullet.size.h <= 0
+    );
   }
 
   /**
@@ -1472,7 +1488,7 @@ class GameState {
       .fill(undefined)
       .map((_, i) => {
         return new Wall(
-          { x: (i + 1) * gap + LAYOUT.wallsSize.w * i, y: 75 },
+          { x: (i + 1) * gap + LAYOUT.wallsSize.w * i, y: LAYOUT.wallYPos },
           LAYOUT.wallsSize,
           customWall3
         );
@@ -1707,6 +1723,7 @@ class CanvasView {
    * @param timeStep
    */
   private drawRunningGame(state: GameState, timeStep: number) {
+    this.drawFloor();
     this.drawPlayer(state.player);
     this.drawAlienSet(state.alienSet);
     this.drawBullets(state.bullets);
@@ -1714,6 +1731,17 @@ class CanvasView {
     this.drawMetadata(state, timeStep);
     if (state.boss !== null) this.drawBoss(state.boss);
     this.drawPressEscMessage();
+  }
+
+  private drawFloor() {
+    const floorWidth = 100 - LAYOUT.padding.hor * 2,
+      w = this.horPixels(floorWidth),
+      h = this.verPixels(DIMENSIONS.floorHeight);
+    const x = this.horPixels(LAYOUT.padding.hor),
+      y = this.verPixels(100 - DIMENSIONS.floorHeight - 1.5);
+
+    this.canvasContext.fillStyle = "#fff";
+    this.canvasContext.fillRect(x, y, w, h);
   }
 
   private drawAlienSet(alienSet: AlienSet) {

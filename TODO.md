@@ -1,9 +1,3 @@
-- Make boss go from either side of the screen
-- commit & update README
-
-- Adjust sizes if needed
-- commit & update README
-
 - Implement alien set entrance animation.
 - commit & update README
 
