@@ -28,6 +28,10 @@ This is an implementation of the classic Space Invaders game using [TypeScript](
 
 ## Overview
 
+### Links
+
+[Live site](https://rafaeldevvv.github.io/space-invaders/)
+
 ### Screenshot
 
 ### Built with
