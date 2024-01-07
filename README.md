@@ -1069,6 +1069,7 @@ What amazed me and inspired me to talk about it here is that I only had to chang
 - [pokenode-ts](https://github.com/Gabb-c/pokenode-ts) - I used it as an example of commits.
 - [<link>: The External Resource Link element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link)
 - [Free Invaders](https://freeinvaders.org) - A game reference.
+- [Hash Symbol Secrets](https://www.pixartprinting.co.uk/blog/hash-symbol-secrets/)
 
 #### Comments
 

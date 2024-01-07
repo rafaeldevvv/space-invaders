@@ -1,15 +1,12 @@
-- Add explosion animation to boss
+- refactor the alien set configuration at the top of the class (put the values in the prototype, you may see decorators)
+- commit & update README
+00000000000000000000
+- refactor the player configuration at the top of the class (put the values in the prototype)
 - commit & update README
 
 - Add visual clue to show player's resurrection
 - commit & update README
 
-- refactor the alien set configuration at the top of the class
-- commit & update README
-
-- refactor the player configuration at the top of the class
-- commit & update README
-00000000000000000000
 - Increase Z alien's score to 40
 - commit & update README
 
