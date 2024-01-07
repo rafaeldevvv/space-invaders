@@ -951,9 +951,13 @@ class Alien {
   }
 }
 
+const bossExplodingTime = 1;
+
 class Boss {
+  timeSinceDeath = 0;
+  status: "alive" | "exploding" | "dead" = "alive";
   pos: Vector;
-  direction: HorizontalDirection = Math.random() > 0.5 ? 1 : -1;
+  private direction: HorizontalDirection = Math.random() > 0.5 ? 1 : -1;
 
   constructor() {
     if (this.direction === HorizontalDirection.Left) {
@@ -964,6 +968,14 @@ class Boss {
   }
 
   update(timeStep: number) {
+    if (this.status === "exploding") {
+      this.timeSinceDeath += timeStep;
+      if (this.timeSinceDeath >= bossExplodingTime) {
+        this.status = "dead";
+      }
+      return;
+    }
+
     this.pos = this.pos.plus(
       new Vector(this.direction * BOSS_CONFIG.speedX * timeStep, 0)
     );
@@ -1546,10 +1558,10 @@ class GameState {
   }
 
   private handleBulletContactWithBoss(b: PlayerBullet) {
-    if (this.boss === null) return false;
+    if (this.boss === null || this.boss.status !== "alive") return false;
     if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
       this.player.score += BOSS_CONFIG.score;
-      this.boss = null;
+      this.boss.status = "exploding";
       this.bossesKilled++;
       this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
       return true;
@@ -1582,9 +1594,13 @@ class GameState {
     if (this.timeSinceBossLastAppearance >= this.bossAppearanceInterval) {
       this.boss = new Boss();
       this.timeSinceBossLastAppearance = 0;
+      this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
     }
 
-    if (this.boss && this.boss.isOutOfBounds()) {
+    if (
+      this.boss &&
+      (this.boss.isOutOfBounds() || this.boss.status === "dead")
+    ) {
       this.boss = null;
     }
   }
@@ -1624,12 +1640,13 @@ class GameState {
 /**
  * The colors of the aliens
  */
-const alienColors: {
+const colors: {
   [Key in TAliens]: string;
-} = {
+} & { boss: string } = {
   X: "limegreen",
   Y: "orange",
   Z: "pink",
+  boss: "#f77",
 };
 
 const GAME_DISPLAY_SETTINGS = {
@@ -1895,11 +1912,11 @@ class CanvasView {
     const { w, h } = this.getPixelSize(DIMENSIONS.alien);
     const { x, y } = this.getPixelPos(pos);
 
-    this.canvasContext.fillStyle = alienColors[alien.alienType];
+    this.canvasContext.fillStyle = colors[alien.alienType];
     this.canvasContext.fillRect(x, y, w, h);
   }
 
-  private drawExplosion(pos: Coords, size: Size) {
+  private drawExplosion(pos: Coords, size: Size, color = "#fff") {
     const { w, h } = this.getPixelSize(size);
     const { x, y } = this.getPixelPos(pos);
 
@@ -1909,7 +1926,7 @@ class CanvasView {
     this.canvasContext.save();
     this.canvasContext.translate(x, y);
 
-    this.canvasContext.fillStyle = "#fff";
+    this.canvasContext.fillStyle = color;
     for (let y = 0; y < explosionPieces.length; y++) {
       for (let x = 0; x < explosionPieces[0].length; x++) {
         if (!explosionPieces[y][x]) continue;
@@ -1958,11 +1975,15 @@ class CanvasView {
   }
 
   private drawBoss(boss: Boss) {
-    const { x, y } = this.getPixelPos(boss.pos);
-    const { w, h } = this.getPixelSize(DIMENSIONS.boss);
+    if (boss.status === "exploding") {
+      this.drawExplosion(boss.pos, DIMENSIONS.boss, colors.boss);
+    } else {
+      const { x, y } = this.getPixelPos(boss.pos);
+      const { w, h } = this.getPixelSize(DIMENSIONS.boss);
 
-    this.canvasContext.fillStyle = "#f77";
-    this.canvasContext.fillRect(x, y, w, h);
+      this.canvasContext.fillStyle = colors.boss;
+      this.canvasContext.fillRect(x, y, w, h);
+    }
   }
 
   private drawWalls(walls: Wall[]) {

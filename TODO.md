@@ -22,6 +22,10 @@
 - Add Bullets collision
 - commit & update README
 
+- Refactor wall and rendering of explosion (too much repeated logic)
+  - Create a class called IterablePieces with a `pieces` property and an interator interface
+- commit & update README
+
 - Implement score showing up when alien or boss is killed
 - commit & update README
 
