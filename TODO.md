@@ -1,13 +1,22 @@
-- Add effects for alien and player dying
+- Add explosion animation to boss
+- commit & update README
+
+- Add visual clue to show player's resurrection
 - commit & update README
 
 - refactor the alien set configuration at the top of the class
 - commit & update README
 
+- refactor the player configuration at the top of the class
+- commit & update README
+00000000000000000000
 - Increase Z alien's score to 40
 - commit & update README
 
 - Make boss score random (or don't, it doesn't make sense to be random)
+- commit & update README
+
+- Make boss be drawn after the esc message
 - commit & update README
 
 - Add Bullets collision

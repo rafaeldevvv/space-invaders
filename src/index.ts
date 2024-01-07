@@ -425,7 +425,9 @@ function trackKeys<Type extends string>(
  * @returns
  */
 function isColumnDead(rows: AlienSet["aliens"], column: number) {
-  return rows.every((row) => row[column] === null || row[column] === "exploding");
+  return rows.every(
+    (row) => row[column] === null || row[column] === "exploding"
+  );
 }
 
 /**
@@ -434,7 +436,7 @@ function isColumnDead(rows: AlienSet["aliens"], column: number) {
  * @returns
  */
 function isRowDead(row: AlienSet["aliens"][number]) {
-  return row.every((alien) => alien === null ||  alien === "exploding");
+  return row.every((alien) => alien === null || alien === "exploding");
 }
 
 /**
@@ -976,7 +978,10 @@ class Boss {
   }
 }
 
-const playerXSpeed = 30;
+type PlayerStatuses = "alive" | "exploding" | "reviving";
+const playerXSpeed = 30,
+  playerExplodingTime = 1,
+  playerRevivingTime = 3;
 
 /**
  * Class representing the player.
@@ -992,6 +997,9 @@ class Player {
 
   public lives = 3;
   public score = 0;
+  public status: PlayerStatuses = "alive";
+  private timeSinceExplosion: number = 0;
+  private timeSinceResurrection = 0;
 
   /**
    * Fires a player bullet.
@@ -1021,22 +1029,48 @@ class Player {
   public update(state: GameState, timeStep: number, keys: KeysTracker) {
     const movedX = new Vector(timeStep * playerXSpeed, 0);
 
-    if (keys[ACTION_KEYS.moveLeft] && this.pos.x > LAYOUT.padding.hor) {
-      this.pos = this.pos.minus(movedX);
-    } else if (
-      keys[ACTION_KEYS.moveRight] &&
-      this.pos.x + DIMENSIONS.player.w < 100 - LAYOUT.padding.hor
-    ) {
-      this.pos = this.pos.plus(movedX);
+    this.handleStatus(timeStep);
+
+    // The player can only move and fire when they are not exploding
+    if (this.status !== "exploding") {
+      if (keys[ACTION_KEYS.moveLeft] && this.pos.x > LAYOUT.padding.hor) {
+        this.pos = this.pos.minus(movedX);
+      } else if (
+        keys[ACTION_KEYS.moveRight] &&
+        this.pos.x + DIMENSIONS.player.w < 100 - LAYOUT.padding.hor
+      ) {
+        this.pos = this.pos.plus(movedX);
+      }
+
+      if (
+        keys[ACTION_KEYS.fire] &&
+        !state.isPlayerBulletPresent &&
+        !state.alienSet.entering // the player can only fire when the alien set is not entering into the view
+      ) {
+        state.bullets.push(this.fire());
+        state.isPlayerBulletPresent = true;
+      }
+    }
+  }
+
+  private handleStatus(timeStep: number) {
+    if (this.status === "exploding") {
+      this.timeSinceExplosion += timeStep;
     }
 
-    if (
-      keys[ACTION_KEYS.fire] &&
-      !state.isPlayerBulletPresent &&
-      !state.alienSet.entering // the player can only fire when the alien set is not entering into the view
-    ) {
-      state.bullets.push(this.fire());
-      state.isPlayerBulletPresent = true;
+    if (this.status === "reviving") {
+      this.timeSinceResurrection += timeStep;
+    }
+
+    if (this.timeSinceExplosion >= playerExplodingTime) {
+      this.status = "reviving";
+      this.timeSinceExplosion = 0;
+      this.resetPos();
+    }
+
+    if (this.timeSinceResurrection >= playerRevivingTime) {
+      this.status = "alive";
+      this.timeSinceResurrection = 0;
     }
   }
 }
@@ -1372,8 +1406,10 @@ class GameState {
   public update(timeStep: number, keys: KeysTracker) {
     if (this.status !== "running") return;
 
-    this.alienSet.update(timeStep);
     this.player.update(this, timeStep, keys);
+    if (this.player.status === "exploding") return;
+
+    this.alienSet.update(timeStep);
 
     /* 
       If the alien set is entering into the view,
@@ -1459,9 +1495,12 @@ class GameState {
       is removed and the player resets its 
       position and loses one life 
     */
-    if (this.env.bulletTouchesObject(b, this.player.pos, DIMENSIONS.player)) {
+    if (
+      this.player.status === "alive" &&
+      this.env.bulletTouchesObject(b, this.player.pos, DIMENSIONS.player)
+    ) {
       this.player.lives--;
-      this.player.resetPos();
+      this.player.status = "exploding";
       return true;
     }
     return false;
@@ -1902,11 +1941,20 @@ class CanvasView {
   }
 
   private drawPlayer(player: Player) {
-    const { x, y } = this.getPixelPos(player.pos);
-    const { w, h } = this.getPixelSize(DIMENSIONS.player);
+    if (player.status === "exploding") {
+      this.drawExplosion(player.pos, DIMENSIONS.player);
+      return;
+    } else if (
+      player.status === "alive" ||
+      (player.status === "reviving" &&
+        Math.round(performance.now() / 400) % 2 === 0)
+    ) {
+      const { x, y } = this.getPixelPos(player.pos);
+      const { w, h } = this.getPixelSize(DIMENSIONS.player);
 
-    this.canvasContext.fillStyle = "white";
-    this.canvasContext.fillRect(x, y, w, h);
+      this.canvasContext.fillStyle = "white";
+      this.canvasContext.fillRect(x, y, w, h);
+    }
   }
 
   private drawBoss(boss: Boss) {
