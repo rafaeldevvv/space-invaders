@@ -1,4 +1,19 @@
-- Add animation for alien and player dying
+- Add effects for alien and player dying
+- commit & update README
+
+- refactor the alien set configuration at the top of the class
+- commit & update README
+
+- Increase Z alien's score to 40
+- commit & update README
+
+- Make boss score random (or don't, it doesn't make sense to be random)
+- commit & update README
+
+- Add Bullets collision
+- commit & update README
+
+- Implement score showing up when alien or boss is killed
 - commit & update README
 
 - Implement mobile controls
@@ -17,10 +32,18 @@
   - Refactor it
 - commit & update README for each one
 
+- Improve alien set
+  - Refactor it
+  - Break it down, it's too big
+- commit & update README for each one
+
 - Make the assets, styles and so on (or maybe make something similar to the wall for the pixel art images)
   - Add images
   - Add sounds
-  - Add font (vt323) (see htmlwebpackplugin)
+  - Add font (vt323)
+- commit & update README
+
+- Add alien scores to start screen
 - commit & update README
 
 - Refactor the code
@@ -31,13 +54,16 @@
 - Remember to try using webpack to load assets such as css and images
 - commit & update README
 
-- Use HTMLWebpack Plugin or something like that
-- commit & update README
-
 - Minify the code (look for an html plugin for that)
 - commit & update README
 
 - See more tags available for TSDoc comments.
+- commit & update README
+
+- Put the code on codepen.
+
+- Split index.ts into many files for better organization
+  - Change isolatedModules in tsconfig.json to true
 - commit & update README
 
 - Generate TSDoc docs

@@ -235,6 +235,21 @@ const customWall3 = `
 ##################..........................##################
 `;
 
+const explosion = `
+....#.......
+....##...###
+.....#..##..
+.....##.#...
+.###........
+##......###.
+....#.##..##
+...##..##...
+...#....##..
+...#.....#..
+`;
+
+const explosionPieces = readSolidPlan(explosion);
+
 /* ============================================================== */
 /* ========================== utilities ========================= */
 /* ============================================================== */
@@ -410,7 +425,7 @@ function trackKeys<Type extends string>(
  * @returns
  */
 function isColumnDead(rows: AlienSet["aliens"], column: number) {
-  return rows.every((row) => row[column] === null);
+  return rows.every((row) => row[column] === null || row[column] === "exploding");
 }
 
 /**
@@ -419,7 +434,7 @@ function isColumnDead(rows: AlienSet["aliens"], column: number) {
  * @returns
  */
 function isRowDead(row: AlienSet["aliens"][number]) {
-  return row.every((alien) => alien === null);
+  return row.every((alien) => alien === null ||  alien === "exploding");
 }
 
 /**
@@ -472,6 +487,22 @@ function randomNumberInFactorRange(
   return randomNum((1 - subtractingFactor) * n, (1 + addingFactor) * n);
 }
 
+/**
+ * Reads a string plan in which hash symbols (#) represent solid pieces (true)
+ * and any other character represents no pieces (false)
+ *
+ * @param plan - A string with hash symbols (#) and any other characters.
+ * @returns - An array of arrays of booleans.
+ */
+function readSolidPlan(plan: string): boolean[][] {
+  const pieces = plan
+    .trim()
+    .split("\n")
+    .map((row) => [...row].map((ch) => ch === "#"));
+
+  return pieces;
+}
+
 /* ==================================================================== */
 /* ===================== Game Components ============================== */
 /* ==================================================================== */
@@ -507,7 +538,11 @@ class AlienSet {
   public numColumns: number;
   public numRows: number;
 
-  public aliens: (Alien | null)[][];
+  /**
+   * The aliens in the set. Each item is an instance of {@link Alien},
+   * "exploding" (it has just been killed by an alien)
+   */
+  public aliens: (Alien | null | "exploding")[][];
   public alive: number;
 
   private timeToUpdate = 1;
@@ -602,12 +637,16 @@ class AlienSet {
       this.timeToUpdate *= alienSetTimeDecreaseFactor;
     }
 
+    if (movedY !== 0 || movedX !== 0) {
+      this.removeDeadAliens();
+    }
+
     // update position
     this.pos = this.pos.plus(new Vector(movedX, movedY));
 
     // update alien guns
-    for (const alien of this) {
-      if (alien) alien.gun.update(timeStep);
+    for (const { alien } of this) {
+      if (alien instanceof Alien) alien.gun.update(timeStep);
     }
   }
 
@@ -689,8 +728,8 @@ class AlienSet {
       firstLivingAlienColumn: NumOrNull = null,
       lastLivingAlienColumn: NumOrNull = null;
 
-    for (const alien of this) {
-      if (!alien) continue;
+    for (const { alien } of this) {
+      if (!(alien instanceof Alien)) continue;
       const { x: column, y: row } = alien.gridPos;
 
       /* 
@@ -740,8 +779,8 @@ class AlienSet {
     let firstLivingAlienColumn: NumOrNull = null;
     let firstLivingAlienRow: NumOrNull = null;
 
-    for (const alien of this) {
-      if (!alien) continue;
+    for (const { alien } of this) {
+      if (!(alien instanceof Alien)) continue;
 
       const { x, y } = alien.gridPos;
 
@@ -803,7 +842,7 @@ class AlienSet {
   private syncAliensGridPos() {
     this.aliens.forEach((row, y) => {
       row.forEach((alien, x) => {
-        if (alien) alien.gridPos = { x, y };
+        if (alien instanceof Alien) alien.gridPos = { x, y };
       });
     });
   }
@@ -816,7 +855,7 @@ class AlienSet {
   /**
    * Gets the position of an alien within the whole game screen.
    *
-   * @param param0 - The alien.
+   * @param param0 - The grid position of the alien within the alien set.
    * @returns - The position of the alien.
    */
   public getAlienPos({ x, y }: Coords): Vector {
@@ -834,8 +873,16 @@ class AlienSet {
    * @param y - The Y position of the alien within the grid.
    */
   public removeAlien(alien: Alien) {
-    this.aliens[alien.gridPos.y][alien.gridPos.x] = null;
+    this.aliens[alien.gridPos.y][alien.gridPos.x] = "exploding";
     this.alive--;
+  }
+
+  private removeDeadAliens() {
+    for (const { alien, row, column } of this) {
+      if (alien === "exploding") {
+        this.aliens[row][column] = null;
+      }
+    }
   }
 
   /**
@@ -844,7 +891,7 @@ class AlienSet {
   public *[Symbol.iterator]() {
     for (let y = 0; y < this.numRows; y++) {
       for (let x = 0; x < this.numColumns; x++) {
-        yield this.aliens[y][x];
+        yield { alien: this.aliens[y][x], column: x, row: y };
       }
     }
   }
@@ -1140,10 +1187,7 @@ class Wall {
     let pieceSize: Size;
 
     if (typeof numColumnsOrPlan === "string") {
-      pieces = numColumnsOrPlan
-        .trim()
-        .split("\n")
-        .map((row) => [...row].map((ch) => ch === "#"));
+      pieces = readSolidPlan(numColumnsOrPlan);
       pieceSize = {
         w: this.size.w / pieces[0].length,
         h: this.size.h / pieces.length,
@@ -1275,8 +1319,8 @@ class GameEnv {
 
   public handleAlienSetContactWithWall() {
     for (const wall of this.walls) {
-      for (const alien of this.alienSet) {
-        if (alien === null) continue;
+      for (const { alien } of this.alienSet) {
+        if (!(alien instanceof Alien)) continue;
 
         const alienPos = this.alienSet.getAlienPos(alien.gridPos);
         wall.collide(alienPos, DIMENSIONS.alien);
@@ -1431,8 +1475,8 @@ class GameState {
    * @returns - A boolean value that tells whether the bullet touches an alien in the set.
    */
   private handleBulletContactWithAlien(b: PlayerBullet) {
-    for (const alien of this.alienSet) {
-      if (alien === null) continue;
+    for (const { alien } of this.alienSet) {
+      if (!(alien instanceof Alien)) continue;
 
       const alienPos = this.alienSet.getAlienPos(alien.gridPos);
       if (this.env.bulletTouchesObject(b, alienPos, DIMENSIONS.alien)) {
@@ -1479,8 +1523,8 @@ class GameState {
   private fireAliens() {
     const newBullets: Bullet[] = [];
 
-    for (const alien of this.alienSet) {
-      if (!alien) continue;
+    for (const { alien } of this.alienSet) {
+      if (!(alien instanceof Alien)) continue;
 
       if (alien.gun.canFire()) {
         const alienPos = this.alienSet.getAlienPos(alien.gridPos);
@@ -1779,21 +1823,26 @@ class CanvasView {
   }
 
   private drawAlienSet(alienSet: AlienSet) {
-    for (const alien of alienSet) {
-      if (!alien) continue;
+    for (const { alien, row, column } of alienSet) {
+      if (alien === null) continue;
 
       const xPercentage =
         alienSet.pos.x +
-        alien.gridPos.x * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
+        column * (DIMENSIONS.alienSetGap.w + DIMENSIONS.alien.w);
 
       const yPercentage =
-        alienSet.pos.y +
-        alien.gridPos.y * (DIMENSIONS.alienSetGap.h + DIMENSIONS.alien.h);
+        alienSet.pos.y + row * (DIMENSIONS.alienSetGap.h + DIMENSIONS.alien.h);
 
-      this.drawAlien(alien, {
+      const alienPos = {
         x: xPercentage,
         y: yPercentage,
-      });
+      };
+
+      if (alien !== "exploding") {
+        this.drawAlien(alien, alienPos);
+      } else {
+        this.drawExplosion(alienPos, DIMENSIONS.alien);
+      }
     }
 
     /* this is meant for tests, remove it later */
@@ -1809,6 +1858,32 @@ class CanvasView {
 
     this.canvasContext.fillStyle = alienColors[alien.alienType];
     this.canvasContext.fillRect(x, y, w, h);
+  }
+
+  private drawExplosion(pos: Coords, size: Size) {
+    const { w, h } = this.getPixelSize(size);
+    const { x, y } = this.getPixelPos(pos);
+
+    const pieceHeight = h / explosionPieces.length,
+      pieceWidth = w / explosionPieces[0].length;
+
+    this.canvasContext.save();
+    this.canvasContext.translate(x, y);
+
+    this.canvasContext.fillStyle = "#fff";
+    for (let y = 0; y < explosionPieces.length; y++) {
+      for (let x = 0; x < explosionPieces[0].length; x++) {
+        if (!explosionPieces[y][x]) continue;
+
+        this.canvasContext.fillRect(
+          x * pieceWidth,
+          y * pieceHeight,
+          pieceWidth,
+          pieceHeight
+        );
+      }
+    }
+    this.canvasContext.restore();
   }
 
   private drawBullets(bullets: Bullet[]) {
