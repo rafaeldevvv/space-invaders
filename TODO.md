@@ -1,7 +1,15 @@
-- refactor the alien set configuration at the top of the class (put the values in the prototype, you may see decorators)
+- Split index.ts into many files for better organization
+  - Make the component classes implement the interfaces defined in `ts/types.ts`
+  - Make every entity in the codebase use interfaces instead of class types
+  - Explain the interfaces (just copy and paste th tsdoc comments)
+  - Improve the configuration of the game
+
+- Refactor everything, every class, every function, break classes down, remove methods and so on
+
+- refactor the alien set configuration above the class (put the values in the prototype, you may see decorators)
 - commit & update README
 00000000000000000000
-- refactor the player configuration at the top of the class (put the values in the prototype)
+- refactor the player configuration above the class (put the values in the prototype)
 - commit & update README
 
 - Add visual clue to show player's resurrection
@@ -72,9 +80,6 @@
 
 - Put the code on codepen.
 
-- Split index.ts into many files for better organization
-  - Change isolatedModules in tsconfig.json to true
-- commit & update README
 
 - Generate TSDoc docs
   - npx typedoc _path_

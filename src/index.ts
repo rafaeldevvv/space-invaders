@@ -2277,3 +2277,5 @@ class GamePresenter {
 }
 
 new GamePresenter(GameState, CanvasView);
+
+export {}
