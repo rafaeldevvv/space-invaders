@@ -1,8 +1,9 @@
 - Split index.ts into many files for better organization
   - Make the component classes implement the interfaces defined in `ts/types.ts`
   - Make every entity in the codebase use interfaces instead of class types
-  - Explain the interfaces (just copy and paste th tsdoc comments)
+  - Explain the interfaces (just copy and paste tsdoc comments)
   - Improve the configuration of the game
+- Commit "Break aplication down into multiple files and folders"
 
 - Refactor everything, every class, every function, break classes down, remove methods and so on
 

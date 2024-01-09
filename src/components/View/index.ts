@@ -7,15 +7,13 @@ import {
   PixelCoords,
   Coords,
   Size,
+  IGameState,
+  IAlien,
+  IBoss,
+  IWall,
+  IView,
 } from "@/ts/types";
 import { ACTION_KEYS, LAYOUT, DIMENSIONS } from "@/game-config";
-import type GameState from "../State";
-import type Bullet from "../Bullet";
-import type Wall from "../Wall";
-import type Player from "../Player";
-import type Boss from "../Boss";
-import type Alien from "../Alien";
-import type AlienSet from "../AlienSet";
 import getElementInnerDimensions from "@/utils/View/getElementInnerDimensions";
 import trackKeys from "@/utils/View/trackKeys";
 import readSolidPlan from "@/utils/common/readSolidPlan";
@@ -58,7 +56,7 @@ const fontSizes: MappedObjectFromUnion<FontSizes, number> = {
  * Class represeting a view component used to display the game state.
  * It uses the HTML Canvas API.
  */
-export default class CanvasView {
+export default class CanvasView implements IView<IGameState> {
   private canvas: HTMLCanvasElement;
   private canvasContext: CanvasRenderingContext2D;
   private canvasFontFamily = "monospace";
@@ -72,10 +70,7 @@ export default class CanvasView {
    * @param state - The initial state of the game.
    * @param parent - The HTML Element used to display the view.
    */
-  constructor(
-    public state: GameState,
-    public parent: HTMLElement
-  ) {
+  constructor(public state: IGameState, public parent: HTMLElement) {
     this.canvas = document.createElement("canvas");
     this.canvasContext = this.canvas.getContext("2d")!;
 
@@ -115,7 +110,7 @@ export default class CanvasView {
    *
    * @param state - A new game state.
    */
-  public syncState(this: CanvasView, state: GameState, timeStep: number) {
+  public syncState(this: CanvasView, state: IGameState, timeStep: number) {
     this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.canvasContext.fillStyle = "black";
     this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -240,7 +235,7 @@ export default class CanvasView {
    * @param state
    * @param timeStep
    */
-  private drawRunningGame(state: GameState, timeStep: number) {
+  private drawRunningGame(state: IGameState, timeStep: number) {
     this.drawFloor();
     this.drawPlayer(state.player);
     this.drawAlienSet(state.alienSet);
@@ -262,7 +257,7 @@ export default class CanvasView {
     this.canvasContext.fillRect(x, y, w, h);
   }
 
-  private drawAlienSet(alienSet: AlienSet) {
+  private drawAlienSet(alienSet: IGameState["alienSet"]) {
     for (const { alien, row, column } of alienSet) {
       if (alien === null) continue;
 
@@ -292,7 +287,7 @@ export default class CanvasView {
     this.canvasContext.fillRect(x, y, w, h);
   }
 
-  private drawAlien(alien: Alien, pos: Coords) {
+  private drawAlien(alien: IAlien, pos: Coords) {
     const { w, h } = this.getPixelSize(DIMENSIONS.alien);
     const { x, y } = this.getPixelPos(pos);
 
@@ -326,13 +321,13 @@ export default class CanvasView {
     this.canvasContext.restore();
   }
 
-  private drawBullets(bullets: Bullet[]) {
+  private drawBullets(bullets: IGameState["bullets"]) {
     for (const bullet of bullets) {
       this.drawBullet(bullet);
     }
   }
 
-  private drawBullet(bullet: Bullet) {
+  private drawBullet(bullet: IGameState["bullets"][number]) {
     const { x, y } = this.getPixelPos(bullet.pos);
     const { w, h } = this.getPixelSize(bullet.size);
 
@@ -341,7 +336,7 @@ export default class CanvasView {
     this.canvasContext.fillRect(x, y, w, h);
   }
 
-  private drawPlayer(player: Player) {
+  private drawPlayer(player: IGameState["player"]) {
     if (player.status === "exploding") {
       this.drawExplosion(player.pos, DIMENSIONS.player);
       return;
@@ -358,7 +353,7 @@ export default class CanvasView {
     }
   }
 
-  private drawBoss(boss: Boss) {
+  private drawBoss(boss: IBoss) {
     if (boss.status === "exploding") {
       this.drawExplosion(boss.pos, DIMENSIONS.boss, colors.boss);
     } else {
@@ -370,13 +365,13 @@ export default class CanvasView {
     }
   }
 
-  private drawWalls(walls: Wall[]) {
+  private drawWalls(walls: IWall[]) {
     for (const wall of walls) {
       this.drawWall(wall);
     }
   }
 
-  private drawWall(wall: Wall) {
+  private drawWall(wall: IWall) {
     const { x, y } = this.getPixelPos(wall.pos);
 
     this.canvasContext.save();
@@ -409,7 +404,7 @@ export default class CanvasView {
    *
    * @param state
    */
-  private drawMetadata(state: GameState, timeStep: number) {
+  private drawMetadata(state: IGameState, timeStep: number) {
     // draw hearts to show player's lives
     // draw score
     const fontSize = this.getFontSize("md");
@@ -502,7 +497,7 @@ export default class CanvasView {
   /**
    * Draws a screen for when the game is over.
    */
-  private drawGameOverScreen(state: GameState) {
+  private drawGameOverScreen(state: IGameState) {
     const titleFontSize = this.getFontSize("xl");
 
     const {

@@ -1,10 +1,9 @@
-import { TShooters, Size } from "@/ts/types";
-import type Vector from "@/utils/common/Vector";
+import { TShooters, Size, IVector, IGameState, IBullet } from "@/ts/types";
 
 /**
  * Class representing a bullet.
  */
-export default class Bullet {
+export default class Bullet implements IBullet {
   /**
    * Creates a bullet.
    *
@@ -15,8 +14,8 @@ export default class Bullet {
    */
   constructor(
     public readonly from: TShooters,
-    public pos: Vector,
-    public readonly speed: Vector,
+    public pos: IVector,
+    public readonly speed: IVector,
     public readonly size: Size
   ) {}
 
@@ -34,7 +33,7 @@ export default class Bullet {
    *
    * @param state - The state of the game.
    */
-  collide(state: { bullets: Bullet[] }) {
+  collide(state: IGameState) {
     state.bullets = state.bullets.filter((bullet) => bullet !== this);
   }
 }

@@ -1,4 +1,4 @@
-import type { TShooters, Size } from "@/ts/types";
+import type { TShooters, Size, IVector, IGun } from "@/ts/types";
 import Vector from "@/utils/common/Vector";
 import Bullet from "../Bullet";
 import randomNumberInFactorRange from "@/utils/common/randomNumberInFactorRange";
@@ -7,7 +7,7 @@ import randomNum from "@/utils/common/randomNum";
 /**
  * Class representing a gun.
  */
-export default class Gun {
+export default class Gun implements IGun {
   public fireInterval: number;
   public timeSinceLastShot: number = 0;
 
@@ -38,7 +38,7 @@ export default class Gun {
    * @param direction - The direction the bullet goes.
    * @returns - A bullet or null if the gun wasn't able to fire.
    */
-  fire(pos: Vector, direction: "up" | "down") {
+  fire(pos: IVector, direction: "up" | "down") {
     const bullet = new Bullet(
       this.owner,
       pos,

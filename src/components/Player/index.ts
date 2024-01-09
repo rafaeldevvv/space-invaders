@@ -1,11 +1,16 @@
-import type AlienSet from "../AlienSet";
 import Gun from "../Gun";
 import Vector from "@/utils/common/Vector";
-import Bullet from "../Bullet";
-import { KeysTracker } from "@/ts/types";
+import {
+  KeysTracker,
+  IPlayer,
+  IVector,
+  PlayerStatuses,
+  IGameState,
+  IBullet,
+  IGun,
+} from "@/ts/types";
 import { DIMENSIONS, LAYOUT, ACTION_KEYS } from "@/game-config";
 
-export type PlayerStatuses = "alive" | "exploding" | "reviving";
 export const playerXSpeed = 30,
   playerExplodingTime = 1,
   playerRevivingTime = 3;
@@ -13,14 +18,14 @@ export const playerXSpeed = 30,
 /**
  * Class representing the player.
  */
-export default class Player {
+export default class Player implements IPlayer {
   public readonly actorType = "player" as const;
 
   private baseXPos = 50 - DIMENSIONS.player.w / 2;
 
-  public pos: Vector = new Vector(this.baseXPos, LAYOUT.playerYPos);
+  public pos: IVector = new Vector(this.baseXPos, LAYOUT.playerYPos);
 
-  public readonly gun: Gun = new Gun("player", 70, { w: 0.5, h: 3 }, 0);
+  public readonly gun: IGun = new Gun("player", 70, { w: 0.5, h: 3 }, 0);
 
   public lives = 3;
   public score = 0;
@@ -33,7 +38,7 @@ export default class Player {
    *
    * @returns - A player bullet.
    */
-  public fire(): Bullet {
+  public fire(): IBullet {
     /* from the center of the player */
     const bulletPosX =
       this.pos.x + DIMENSIONS.player.w / 2 - this.gun.bulletSize.w / 2;
@@ -53,15 +58,7 @@ export default class Player {
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys are currently held down.
    */
-  public update(
-    state: {
-      isPlayerBulletPresent: boolean;
-      alienSet: AlienSet;
-      bullets: Bullet[];
-    },
-    timeStep: number,
-    keys: KeysTracker
-  ) {
+  public update(state: IGameState, timeStep: number, keys: KeysTracker) {
     const movedX = new Vector(timeStep * playerXSpeed, 0);
 
     this.handleStatus(timeStep);

@@ -1,8 +1,8 @@
-import { Size, Coords } from "@/ts/types";
+import { Size, Coords, IWall } from "@/ts/types";
 import readSolidPlan from "@/utils/common/readSolidPlan";
 import overlap from "@/utils/common/overlap";
 
-export default class Wall {
+export default class Wall implements IWall {
    /**
     * The pieces of the wall as a matrix.
     */

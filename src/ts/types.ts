@@ -90,7 +90,7 @@ interface IAlienSet {
   adapt(): void;
   getAlienPos({ x, y }: Coords): IVector;
   removeAlien(alien: IAlien): void;
-  [Symbol.iterator]: Iterator<{
+  [Symbol.iterator](): Iterator<{
     alien: IAlien | null | "exploding";
     row: number;
     column: number;
@@ -135,6 +135,7 @@ interface IEnvironment {
   isBulletOutOfBounds(bullet: IBullet): boolean;
   alienSetTouchesPlayer(): boolean;
   handleAlienSetContactWithWall(): void;
+  bulletTouchesObject(bullet: IBullet, objPos: Coords, objSize: Size): boolean;
 }
 
 interface IGun {
@@ -167,8 +168,8 @@ interface IWall {
   readonly pos: Coords;
   readonly size: Size;
   getPiecePos(column: number, row: number): Coords;
-  collide(objPos: Coords, objSize: Size): void;
-  [Symbol.iterator]: Iterator<{ row: number; column: number; piece: boolean }>;
+  collide(objPos: Coords, objSize: Size): boolean;
+  [Symbol.iterator](): Iterator<{ row: number; column: number; piece: boolean }>;
 }
 
 interface IGameState {
@@ -196,7 +197,7 @@ interface IView<State> {
   addKeyHandler(key: string, handler: KeyboardEventHandler): void;
 }
 
-export {
+export type {
   Coords,
   NumOrNull,
   KeyboardEventHandler,

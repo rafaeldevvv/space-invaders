@@ -1,5 +1,4 @@
 import Boss from "../Boss";
-import type { default as Bullet, AlienBullet, PlayerBullet } from "../Bullet";
 import Wall from "../Wall";
 import Player from "../Player";
 import { LAYOUT, BOSS_CONFIG, DIMENSIONS } from "@/game-config";
@@ -7,7 +6,17 @@ import randomNum from "@/utils/common/randomNum";
 import AlienSet from "../AlienSet";
 import Alien from "../Alien";
 import GameEnv from "../Environment";
-import { KeysTracker } from "@/ts/types";
+import {
+  IBullet,
+  IGameState,
+  KeysTracker,
+  PlayerBullet,
+  AlienBullet,
+  IWall,
+  IEnvironment,
+  IPlayer,
+  IAlienSet,
+} from "@/ts/types";
 import shieldLikeWall from "@/plans/walls";
 
 import aliensPlan from "@/plans/alien-set";
@@ -22,8 +31,8 @@ function generateRandomBossAppearanceInterval() {
 /**
  * Class that manages the state of a running game.
  */
-export default class GameState {
-  public bullets: Bullet[] = [];
+export default class GameState implements IGameState {
+  public bullets: IBullet[] = [];
   public status: "lost" | "running" | "start" | "paused" = "start";
   public boss: Boss | null = null;
   public bossesKilled = 0;
@@ -40,9 +49,9 @@ export default class GameState {
    * @param env - The game environment.
    */
   constructor(
-    public alienSet: AlienSet,
-    public player: Player,
-    public env: GameEnv
+    public alienSet: IAlienSet,
+    public player: IPlayer,
+    public env: IEnvironment
   ) {}
 
   /**
@@ -89,7 +98,7 @@ export default class GameState {
   private handleBullets(timeStep: number) {
     this.bullets.forEach((bullet) => bullet.update(timeStep));
 
-    const newBullets: Bullet[] = [];
+    const newBullets: IBullet[] = [];
 
     let isSomeAlienKilled = false;
     for (const b of this.bullets) {
@@ -183,7 +192,7 @@ export default class GameState {
    * @param b - A bullet.
    * @returns - A boolean value that tells whether the bullet touches a wall.
    */
-  private handleBulletContactWithWalls(b: Bullet) {
+  private handleBulletContactWithWalls(b: IBullet) {
     let touchedPiece = false;
     for (const wall of this.env.walls) {
       touchedPiece = wall.collide(b.pos, b.size);
@@ -208,7 +217,7 @@ export default class GameState {
    * Fires the aliens that can fire.
    */
   private fireAliens() {
-    const newBullets: Bullet[] = [];
+    const newBullets: IBullet[] = [];
 
     for (const { alien } of this.alienSet) {
       if (!(alien instanceof Alien)) continue;
@@ -253,7 +262,7 @@ export default class GameState {
 
     const gap = (100 - LAYOUT.wallsSize.w * LAYOUT.numWalls) / 5;
 
-    const walls: Wall[] = new Array(LAYOUT.numWalls)
+    const walls: IWall[] = new Array(LAYOUT.numWalls)
       .fill(undefined)
       .map((_, i) => {
         return new Wall(

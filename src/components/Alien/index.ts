@@ -1,7 +1,12 @@
 import { DIMENSIONS } from "@/game-config";
 import Vector from "@/utils/common/Vector";
-import { Coords, RemoveFirstElement, MappedObjectFromUnion } from "@/ts/types";
-import type Bullet from "@/components/Bullet";
+import {
+  Coords,
+  RemoveFirstElement,
+  MappedObjectFromUnion,
+  IGun,
+  IAlien,
+} from "@/ts/types";
 import Gun from "@/components/Gun";
 
 /**
@@ -48,7 +53,7 @@ export const alienTypesConfig: MappedObjectFromUnion<TAliens, AlienTypeConfig> =
 /**
  * Class representing an alien.
  */
-export default class Alien {
+export default class Alien implements IAlien {
   public readonly actorType = "alien" as const;
 
   /**
@@ -62,7 +67,7 @@ export default class Alien {
   constructor(
     public gridPos: Coords,
     public readonly score: number,
-    public readonly gun: Gun,
+    public readonly gun: IGun,
     public readonly alienType: TAliens
   ) {}
 
@@ -72,7 +77,7 @@ export default class Alien {
    * @param alienPos - The position from where the alien fires.
    * @returns - The fired bullet or null if the gun wasn't able to fire.
    */
-  public fire(alienPos: Coords): Bullet | null {
+  public fire(alienPos: Coords) {
     /* bullet is fired from the center of the alien */
     const bulletX =
       alienPos.x + DIMENSIONS.alien.w / 2 - this.gun.bulletSize.w / 2;

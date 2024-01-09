@@ -1,6 +1,13 @@
+import {
+  Size,
+  NumOrNull,
+  TAliens,
+  IAlienSet,
+  IVector,
+  IAlien,
+} from "@/ts/types";
 import Vector from "@/utils/common/Vector";
 import Alien, { alienTypesRegExp, alienTypes } from "../Alien";
-import { Size, NumOrNull, TAliens } from "@/ts/types";
 import { HorizontalDirection } from "@/ts/enums";
 import { DIMENSIONS, LAYOUT } from "@/game-config";
 
@@ -11,7 +18,7 @@ import { DIMENSIONS, LAYOUT } from "@/game-config";
  * @param column - The column
  * @returns
  */
-function isColumnDead(rows: AlienSet["aliens"], column: number) {
+function isColumnDead(rows: IAlienSet["aliens"], column: number) {
   return rows.every(
     (row) => row[column] === null || row[column] === "exploding"
   );
@@ -22,7 +29,7 @@ function isColumnDead(rows: AlienSet["aliens"], column: number) {
  * @param row
  * @returns
  */
-function isRowDead(row: AlienSet["aliens"][number]) {
+function isRowDead(row: IAlienSet["aliens"][number]) {
   return row.every((alien) => alien === null || alien === "exploding");
 }
 
@@ -33,7 +40,7 @@ function isRowDead(row: AlienSet["aliens"][number]) {
  * @param rows - The same thing that the {@link AlienSet.aliens} property holds.
  * @returns - The first or last column or null if neither of them is dead.
  */
-function getFirstOrLastColumnIfDead(rows: AlienSet["aliens"]): number | null {
+function getFirstOrLastColumnIfDead(rows: IAlienSet["aliens"]): number | null {
   const isFirstColumnDead = isColumnDead(rows, 0);
   const isLastColumnDead = isColumnDead(rows, rows[0].length - 1);
 
@@ -45,7 +52,7 @@ function getFirstOrLastColumnIfDead(rows: AlienSet["aliens"]): number | null {
 /**
  * Same as {@link getFirstOrLastColumnIfDead}, but for rows.
  */
-function getFirstOrLastRowIfDead(rows: AlienSet["aliens"]): number | null {
+function getFirstOrLastRowIfDead(rows: IAlienSet["aliens"]): number | null {
   const isFirstRowDead = isRowDead(rows[0]);
   const isLastRowDead = isRowDead(rows[rows.length - 1]);
 
@@ -68,8 +75,8 @@ const alienSetEntranceSpeed = 30;
 /**
  * A class represeting a set of {@link Alien}s
  */
-export default class AlienSet {
-  public pos: Vector;
+export default class AlienSet implements IAlienSet {
+  public pos: IVector;
   public size: Size;
 
   private yStep = 2;
@@ -398,7 +405,7 @@ export default class AlienSet {
    * @param param0 - The grid position of the alien within the alien set.
    * @returns - The position of the alien.
    */
-  public getAlienPos({ x, y }: Coords): Vector {
+  public getAlienPos({ x, y }: Coords): IVector {
     return new Vector(
       /* alienSet positions + sizes + gaps */
       this.pos.x + x * DIMENSIONS.alien.w + x * DIMENSIONS.alienSetGap.w,
@@ -412,7 +419,7 @@ export default class AlienSet {
    * @param x - The X position of the alien within the grid.
    * @param y - The Y position of the alien within the grid.
    */
-  public removeAlien(alien: Alien) {
+  public removeAlien(alien: IAlien) {
     this.aliens[alien.gridPos.y][alien.gridPos.x] = "exploding";
     this.alive--;
   }

@@ -1070,6 +1070,10 @@ What amazed me and inspired me to talk about it here is that I only had to chang
 - [<link>: The External Resource Link element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link)
 - [Free Invaders](https://freeinvaders.org) - A game reference.
 - [Hash Symbol Secrets](https://www.pixartprinting.co.uk/blog/hash-symbol-secrets/)
+- [TypeScript - Iterators and Generators](https://www.typescriptlang.org/docs/handbook/iterators-and-generators.html)
+- [JavaScript modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#cyclic_imports)
+- [Quentin Trimble](https://blog.logrocket.com/when-how-use-interfaces-classes-typescript/#:~:text=When%20should%20we%20use%20classes%20and%20interfaces%3F,interface%20is%20best%20for%20you.)
+- [When use a interface or class in Typescript [duplicate]](https://stackoverflow.com/questions/51716808/when-use-a-interface-or-class-in-typescript)
 
 #### Comments
 
@@ -1098,6 +1102,7 @@ What amazed me and inspired me to talk about it here is that I only had to chang
 - [style-loader](https://webpack.js.org/loaders/style-loader/)
 - [css-loader](https://webpack.js.org/loaders/css-loader/)
 - [Can I use webpack to generate CSS and JS separately?](https://stackoverflow.com/questions/35322958/can-i-use-webpack-to-generate-css-and-js-separately)
+- [Resolve | Webpack](https://webpack.js.org/configuration/resolve/#resolvemainfiles)
 
 ## Author
 
