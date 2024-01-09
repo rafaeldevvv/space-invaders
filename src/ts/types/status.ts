@@ -3,7 +3,7 @@
  * @author Rafael Maia <https://rafaeldevvv.github.io/portfolio>
  */
 
-import { IAlien } from "../types";
+import { IAlien } from "./components";
 
 type TStateStatuses = "lost" | "running" | "start" | "paused";
 type AlienSetAlienStates = IAlien | null | "exploding";

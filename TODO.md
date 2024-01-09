@@ -1,7 +1,6 @@
 - Split index.ts into many files for better organization
-  - Explain the interfaces (just copy and paste tsdoc comments)
   - Improve the configuration of the game
-- Commit "Break aplication down into multiple files and folders"
+  - Maybe, remove @file at the top of each file in ts/types
 
 - Refactor everything, every class, every function, break classes down, remove methods and so on
 

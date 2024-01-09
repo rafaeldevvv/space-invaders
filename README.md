@@ -1074,7 +1074,8 @@ What amazed me and inspired me to talk about it here is that I only had to chang
 - [JavaScript modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#cyclic_imports)
 - [Quentin Trimble](https://blog.logrocket.com/when-how-use-interfaces-classes-typescript/#:~:text=When%20should%20we%20use%20classes%20and%20interfaces%3F,interface%20is%20best%20for%20you.)
 - [When use a interface or class in Typescript [duplicate]](https://stackoverflow.com/questions/51716808/when-use-a-interface-or-class-in-typescript)
-- [lowcode-engine](https://github.com/alibaba/lowcode-engine/) - I used it as a reference to organize files and structure interfaces.
+- [lowcode-engine](https://github.com/alibaba/lowcode-engine/) - I used it as a reference to organize files, structure interfaces and make commits.
+- [Refactoring](https://refactoring.com)
 
 #### Comments
 
