@@ -4,7 +4,8 @@ import aliensPlan from "@/plans/alien-set";
 import runAnimation from "@/utils/Presenter/runAnimation";
 
 /**
- * A class responsible for managing the flow of information between model (state) and view (display).
+ * A class responsible for managing the flow of information 
+ * between model (state) and view (display).
  */
 export default class GamePresenter {
   State: GameStateConstructor;

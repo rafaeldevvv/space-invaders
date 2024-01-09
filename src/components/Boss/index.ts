@@ -5,6 +5,10 @@ import { IVector,IBoss } from "@/ts/types";
 
 const bossExplodingTime = 1;
 
+/**
+ * Class representing the boss in the game.
+ * @implements {IBoss}
+ */
 export default class Boss implements IBoss {
   timeSinceDeath = 0;
   status: "alive" | "exploding" | "dead" = "alive";

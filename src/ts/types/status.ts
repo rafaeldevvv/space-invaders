@@ -1,3 +1,8 @@
+/**
+ * @file Defines types representing the statuses of components.
+ * @author Rafael Maia <https://rafaeldevvv.github.io/portfolio>
+ */
+
 import { IAlien } from "../types";
 
 type TStateStatuses = "lost" | "running" | "start" | "paused";

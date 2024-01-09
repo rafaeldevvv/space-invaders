@@ -30,6 +30,7 @@ function generateRandomBossAppearanceInterval() {
 
 /**
  * Class that manages the state of a running game.
+ * @implements {IGameState}
  */
 export default class GameState implements IGameState {
   public bullets: IBullet[] = [];

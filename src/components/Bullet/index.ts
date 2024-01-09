@@ -2,6 +2,7 @@ import { TShooters, Size, IVector, IGameState, IBullet } from "@/ts/types";
 
 /**
  * Class representing a bullet.
+ * @implements {IBullet}
  */
 export default class Bullet implements IBullet {
   /**

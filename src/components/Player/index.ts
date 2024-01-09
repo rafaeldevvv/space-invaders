@@ -17,6 +17,7 @@ export const playerXSpeed = 30,
 
 /**
  * Class representing the player.
+ * @implements {IPlayer}
  */
 export default class Player implements IPlayer {
   public readonly actorType = "player" as const;

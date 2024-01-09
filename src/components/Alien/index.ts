@@ -6,6 +6,7 @@ import {
   MappedObjectFromUnion,
   IGun,
   IAlien,
+  TAliens
 } from "@/ts/types";
 import Gun from "@/components/Gun";
 
@@ -17,7 +18,6 @@ import Gun from "@/components/Gun";
  * `Z` represents the highest level alien.
  */
 export const alienTypes = ["X", "Y", "Z"] as const;
-export type TAliens = (typeof alienTypes)[number];
 
 export const alienTypesRegExp = new RegExp(
   `(\\w*(${alienTypes.join("|")})*\\w*)+`
@@ -52,6 +52,7 @@ export const alienTypesConfig: MappedObjectFromUnion<TAliens, AlienTypeConfig> =
 
 /**
  * Class representing an alien.
+ * @implements {IAlien}
  */
 export default class Alien implements IAlien {
   public readonly actorType = "alien" as const;

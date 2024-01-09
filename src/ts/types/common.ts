@@ -1,5 +1,6 @@
 /**
- * @file Describes all types used in the game.
+ * @file Defines types that are used across the entire codebase.
+ * @author Rafael Maia <https://rafaeldevvv.github.io/portfolio>
  */
 
 /**
@@ -19,7 +20,7 @@ interface Coords {
 interface PixelCoords extends Coords {}
 
 /**
- * A two-dimensional size
+ * A two-dimensional size.
  */
 interface Size {
   w: number;
@@ -48,6 +49,9 @@ type TShooters = "player" | "alien";
 const alienTypes = ["X", "Y", "Z"] as const;
 type TAliens = (typeof alienTypes)[number];
 
+/**
+ * A two-dimensional vector object wrapper.
+ */
 interface IVector {
   x: number;
   y: number;

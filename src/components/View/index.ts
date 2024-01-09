@@ -55,6 +55,8 @@ const fontSizes: MappedObjectFromUnion<FontSizes, number> = {
 /**
  * Class represeting a view component used to display the game state.
  * It uses the HTML Canvas API.
+ * 
+ * @implements {IView<IGameState>}
  */
 export default class CanvasView implements IView<IGameState> {
   private canvas: HTMLCanvasElement;

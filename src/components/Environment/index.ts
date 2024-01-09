@@ -6,6 +6,7 @@ import { Size, IAlienSet, IPlayer, IWall, IBullet, IEnvironment } from "@/ts/typ
 /**
  * Class representing the Game Environment responsible
  * for managing collision.
+ * @implements {IEnvironment}
  */
 export default class GameEnv implements IEnvironment {
   /**

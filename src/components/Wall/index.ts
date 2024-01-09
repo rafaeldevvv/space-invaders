@@ -2,6 +2,11 @@ import { Size, Coords, IWall } from "@/ts/types";
 import readSolidPlan from "@/utils/common/readSolidPlan";
 import overlap from "@/utils/common/overlap";
 
+/**
+ * Class representing a wall in the game.
+ * 
+ * @implements {IWall}
+ */
 export default class Wall implements IWall {
    /**
     * The pieces of the wall as a matrix.

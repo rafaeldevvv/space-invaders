@@ -6,6 +6,7 @@ import randomNum from "@/utils/common/randomNum";
 
 /**
  * Class representing a gun.
+ * @implements {IGun}
  */
 export default class Gun implements IGun {
   public fireInterval: number;

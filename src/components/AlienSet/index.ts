@@ -74,6 +74,7 @@ const alienSetEntranceSpeed = 30;
 
 /**
  * A class represeting a set of {@link Alien}s
+ * @implements {IAlienSet}
  */
 export default class AlienSet implements IAlienSet {
   public pos: IVector;
@@ -433,7 +434,8 @@ export default class AlienSet implements IAlienSet {
   }
 
   /**
-   * Iterates through the AlienSet, yielding every alien in the set
+   * Iterates through the AlienSet, yielding every alien in the set, 
+   * and also the alien's row and column.
    */
   public *[Symbol.iterator]() {
     for (let y = 0; y < this.numRows; y++) {
