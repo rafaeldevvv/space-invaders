@@ -1,3 +1,5 @@
+import { Size } from "@/ts/types";
+
 /**
  * Describes the layout of the game.
  */
