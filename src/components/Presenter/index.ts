@@ -1,10 +1,10 @@
 import { IView, IGameState, GameStateConstructor } from "@/ts/types";
 import { ACTION_KEYS } from "@/game-config";
 import aliensPlan from "@/plans/alien-set";
-import runAnimation from "@/utils/Presenter/runAnimation";
+import { runAnimation } from "./utils";
 
 /**
- * A class responsible for managing the flow of information 
+ * A class responsible for managing the flow of information
  * between model (state) and view (display).
  */
 export default class GamePresenter {

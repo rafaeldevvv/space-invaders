@@ -10,7 +10,7 @@ import randomNum from "@/utils/common/randomNum";
  */
 export default class Gun implements IGun {
   public fireInterval: number;
-  public timeSinceLastShot: number = 0;
+  private timeSinceLastShot: number = 0;
 
   /**
    * Creates a Gun.
@@ -27,9 +27,13 @@ export default class Gun implements IGun {
     private baseFireInterval: number
   ) {
     // to give a random initial fireInterval
-    this.fireInterval = randomNumberInFactorRange(baseFireInterval, 0.2);
+    this.fireInterval =
+      this.baseFireInterval === 0
+        ? 0
+        : randomNumberInFactorRange(baseFireInterval, 0.2);
     // for the first bullet to be really random
-    this.timeSinceLastShot = randomNum(0, this.fireInterval);
+    this.timeSinceLastShot =
+      this.baseFireInterval === 0 ? 0 : randomNum(0, this.fireInterval);
   }
 
   /**
@@ -71,6 +75,7 @@ export default class Gun implements IGun {
    * @param timeStep
    */
   update(timeStep: number) {
+    if (this.baseFireInterval === 0) return;
     this.timeSinceLastShot += timeStep * 1000;
   }
 

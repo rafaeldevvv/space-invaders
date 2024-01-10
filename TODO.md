@@ -4,6 +4,20 @@
   - Create a class called IterablePieces with a `pieces` property and an interator interface
 - commit & update README
 
+- Improve controller
+  - Make it take objects instead of constructors
+  - Make it possible to pass the parent element to the controller
+- commit & update README
+
+- Improve view
+  - Refactor it
+- commit & update README for each one
+
+- Improve alien set
+  - Refactor it
+  - Break it down, it's too big
+- commit & update README for each one
+
 - Change visual clue to show player's resurrection
 - commit & update README
 
@@ -26,19 +40,6 @@
   a css file inside src and import it into the ts file, so that the code is contained within one file.
 - commit & update README
 
-- Improve controller
-  - Make it take objects instead of constructors
-  - Make it possible to pass the parent element to the controller
-- commit & update README
-
-- Improve view
-  - Refactor it
-- commit & update README for each one
-
-- Improve alien set
-  - Refactor it
-  - Break it down, it's too big
-- commit & update README for each one
 
 - Make the assets, styles and so on (or maybe make something similar to the wall for the pixel art images)
   - Add images

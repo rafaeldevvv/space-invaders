@@ -1080,6 +1080,7 @@ The reason why I created the `ts/types/components` file is that using the compon
 - [When use a interface or class in Typescript [duplicate]](https://stackoverflow.com/questions/51716808/when-use-a-interface-or-class-in-typescript)
 - [lowcode-engine](https://github.com/alibaba/lowcode-engine/) - I used it as a reference to organize files, structure interfaces and make commits.
 - [Refactoring](https://refactoring.com)
+- [Typescript: different return type based on parameter](https://stackoverflow.com/questions/74174908/typescript-different-return-type-based-on-parameter)
 
 #### Comments
 

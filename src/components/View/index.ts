@@ -14,8 +14,7 @@ import {
   IView,
 } from "@/ts/types";
 import { ACTION_KEYS, LAYOUT, DIMENSIONS } from "@/game-config";
-import getElementInnerDimensions from "@/utils/View/getElementInnerDimensions";
-import trackKeys from "@/utils/View/trackKeys";
+import { getElementInnerDimensions, trackKeys } from "./utils";
 import readSolidPlan from "@/utils/common/readSolidPlan";
 import explosionPlan from "@/plans/explosions";
 
@@ -55,7 +54,7 @@ const fontSizes: MappedObjectFromUnion<FontSizes, number> = {
 /**
  * Class represeting a view component used to display the game state.
  * It uses the HTML Canvas API.
- * 
+ *
  * @implements {IView<IGameState>}
  */
 export default class CanvasView implements IView<IGameState> {

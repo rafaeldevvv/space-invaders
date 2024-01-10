@@ -120,7 +120,6 @@ interface IGun {
   bulletSize: Size;
   owner: TShooters;
   fireInterval: number;
-  timeSinceLastShot: number;
 
   /**
    * Fires a bullet from a position.
@@ -140,7 +139,6 @@ interface IPlayer {
    */
   readonly actorType: "player";
   pos: IVector;
-  readonly gun: IGun;
   lives: number;
   score: number;
   status: PlayerStatuses;
