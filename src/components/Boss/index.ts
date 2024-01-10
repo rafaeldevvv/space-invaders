@@ -9,10 +9,11 @@ import { bossExplodingTime, speedX } from "./config";
  * @implements {IBoss}
  */
 export default class Boss implements IBoss {
-  timeSinceDeath = 0;
-  status: "alive" | "exploding" | "dead" = "alive";
-  pos: IVector;
-  private direction: HorizontalDirection = Math.random() > 0.5 ? 1 : -1;
+  public timeSinceDeath = 0;
+  public status: "alive" | "exploding" | "dead" = "alive";
+  public pos: IVector;
+  private direction: HorizontalDirection =
+    Math.random() > 0.5 ? HorizontalDirection.Right : HorizontalDirection.Left;
 
   constructor() {
     if (this.direction === HorizontalDirection.Left) {
@@ -22,7 +23,7 @@ export default class Boss implements IBoss {
     }
   }
 
-  update(timeStep: number) {
+  public update(timeStep: number) {
     if (this.status === "exploding") {
       this.timeSinceDeath += timeStep;
       if (this.timeSinceDeath >= bossExplodingTime) {
@@ -31,12 +32,10 @@ export default class Boss implements IBoss {
       return;
     }
 
-    this.pos = this.pos.plus(
-      new Vector(this.direction * speedX * timeStep, 0)
-    );
+    this.pos = this.pos.plus(new Vector(this.direction * speedX * timeStep, 0));
   }
 
-  isOutOfBounds() {
+  public isOutOfBounds() {
     if (this.direction === HorizontalDirection.Right) {
       return this.pos.x >= 100;
     } else {

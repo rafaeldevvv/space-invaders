@@ -29,15 +29,12 @@ export default class Bullet implements IBullet {
     this.pos = this.pos.plus(this.speed.times(timeStep));
   }
 
-  /**
-   * Is called when the bullet hits something.
-   *
-   * @param state - The state of the game.
-   */
-  collide(state: IGameState) {
-    state.bullets = state.bullets.filter((bullet) => bullet !== this);
+  isOutOfBounds() {
+    return (
+      this.pos.x > 100 ||
+      this.pos.x < -this.size.w ||
+      this.pos.y > 100 ||
+      this.pos.y < -this.size.h
+    );
   }
 }
-
-export type AlienBullet = Bullet & { from: "alien" };
-export type PlayerBullet = Bullet & { from: "player" };

@@ -1,5 +1,9 @@
 - Refactor everything, every class, every function, break classes down, remove methods and so on
 
+- Refactor wall and rendering of explosion (too much repeated logic)
+  - Create a class called IterablePieces with a `pieces` property and an interator interface
+- commit & update README
+
 - Change visual clue to show player's resurrection
 - commit & update README
 
@@ -10,10 +14,6 @@
 - commit & update README
 
 - Add Bullets collision
-- commit & update README
-
-- Refactor wall and rendering of explosion (too much repeated logic)
-  - Create a class called IterablePieces with a `pieces` property and an interator interface
 - commit & update README
 
 - Implement score showing up when alien or boss is killed

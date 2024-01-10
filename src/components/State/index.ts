@@ -104,7 +104,7 @@ export default class GameState implements IGameState {
 
     let isSomeAlienKilled = false;
     for (const b of this.bullets) {
-      const outOfBounds = this.env.isBulletOutOfBounds(b);
+      const outOfBounds = b.isOutOfBounds();
       if (outOfBounds) {
         if (b.from === "player") this.isPlayerBulletPresent = false;
         continue;

@@ -101,13 +101,7 @@ interface IBullet {
   readonly speed: IVector;
   readonly size: Size;
   update(timeStep: number): void;
-
-  /**
-   * Is called when the bullet hits something.
-   *
-   * @param state - The state of the game.
-   */
-  collide(state: IGameState): void;
+  isOutOfBounds(): boolean;
 }
 
 type AlienBullet = IBullet & { from: "alien" };
@@ -117,7 +111,6 @@ interface IEnvironment {
   alienSet: IAlienSet;
   player: IPlayer;
   walls: IWall[];
-  isBulletOutOfBounds(bullet: IBullet): boolean;
   alienSetTouchesPlayer(): boolean;
   handleAlienSetContactWithWall(): void;
   bulletTouchesObject(bullet: IBullet, objPos: Coords, objSize: Size): boolean;
