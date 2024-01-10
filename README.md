@@ -1030,6 +1030,10 @@ class GameState {
 
 What amazed me and inspired me to talk about it here is that I only had to change the GameState class and I didn't have to mess with anything except that. I guess that's a good sign that I am applying the Single Responsibility Principle and Separation of Concerns well.
 
+### Cyclic imports
+
+The reason why I created the `ts/types/components` file is that using the components' class types themselves would cause a lot of cyclic imports. And also because if code that uses a component needs the component to implement a new feature, I just need to change the interface that it expects and TypeScript will signal to me what needs to be done for the component to comply with the interface, and I think that's a great thing.
+
 ### Useful Resources
 
 #### General

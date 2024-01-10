@@ -1,6 +1,5 @@
 import {
   Size,
-  NumOrNull,
   TAliens,
   IAlienSet,
   IVector,
@@ -17,7 +16,7 @@ import {
   timeDecreaseFactor,
   stepToEdgeAdjustment,
 } from "./config";
-import { getFirstOrLastColumnIfDead, getFirstOrLastRowIfDead } from "./utils";
+import { adaptPos, adaptSize, removeDeadRowsAndColumns } from "./utils";
 
 /**
  * A class represeting a set of {@link Alien}s
@@ -38,6 +37,10 @@ export default class AlienSet implements IAlienSet {
    * "exploding" (it has just been killed by an alien)
    */
   public aliens: (Alien | null | "exploding")[][];
+
+  /**
+   * The number of aliens in the set that are currently alive.
+   */
   public alive: number;
 
   private timeToUpdate = 1;
@@ -188,7 +191,6 @@ export default class AlienSet implements IAlienSet {
         } else {
           movedX = this.xStep;
         }
-        // movedX = Math.min(this.xStep, rightDistance);
       } else {
         /*
            get either the distance left to reach the inner left padding edge
@@ -200,7 +202,6 @@ export default class AlienSet implements IAlienSet {
         } else {
           movedX = this.xStep;
         }
-        // movedX = Math.min(this.xStep, leftDistance);
       }
       movedX *= this.direction;
     }
@@ -209,142 +210,9 @@ export default class AlienSet implements IAlienSet {
   }
 
   public adapt() {
-    this.adaptPos();
-    this.adaptSize();
-    this.removeDeadRowsAndColumns();
-  }
-
-  /**
-   * Adapts the size of the alien set when enough aliens have been removed.
-   */
-  private adaptSize() {
-    let firstLivingAlienRow: NumOrNull = null,
-      lastLivingAlienRow: NumOrNull = null,
-      firstLivingAlienColumn: NumOrNull = null,
-      lastLivingAlienColumn: NumOrNull = null;
-
-    for (const { alien } of this) {
-      if (!(alien instanceof Alien)) continue;
-      const { x: column, y: row } = alien.gridPos;
-
-      /* 
-         `row < firstLivingAlienRow` isn't needed here because 
-         it will always check top-bottom
-       */
-      if (firstLivingAlienRow === null) {
-        firstLivingAlienRow = row;
-      }
-      lastLivingAlienRow = row;
-
-      /* 
-         if the  first column is null or the current one is less than the previous 
-         one, then this is the first living alien column 
-       */
-      if (firstLivingAlienColumn === null || column < firstLivingAlienColumn) {
-        firstLivingAlienColumn = column;
-      }
-      if (lastLivingAlienColumn === null || column > lastLivingAlienColumn) {
-        lastLivingAlienColumn = column;
-      }
-    }
-
-    if (firstLivingAlienRow !== null) {
-      const newH =
-        // add one because if the living aliens are on the same row, the new height would be zero
-        // same thing for columns
-        (lastLivingAlienRow! - firstLivingAlienRow + 1) * DIMENSIONS.alien.h +
-        (lastLivingAlienRow! - firstLivingAlienRow) * DIMENSIONS.alienSetGap.h;
-      const newW =
-        (lastLivingAlienColumn! - firstLivingAlienColumn! + 1) *
-          DIMENSIONS.alien.w +
-        (lastLivingAlienColumn! - firstLivingAlienColumn!) *
-          DIMENSIONS.alienSetGap.w;
-
-      this.size = {
-        w: newW,
-        h: newH,
-      };
-    }
-  }
-
-  /**
-   * Adapts the position of the alien set when enough aliens have been removed.
-   */
-  private adaptPos(): void {
-    let firstLivingAlienColumn: NumOrNull = null;
-    let firstLivingAlienRow: NumOrNull = null;
-
-    for (const { alien } of this) {
-      if (!(alien instanceof Alien)) continue;
-
-      const { x, y } = alien.gridPos;
-
-      if (firstLivingAlienColumn === null || x < firstLivingAlienColumn) {
-        firstLivingAlienColumn = x;
-      }
-
-      if (firstLivingAlienRow === null) {
-        firstLivingAlienRow = y;
-      }
-    }
-
-    /* if there is still aliens */
-    if (firstLivingAlienColumn !== null && firstLivingAlienRow !== null) {
-      this.pos = this.getAlienPos({
-        x: firstLivingAlienColumn,
-        y: firstLivingAlienRow,
-      });
-    }
-  }
-
-  /**
-   * Removes rows or columns that have no living aliens.
-   */
-  private removeDeadRowsAndColumns() {
-    let columnToRemove: number | null;
-    while (
-      (columnToRemove = getFirstOrLastColumnIfDead(this.aliens)) !== null
-    ) {
-      this.aliens = this.aliens.map((row) => {
-        return row.filter((_, x) => x !== columnToRemove);
-      });
-
-      /* 
-         this is totally necessary for this logic to work
-         it ensures that after a row or column is removed, the 
-         this.getFirstOrLastColumnIfDead method will return 0 
-         for the next column to be removed 
-       */
-      this.syncAliensGridPos();
-    }
-
-    let rowToRemove: number | null;
-    while (
-      this.aliens.length !== 0 &&
-      (rowToRemove = getFirstOrLastRowIfDead(this.aliens)) !== null
-    ) {
-      this.aliens = this.aliens.filter((_, y) => y !== rowToRemove);
-      this.syncAliensGridPos();
-    }
-
-    this.syncNumOfColsAndRows();
-  }
-
-  /**
-   * After the unnecessary rows and columns are removed, the grid position of the aliens are going to be messed up.
-   * This ensures that the grid position of the aliens are consistent within the new set.
-   */
-  private syncAliensGridPos() {
-    this.aliens.forEach((row, y) => {
-      row.forEach((alien, x) => {
-        if (alien instanceof Alien) alien.gridPos = { x, y };
-      });
-    });
-  }
-
-  private syncNumOfColsAndRows() {
-    this.numRows = this.aliens.length;
-    this.numColumns = this.numRows === 0 ? 0 : this.aliens[0].length;
+    adaptPos(this);
+    adaptSize(this);
+    removeDeadRowsAndColumns(this);
   }
 
   /**

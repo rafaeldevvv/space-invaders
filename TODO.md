@@ -1,20 +1,6 @@
-- Split index.ts into many files for better organization
-  - Improve the configuration of the game
-  - Maybe, remove @file at the top of each file in ts/types
-  - See
-
 - Refactor everything, every class, every function, break classes down, remove methods and so on
 
-- refactor the alien set configuration above the class (put the values in the prototype, you may see decorators)
-- commit & update README
-00000000000000000000
-- refactor the player configuration above the class (put the values in the prototype)
-- commit & update README
-
-- Add visual clue to show player's resurrection
-- commit & update README
-
-- Increase Z alien's score to 40
+- Change visual clue to show player's resurrection
 - commit & update README
 
 - Make boss score random (or don't, it doesn't make sense to be random)
