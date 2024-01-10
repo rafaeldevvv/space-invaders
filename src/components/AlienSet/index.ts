@@ -7,70 +7,17 @@ import {
   IAlien,
 } from "@/ts/types";
 import Vector from "@/utils/common/Vector";
-import Alien, { alienTypesRegExp, alienTypes } from "../Alien";
+import { alienTypesRegExp, alienTypes } from "../Alien/config";
+import Alien from "../Alien";
 import { HorizontalDirection } from "@/ts/enums";
 import { DIMENSIONS, LAYOUT } from "@/game-config";
-
-/**
- * Checks whether a particular column in the set has all its aliens dead.
- *
- * @param rows - The rows
- * @param column - The column
- * @returns
- */
-function isColumnDead(rows: IAlienSet["aliens"], column: number) {
-  return rows.every(
-    (row) => row[column] === null || row[column] === "exploding"
-  );
-}
-
-/**
- * Same as {@link isColumnDead}, but for a row in the AlienSet.
- * @param row
- * @returns
- */
-function isRowDead(row: IAlienSet["aliens"][number]) {
-  return row.every((alien) => alien === null || alien === "exploding");
-}
-
-/**
- * Gets the first or last column in a set of aliens if either is dead.
- * The first column takes precedence over the last column.
- *
- * @param rows - The same thing that the {@link AlienSet.aliens} property holds.
- * @returns - The first or last column or null if neither of them is dead.
- */
-function getFirstOrLastColumnIfDead(rows: IAlienSet["aliens"]): number | null {
-  const isFirstColumnDead = isColumnDead(rows, 0);
-  const isLastColumnDead = isColumnDead(rows, rows[0].length - 1);
-
-  if (isFirstColumnDead) return 0;
-  if (isLastColumnDead) return rows[0].length - 1;
-  else return null;
-}
-
-/**
- * Same as {@link getFirstOrLastColumnIfDead}, but for rows.
- */
-function getFirstOrLastRowIfDead(rows: IAlienSet["aliens"]): number | null {
-  const isFirstRowDead = isRowDead(rows[0]);
-  const isLastRowDead = isRowDead(rows[rows.length - 1]);
-
-  if (isFirstRowDead) return 0;
-  if (isLastRowDead) return rows.length - 1;
-  else return null;
-}
-
-/**
- * This is to adjust the step of the alien set when it
- * is close to the edge of the display. With this, the alien
- * set will not seem stagnant when there's just a small distance
- * for it to reach the edge
- */
-const alienSetStepToEdgeAdjustment = 1.33;
-const alienSetTimeDecreaseFactor = 0.92;
-const alienSetBaseYPos = LAYOUT.padding.ver + 12;
-const alienSetEntranceSpeed = 30;
+import {
+  entranceSpeed,
+  baseYPos,
+  timeDecreaseFactor,
+  stepToEdgeAdjustment,
+} from "./config";
+import { getFirstOrLastColumnIfDead, getFirstOrLastRowIfDead } from "./utils";
 
 /**
  * A class represeting a set of {@link Alien}s
@@ -160,13 +107,13 @@ export default class AlienSet implements IAlienSet {
    */
   public update(timeStep: number) {
     if (this.entering) {
-      this.pos = this.pos.plus(new Vector(0, alienSetEntranceSpeed * timeStep));
+      this.pos = this.pos.plus(new Vector(0, entranceSpeed * timeStep));
 
       /* if it is in the place where it is supposed to be initially */
-      if (this.pos.y >= alienSetBaseYPos) {
+      if (this.pos.y >= baseYPos) {
         this.entering = false;
         /* adjustment */
-        this.pos.y = alienSetBaseYPos;
+        this.pos.y = baseYPos;
       } else return;
     }
 
@@ -182,7 +129,7 @@ export default class AlienSet implements IAlienSet {
 
     // if it moved down, decreases the updateTime
     if (movedY > 0) {
-      this.timeToUpdate *= alienSetTimeDecreaseFactor;
+      this.timeToUpdate *= timeDecreaseFactor;
     }
 
     if (movedY !== 0 || movedX !== 0) {
@@ -236,7 +183,7 @@ export default class AlienSet implements IAlienSet {
          */
         const rightDistance =
           100 - this.pos.x - LAYOUT.padding.hor - this.size.w;
-        if (rightDistance < this.xStep * alienSetStepToEdgeAdjustment) {
+        if (rightDistance < this.xStep * stepToEdgeAdjustment) {
           movedX = rightDistance;
         } else {
           movedX = this.xStep;
@@ -248,7 +195,7 @@ export default class AlienSet implements IAlienSet {
            or the normal step to move
          */
         const leftDistance = this.pos.x - LAYOUT.padding.hor;
-        if (leftDistance < this.xStep * alienSetStepToEdgeAdjustment) {
+        if (leftDistance < this.xStep * stepToEdgeAdjustment) {
           movedX = leftDistance;
         } else {
           movedX = this.xStep;
@@ -434,7 +381,7 @@ export default class AlienSet implements IAlienSet {
   }
 
   /**
-   * Iterates through the AlienSet, yielding every alien in the set, 
+   * Iterates through the AlienSet, yielding every alien in the set,
    * and also the alien's row and column.
    */
   public *[Symbol.iterator]() {

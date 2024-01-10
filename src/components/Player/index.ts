@@ -10,10 +10,7 @@ import {
   IGun,
 } from "@/ts/types";
 import { DIMENSIONS, LAYOUT, ACTION_KEYS } from "@/game-config";
-
-export const playerXSpeed = 30,
-  playerExplodingTime = 1,
-  playerRevivingTime = 3;
+import { xSpeed, explodingTime, revivingTime } from "./config";
 
 /**
  * Class representing the player.
@@ -60,7 +57,7 @@ export default class Player implements IPlayer {
    * @param keys - An object that tracks which keys are currently held down.
    */
   public update(state: IGameState, timeStep: number, keys: KeysTracker) {
-    const movedX = new Vector(timeStep * playerXSpeed, 0);
+    const movedX = new Vector(timeStep * xSpeed, 0);
 
     this.handleStatus(timeStep);
 
@@ -95,13 +92,13 @@ export default class Player implements IPlayer {
       this.timeSinceResurrection += timeStep;
     }
 
-    if (this.timeSinceExplosion >= playerExplodingTime) {
+    if (this.timeSinceExplosion >= explodingTime) {
       this.status = "reviving";
       this.timeSinceExplosion = 0;
       this.resetPos();
     }
 
-    if (this.timeSinceResurrection >= playerRevivingTime) {
+    if (this.timeSinceResurrection >= revivingTime) {
       this.status = "alive";
       this.timeSinceResurrection = 0;
     }

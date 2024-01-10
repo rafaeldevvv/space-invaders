@@ -1,9 +1,8 @@
 import Vector from "@/utils/common/Vector";
-import { LAYOUT, DIMENSIONS, BOSS_CONFIG } from "@/game-config";
+import { LAYOUT, DIMENSIONS } from "@/game-config";
 import { HorizontalDirection } from "@/ts/enums";
-import { IVector,IBoss } from "@/ts/types";
-
-const bossExplodingTime = 1;
+import { IVector, IBoss } from "@/ts/types";
+import { bossExplodingTime, speedX } from "./config";
 
 /**
  * Class representing the boss in the game.
@@ -33,7 +32,7 @@ export default class Boss implements IBoss {
     }
 
     this.pos = this.pos.plus(
-      new Vector(this.direction * BOSS_CONFIG.speedX * timeStep, 0)
+      new Vector(this.direction * speedX * timeStep, 0)
     );
   }
 

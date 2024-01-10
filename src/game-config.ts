@@ -1,5 +1,3 @@
-import { Size } from "@/ts/types";
-
 /**
  * Describes the layout of the game.
  */
@@ -23,13 +21,7 @@ const LAYOUT = {
  * The dimensions of all objects in the game.
  * The sizes are percentages within the display, from 0 to 100.
  */
-const DIMENSIONS: {
-  readonly alien: Size;
-  readonly player: Size;
-  readonly alienSetGap: Size;
-  readonly boss: Size;
-  readonly floorHeight: number;
-} = {
+const DIMENSIONS = {
   alien: {
     w: 3.5, // 3.5% of the display width
     h: 5, // 5% of the display height
@@ -47,7 +39,7 @@ const DIMENSIONS: {
     h: 7.5,
   },
   floorHeight: 1,
-};
+} as const;
 
 const ACTION_KEYS = {
   moveRight: "ArrowRight",
@@ -58,13 +50,4 @@ const ACTION_KEYS = {
   pauseGame: "Escape",
 } as const;
 
-/**
- * The configuration of the boss.
- */
-const BOSS_CONFIG = {
-  speedX: 13,
-  baseAppearanceInterval: 25,
-  score: 200,
-};
-
-export { BOSS_CONFIG, ACTION_KEYS, LAYOUT, DIMENSIONS };
+export { ACTION_KEYS, LAYOUT, DIMENSIONS };

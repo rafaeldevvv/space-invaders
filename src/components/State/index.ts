@@ -1,7 +1,7 @@
 import Boss from "../Boss";
 import Wall from "../Wall";
 import Player from "../Player";
-import { LAYOUT, BOSS_CONFIG, DIMENSIONS } from "@/game-config";
+import { LAYOUT, DIMENSIONS } from "@/game-config";
 import randomNum from "@/utils/common/randomNum";
 import AlienSet from "../AlienSet";
 import Alien from "../Alien";
@@ -18,6 +18,7 @@ import {
   IAlienSet,
 } from "@/ts/types";
 import shieldLikeWall from "@/plans/walls";
+import * as BOSS_CONFIG from "../Boss/config";
 
 import aliensPlan from "@/plans/alien-set";
 
