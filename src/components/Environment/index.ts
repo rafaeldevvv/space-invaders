@@ -1,5 +1,5 @@
 import Alien from "../Alien";
-import { LAYOUT, DIMENSIONS } from "@/game-config";
+import { DIMENSIONS } from "@/game-config";
 import overlap from "@/utils/common/overlap";
 import { Size, IAlienSet, IPlayer, IWall, IBullet, IEnvironment } from "@/ts/types";
 
@@ -21,19 +21,6 @@ export default class GameEnv implements IEnvironment {
     public player: IPlayer,
     public walls: IWall[]
   ) {}
-
-  /**
-   * Checks whether the bullet is outside the boundaries of the screen.
-   *
-   * @param bullet
-   * @returns
-   */
-  public isBulletOutOfBounds(bullet: IBullet) {
-    return (
-      bullet.pos.y + bullet.size.h >= LAYOUT.floorYPos ||
-      bullet.pos.y + bullet.size.h <= 0
-    );
-  }
 
   /**
    * Checks whether the alien set has reached the wall.
