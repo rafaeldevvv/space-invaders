@@ -214,9 +214,14 @@ interface GameStateConstructor {
   start(plan: string): IGameState;
 }
 
+type ViewConstructor = new (
+  state: IGameState,
+  parentElement: HTMLElement
+) => IView<IGameState>;
+
 interface IView<State> {
   syncState(state: State, timeStep: number): void;
-  setDisplaySize(): void;
+  adaptDisplaySize(): void;
 
   /**
    * Tracks the keys of the game as a map object from Key to Boolean.
@@ -239,4 +244,5 @@ export type {
   IBullet,
   PlayerBullet,
   AlienBullet,
+  ViewConstructor,
 };

@@ -1081,6 +1081,8 @@ The reason why I created the `ts/types/components` file is that using the compon
 - [lowcode-engine](https://github.com/alibaba/lowcode-engine/) - I used it as a reference to organize files, structure interfaces and make commits.
 - [Refactoring](https://refactoring.com)
 - [Typescript: different return type based on parameter](https://stackoverflow.com/questions/74174908/typescript-different-return-type-based-on-parameter)
+- [Javascript | Composition vs Inheritance](https://jordan-eckowitz.medium.com/javascript-composition-vs-inheritance-4b99234593a9#:~:text=This%20approach%20makes%20use%20of,instances%20be%20chosen%20over%20inheritance.)
+- ['File name differs from already included file name only in casing' on relative path with same casing](https://stackoverflow.com/questions/51197940/file-name-differs-from-already-included-file-name-only-in-casing-on-relative-p)
 
 #### Comments
 

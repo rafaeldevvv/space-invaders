@@ -1,9 +1,5 @@
 - Refactor everything, every class, every function, break classes down, remove methods and so on
 
-- Refactor wall and rendering of explosion (too much repeated logic)
-  - Create a class called IterablePieces with a `pieces` property and an interator interface
-- commit & update README
-
 - Improve controller
   - Make it take objects instead of constructors
   - Make it possible to pass the parent element to the controller
@@ -12,6 +8,10 @@
 - Improve view
   - Refactor it
 - commit & update README for each one
+
+- Refactor wall and rendering of explosion (too much repeated logic)
+  - Create a class called IterablePieces with a `pieces` property and an interator interface
+- commit & update README
 
 - Improve alien set
   - Refactor it
@@ -40,6 +40,8 @@
   a css file inside src and import it into the ts file, so that the code is contained within one file.
 - commit & update README
 
+- take a a look at the rules of the game in some website
+  - try this one: https://www.classicgaming.cc/classics/space-invaders/play-guide
 
 - Make the assets, styles and so on (or maybe make something similar to the wall for the pixel art images)
   - Add images
@@ -65,7 +67,6 @@
 - commit & update README
 
 - Put the code on codepen.
-
 
 - Generate TSDoc docs
   - npx typedoc _path_

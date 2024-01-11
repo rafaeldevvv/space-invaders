@@ -1,4 +1,9 @@
-import { IView, IGameState, GameStateConstructor } from "@/ts/types";
+import {
+  IView,
+  IGameState,
+  GameStateConstructor,
+  ViewConstructor,
+} from "@/ts/types";
 import { ACTION_KEYS } from "@/game-config";
 import aliensPlan from "@/plans/alien-set";
 import { runAnimation } from "./utils";
@@ -14,17 +19,12 @@ export default class GamePresenter {
 
   constructor(
     State: GameStateConstructor,
-    View: {
-      new (
-        state: IGameState,
-        controller: GamePresenter,
-        parentElement: HTMLElement
-      ): IView<IGameState>;
-    }
+    View: ViewConstructor,
+    parent: HTMLElement
   ) {
     this.State = State;
     this.state = State.start(aliensPlan);
-    this.view = new View(this.state, this, document.body);
+    this.view = new View(this.state, parent);
     this.view.syncState(this.state, 0);
 
     this.runGame();
