@@ -74,6 +74,11 @@ type RemoveFirstElement<Type> = Type extends [infer A, ...infer R] ? R : never;
 
 type NumOrNull = number | null;
 
+/**
+ * A multi-line string representing how objects in a grid-like layout should be arranged.
+ */
+type Plan = string;
+
 export type {
   PixelCoords,
   PixelSize,
@@ -85,4 +90,5 @@ export type {
   NumOrNull,
   MappedObjectFromUnion,
   RemoveFirstElement,
+  Plan
 };

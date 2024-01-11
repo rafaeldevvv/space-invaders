@@ -4,6 +4,7 @@ import {
   IAlienSet,
   IVector,
   IAlien,
+  Plan
 } from "@/ts/types";
 import Vector from "@/utils/common/Vector";
 import { alienTypesRegExp, alienTypes } from "../Alien/config";
@@ -62,7 +63,7 @@ export default class AlienSet implements IAlienSet {
    *
    * @param plan - A string represeting an arranged set of aliens.
    */
-  constructor(plan: string) {
+  constructor(plan: Plan) {
     if (!alienTypesRegExp.test(plan)) {
       throw new Error(
         `Invalid character(s) in plan ${plan}. Consider using only valid characters (${alienTypes.join(

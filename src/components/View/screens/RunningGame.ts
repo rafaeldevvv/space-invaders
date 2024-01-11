@@ -2,10 +2,10 @@ import { LAYOUT, DIMENSIONS } from "@/game-config";
 import { IGameState, IAlien, Size, IBoss, IWall } from "@/ts/types";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
 import { colors } from "../config";
-import readSolidPlan from "@/utils/common/readSolidPlan";
 import explosionPlan from "@/plans/explosions";
+import IterablePieces from "@/utils/common/IterablePieces";
 
-const explosionPieces = readSolidPlan(explosionPlan);
+const explosion = new IterablePieces(explosionPlan);
 
 export default class RunningGame extends BaseCanvasWrapper {
   public syncState(state: IGameState, timeStep: number) {
@@ -75,24 +75,21 @@ export default class RunningGame extends BaseCanvasWrapper {
     const { w, h } = this.getPixelSize(size);
     const { x, y } = this.getPixelPos(pos);
 
-    const pieceHeight = h / explosionPieces.length,
-      pieceWidth = w / explosionPieces[0].length;
+    const pieceHeight = h / explosion.pieces.length,
+      pieceWidth = w / explosion.pieces[0].length;
 
     this.ctx.save();
     this.ctx.translate(x, y);
 
     this.ctx.fillStyle = color;
-    for (let y = 0; y < explosionPieces.length; y++) {
-      for (let x = 0; x < explosionPieces[y].length; x++) {
-        if (!explosionPieces[y][x]) continue;
-
-        this.ctx.fillRect(
-          x * pieceWidth,
-          y * pieceHeight,
-          pieceWidth,
-          pieceHeight
-        );
-      }
+    for (const { piece, row, column } of explosion) {
+      if (!piece) continue;
+      this.ctx.fillRect(
+        row * pieceWidth,
+        column * pieceHeight,
+        pieceWidth,
+        pieceHeight
+      );
     }
     this.ctx.restore();
   }
@@ -156,7 +153,7 @@ export default class RunningGame extends BaseCanvasWrapper {
     const piecePixelWidth = this.horPixels(w),
       piecePixelHeight = this.verPixels(h);
 
-    for (const { row, column, piece } of wall) {
+    for (const { row, column, piece } of wall.pieces) {
       if (piece) {
         const xPixels = this.horPixels(column * w),
           yPixels = this.verPixels(row * h);

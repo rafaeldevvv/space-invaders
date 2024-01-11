@@ -151,7 +151,7 @@ interface IWall {
   /**
    * The pieces of the wall as a matrix of boolean values.
    */
-  readonly piecesMatrix: boolean[][];
+  readonly pieces: IIterablePieces;
 
   /**
    * The size of each piece of the wall.
@@ -178,11 +178,6 @@ interface IWall {
    * @returns - A boolean that tells whether the object touches a piece of the wall.
    */
   collide(objPos: Coords, objSize: Size): boolean;
-  [Symbol.iterator](): Iterator<{
-    row: number;
-    column: number;
-    piece: boolean;
-  }>;
 }
 
 interface IGameState {
@@ -230,6 +225,14 @@ interface IView<State> {
   addKeyHandler(key: string, handler: KeyboardEventHandler): void;
 }
 
+type IteratedPiece = { row: number; column: number; piece: boolean };
+
+interface IIterablePieces {
+  pieces: boolean[][];
+  breakPiece(column: number, row: number): void;
+  [Symbol.iterator](): Generator<IteratedPiece>;
+}
+
 export type {
   IView,
   GameStateConstructor,
@@ -245,4 +248,6 @@ export type {
   PlayerBullet,
   AlienBullet,
   ViewConstructor,
+  IIterablePieces,
+  IteratedPiece
 };
