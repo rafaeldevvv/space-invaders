@@ -4,6 +4,8 @@ import BaseCanvasWrapper from "./BaseCanvasWrapper";
 import { colors } from "../config";
 import explosionPlan from "@/plans/explosions";
 import IterablePieces from "@/utils/common/IterablePieces";
+import * as playerConfig from "@/components/Player/config";
+import { drawProgressBar } from "../utils";
 
 const explosion = new IterablePieces(explosionPlan);
 
@@ -112,15 +114,31 @@ export default class RunningGame extends BaseCanvasWrapper {
     if (player.status === "exploding") {
       this.drawExplosion(player.pos, DIMENSIONS.player);
       return;
-    } else if (
-      player.status === "alive" ||
-      (player.status === "reviving" &&
-        Math.round(performance.now() / 400) % 2 === 0)
-    ) {
+    } else {
+      const progress =
+        player.status === "reviving"
+          ? Math.min(
+              player.timeSinceResurrection / playerConfig.revivingTime,
+              1
+            )
+          : 1;
+
       const { x, y } = this.getPixelPos(player.pos);
       const { w, h } = this.getPixelSize(DIMENSIONS.player);
 
-      this.ctx.fillStyle = "white";
+      if (player.status === "reviving") {
+        const progressBarWidth = w * 1.2,
+          widthDifference = progressBarWidth - w;
+
+        drawProgressBar(
+          this.ctx,
+          progress,
+          { x: x - widthDifference / 2, y: y + 1.1 * h },
+          { w: progressBarWidth, h: this.verPixels(1) }
+        );
+      }
+
+      this.ctx.fillStyle = `rgba(255 255 255 / ${progress})`;
       this.ctx.fillRect(x, y, w, h);
     }
   }

@@ -1,4 +1,9 @@
-import { PixelSize, MappedObjectFromUnion, PixelCoords } from "@/ts/types";
+import {
+  PixelSize,
+  MappedObjectFromUnion,
+  PixelCoords,
+  Size,
+} from "@/ts/types";
 
 /**
  * Calculates the size of an HTML Element excluding padding, border and margin
@@ -93,4 +98,36 @@ export function drawTwinkleMessage(
 
     ctx.fillText(message, x, y);
   }
+}
+
+export interface ProgressBarOptions {
+  positiveColor?: string;
+  negativeColor?: string;
+}
+
+/**
+ * Draws a progress bar onto the canvas.
+ * 
+ * @param ctx - The 2d context of the canvas.
+ * @param progress - The progress, which has to be a value between 0 and 1.
+ * @param pos - The pos of the progress bar in pixels.
+ * @param size - The size of the progress bar in pixels.
+ * @param options - Customization options for the progress bar.
+ */
+export function drawProgressBar(
+  ctx: CanvasRenderingContext2D,
+  progress: number,
+  pos: PixelCoords,
+  size: PixelSize,
+  options?: ProgressBarOptions
+) {
+  const { positiveColor = "limegreen", negativeColor = "gray" } = options || {};
+
+  const positiveWidth = progress * size.w,
+    negativeWidth = (1 - progress) * size.w;
+
+  ctx.fillStyle = positiveColor;
+  ctx.fillRect(pos.x, pos.y, positiveWidth, size.h);
+  ctx.fillStyle = negativeColor;
+  ctx.fillRect(pos.x + positiveWidth, pos.y, negativeWidth, size.h);
 }

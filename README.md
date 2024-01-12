@@ -1034,6 +1034,85 @@ What amazed me and inspired me to talk about it here is that I only had to chang
 
 The reason why I created the `ts/types/components` file is that using the components' class types themselves would cause a lot of cyclic imports. And also because if code that uses a component needs the component to implement a new feature, I just need to change the interface that it expects and TypeScript will signal to me what needs to be done for the component to comply with the interface, and I think that's a great thing.
 
+### Webpack config problem
+
+Webpack wasn't being able to resolve the dependencies of my module and throwing an error like `Field 'browser' doesn't contain a valid alias configuration`. This was the configuration:
+
+```js
+module.exports = {
+   mode: "development",
+   entry: './src/index.ts',
+   output: {
+      filename: 'bundle.js',
+      path: path.resolve(__dirname, 'dist'),
+      clean: true,
+   },
+   module: {
+      rules: [
+         {
+            test: /\.tsx?$/,
+            use: 'ts-loader',
+            exclude: /node_modules/,
+         },
+         {
+            test: /\.css$/,
+            use: ["style-loader", "css-loader"],
+            exclude: /node_modules/,
+         }
+      ],
+   },
+   resolve: {
+      extensions: ['.ts', '.js'],
+      alias: {
+         "@/": path.resolve(__dirname, "/src/"),
+      }
+   },
+   stats: {
+      errorDetails: true
+   },
+};
+```
+
+I had to change it to:
+
+```js
+module.exports = {
+   mode: "development",
+   entry: './src/index.ts',
+   // devtool: 'inline-source-map',
+   output: {
+      filename: 'bundle.js',
+      path: path.resolve(__dirname, 'dist'),
+      clean: true,
+   },
+   module: {
+      rules: [
+         {
+            test: /\.tsx?$/,
+            use: 'ts-loader',
+            exclude: /node_modules/,
+         },
+         {
+            test: /\.css$/,
+            use: ["style-loader", "css-loader"],
+            exclude: /node_modules/,
+         }
+      ],
+   },
+   resolve: {
+      extensions: ['.ts', '.js'],
+      alias: {
+         "@": path.resolve(__dirname, "./src"),
+      }
+   },
+   stats: {
+      errorDetails: true
+   },
+};
+```
+
+I raised [a question on stack overflow about it](https://stackoverflow.com/questions/77809657/webpack-field-browser-doesnt-contain-a-valid-alias-configuration-using-al), answer me and help me if you can.
+
 ### Useful Resources
 
 #### General
@@ -1115,6 +1194,9 @@ The reason why I created the `ts/types/components` file is that using the compon
 - [Resolve | Webpack](https://webpack.js.org/configuration/resolve/#resolvemainfiles)
 - [Using webpack to use require modules in browser](https://stackoverflow.com/questions/40207277/using-webpack-to-use-require-modules-in-browser)
 - [Webpack doesn't resolve properly my alias](https://stackoverflow.com/questions/36365550/webpack-doesnt-resolve-properly-my-alias)
+- [eslint-plugin-import Issue #854](https://github.com/import-js/eslint-plugin-import/issues/854)
+- [What does a trailing slash in the parameter of require.resolve() mean?](https://stackoverflow.com/questions/64413530/what-does-a-trailing-slash-in-the-parameter-of-require-resolve-mean)
+- [Field 'browser' doesn't contain a valid alias configuration](https://stackoverflow.com/questions/43037590/field-browser-doesnt-contain-a-valid-alias-configuration)
 
 ## Author
 

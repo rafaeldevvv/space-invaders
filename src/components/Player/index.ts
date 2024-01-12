@@ -29,7 +29,7 @@ export default class Player implements IPlayer {
   public score = 0;
   public status: PlayerStatuses = "alive";
   private timeSinceExplosion: number = 0;
-  private timeSinceResurrection = 0;
+  public timeSinceResurrection = 0;
 
   /**
    * Fires a player bullet.

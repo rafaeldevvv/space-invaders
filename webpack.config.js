@@ -4,7 +4,6 @@ module.exports = {
    mode: "development",
    entry: './src/index.ts',
    // devtool: 'inline-source-map',
-   // context: path.join(__dirname, 'src'),
    output: {
       filename: 'bundle.js',
       path: path.resolve(__dirname, 'dist'),

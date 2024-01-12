@@ -142,6 +142,7 @@ interface IPlayer {
   lives: number;
   score: number;
   status: PlayerStatuses;
+  timeSinceResurrection: number;
   fire(): IBullet;
   resetPos(): void;
   update(state: IGameState, timeStep: number, keys: KeysTracker): void;
