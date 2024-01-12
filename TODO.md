@@ -1,12 +1,3 @@
-- Refactor wall and rendering of explosion (too much repeated logic)
-  - Create a class called IterablePieces with a `pieces` property and an interator interface
-- commit & update README
-
-- Improve alien set
-  - Refactor it
-  - Break it down, it's too big
-- commit & update README for each one
-
 - Change visual clue to show player's resurrection
 - commit & update README
 

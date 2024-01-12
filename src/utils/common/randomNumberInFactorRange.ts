@@ -1,3 +1,5 @@
+import randomNum from "./randomNum";
+
 /**
  * Generates a number which is a random number between
  * the given number multiplied by `1 - subtractingFactor` and the given

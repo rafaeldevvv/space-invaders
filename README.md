@@ -1083,6 +1083,7 @@ The reason why I created the `ts/types/components` file is that using the compon
 - [Typescript: different return type based on parameter](https://stackoverflow.com/questions/74174908/typescript-different-return-type-based-on-parameter)
 - [Javascript | Composition vs Inheritance](https://jordan-eckowitz.medium.com/javascript-composition-vs-inheritance-4b99234593a9#:~:text=This%20approach%20makes%20use%20of,instances%20be%20chosen%20over%20inheritance.)
 - ['File name differs from already included file name only in casing' on relative path with same casing](https://stackoverflow.com/questions/51197940/file-name-differs-from-already-included-file-name-only-in-casing-on-relative-p)
+- [Javascript - function with optional parameters as object?](https://stackoverflow.com/questions/27735855/javascript-function-with-optional-parameters-as-object)
 
 #### Comments
 
@@ -1112,6 +1113,8 @@ The reason why I created the `ts/types/components` file is that using the compon
 - [css-loader](https://webpack.js.org/loaders/css-loader/)
 - [Can I use webpack to generate CSS and JS separately?](https://stackoverflow.com/questions/35322958/can-i-use-webpack-to-generate-css-and-js-separately)
 - [Resolve | Webpack](https://webpack.js.org/configuration/resolve/#resolvemainfiles)
+- [Using webpack to use require modules in browser](https://stackoverflow.com/questions/40207277/using-webpack-to-use-require-modules-in-browser)
+- [Webpack doesn't resolve properly my alias](https://stackoverflow.com/questions/36365550/webpack-doesnt-resolve-properly-my-alias)
 
 ## Author
 

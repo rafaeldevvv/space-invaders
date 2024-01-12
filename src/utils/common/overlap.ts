@@ -1,3 +1,5 @@
+import { Size } from "@/ts/types";
+
 /**
  * Checks whether two objects overlap.
  *

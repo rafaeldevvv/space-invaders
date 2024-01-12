@@ -3,7 +3,7 @@
  * @author Rafael Maia <https://rafaeldevvv.github.io/portfolio>
  */
 
-import { MappedObjectFromUnion } from "./helpers";
+import { MappedObjectFromUnion } from "./common";
 type KeysTracker = MappedObjectFromUnion<GameKeys, boolean>;
 type KeyboardEventHandler = (e: KeyboardEvent) => void;
 type GameKeys = " " | "ArrowLeft" | "ArrowRight";
