@@ -85,8 +85,8 @@ export default class RunningGame extends BaseCanvasWrapper {
     for (const { piece, row, column } of explosion) {
       if (!piece) continue;
       this.ctx.fillRect(
-        row * pieceWidth,
-        column * pieceHeight,
+        column * pieceWidth,
+        row * pieceHeight,
         pieceWidth,
         pieceHeight
       );

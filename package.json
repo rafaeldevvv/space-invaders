@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "An implementation of the classic Space Invaders game using TypeScript",
   "private": true,
+  "browser": {
+    "[module-name]": false   
+  },
   "directories": {
     "doc": "docs",
     "test": "tests"

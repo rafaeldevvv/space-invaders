@@ -4,6 +4,7 @@ module.exports = {
    mode: "development",
    entry: './src/index.ts',
    // devtool: 'inline-source-map',
+   // context: path.join(__dirname, 'src'),
    output: {
       filename: 'bundle.js',
       path: path.resolve(__dirname, 'dist'),
@@ -24,15 +25,12 @@ module.exports = {
       ],
    },
    resolve: {
+      extensions: ['.ts', '.js'],
       alias: {
-         "@": path.resolve(__dirname, "/src/"),
+         "@": path.resolve(__dirname, "./src"),
       }
    },
    stats: {
       errorDetails: true
    },
-   resolve: {
-      extensions: [".ts", ".js"],
-      modules: ["src"]
-   }
 };
