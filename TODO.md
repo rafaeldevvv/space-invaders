@@ -1,5 +1,5 @@
-- Change visual clue to show player's resurrection
-- commit & update README
+- Fix: make bullets disappear when they hit the floor
+- commit
 
 - Make boss score random (or don't, it doesn't make sense to be random)
 - commit & update README

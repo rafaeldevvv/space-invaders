@@ -86,7 +86,7 @@ eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {
   \****************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst game_config_1 = __webpack_require__(/*! @/game-config */ \"./src/game-config.ts\");\nclass Bullet {\n    constructor(from, pos, speed, size) {\n        this.from = from;\n        this.pos = pos;\n        this.speed = speed;\n        this.size = size;\n    }\n    update(timeStep) {\n        this.pos = this.pos.plus(this.speed.times(timeStep));\n    }\n    isOutOfBounds() {\n        return (this.pos.x > 100 ||\n            this.pos.x < -this.size.w ||\n            this.pos.y >= game_config_1.LAYOUT.floorYPos ||\n            this.pos.y < -this.size.h);\n    }\n}\nexports[\"default\"] = Bullet;\n\n\n//# sourceURL=webpack://space-invaders/./src/components/Bullet/index.ts?");
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst game_config_1 = __webpack_require__(/*! @/game-config */ \"./src/game-config.ts\");\nclass Bullet {\n    constructor(from, pos, speed, size) {\n        this.from = from;\n        this.pos = pos;\n        this.speed = speed;\n        this.size = size;\n    }\n    update(timeStep) {\n        this.pos = this.pos.plus(this.speed.times(timeStep));\n    }\n    isOutOfBounds() {\n        return (this.pos.x > 100 ||\n            this.pos.x < -this.size.w ||\n            this.pos.y + this.size.h >= game_config_1.LAYOUT.floorYPos ||\n            this.pos.y < -this.size.h);\n    }\n}\nexports[\"default\"] = Bullet;\n\n\n//# sourceURL=webpack://space-invaders/./src/components/Bullet/index.ts?");
 
 /***/ }),
 

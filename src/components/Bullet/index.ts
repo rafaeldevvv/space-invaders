@@ -34,7 +34,7 @@ export default class Bullet implements IBullet {
     return (
       this.pos.x > 100 ||
       this.pos.x < -this.size.w ||
-      this.pos.y >= LAYOUT.floorYPos ||
+      this.pos.y + this.size.h >= LAYOUT.floorYPos ||
       this.pos.y < -this.size.h
     );
   }
