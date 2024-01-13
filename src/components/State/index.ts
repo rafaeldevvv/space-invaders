@@ -2,7 +2,7 @@ import Boss from "../Boss";
 import Wall from "../Wall";
 import Player from "../Player";
 import { LAYOUT, DIMENSIONS } from "@/game-config";
-import randomNum from "@/utils/common/randomNum";
+import { randomNumberInFactorRange } from "@/utils/common/numbers";
 import AlienSet from "../AlienSet";
 import Alien from "../Alien";
 import GameEnv from "../Environment";
@@ -23,10 +23,7 @@ import * as BOSS_CONFIG from "../Boss/config";
 import aliensPlan from "@/plans/alien-set";
 
 function generateRandomBossAppearanceInterval() {
-  return randomNum(
-    0.8 * BOSS_CONFIG.baseAppearanceInterval,
-    1.2 * BOSS_CONFIG.baseAppearanceInterval
-  );
+  return randomNumberInFactorRange(BOSS_CONFIG.baseAppearanceInterval, 0.2);
 }
 
 /**
@@ -207,7 +204,8 @@ export default class GameState implements IGameState {
   private handleBulletContactWithBoss(b: PlayerBullet) {
     if (this.boss === null || this.boss.status !== "alive") return false;
     if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
-      this.player.score += BOSS_CONFIG.score;
+      console.log("BOSS SCORE:", this.boss.score)
+      this.player.score += this.boss.score;
       this.boss.status = "exploding";
       this.bossesKilled++;
       this.bossAppearanceInterval = generateRandomBossAppearanceInterval();

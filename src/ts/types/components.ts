@@ -91,6 +91,7 @@ interface IBoss {
   timeSinceDeath: number;
   status: BossStatuses;
   pos: IVector;
+  score: number;
   update(timeStep: number): void;
   isOutOfBounds(): boolean;
 }

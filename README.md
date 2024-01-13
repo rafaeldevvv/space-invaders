@@ -1163,6 +1163,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Javascript | Composition vs Inheritance](https://jordan-eckowitz.medium.com/javascript-composition-vs-inheritance-4b99234593a9#:~:text=This%20approach%20makes%20use%20of,instances%20be%20chosen%20over%20inheritance.)
 - ['File name differs from already included file name only in casing' on relative path with same casing](https://stackoverflow.com/questions/51197940/file-name-differs-from-already-included-file-name-only-in-casing-on-relative-p)
 - [Javascript - function with optional parameters as object?](https://stackoverflow.com/questions/27735855/javascript-function-with-optional-parameters-as-object)
+- [How to un-commit last un-pushed git commit without losing the changes](https://stackoverflow.com/questions/19859486/how-to-un-commit-last-un-pushed-git-commit-without-losing-the-changes)
 
 #### Comments
 

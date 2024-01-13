@@ -1,8 +1,7 @@
 import type { TShooters, Size, IVector, IGun } from "@/ts/types";
 import Vector from "@/utils/common/Vector";
 import Bullet from "../Bullet";
-import randomNumberInFactorRange from "@/utils/common/randomNumberInFactorRange";
-import randomNum from "@/utils/common/randomNum";
+import { randomNum, randomNumberInFactorRange } from "@/utils/common/numbers";
 
 /**
  * Class representing a gun.

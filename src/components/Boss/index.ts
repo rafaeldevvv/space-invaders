@@ -2,7 +2,8 @@ import Vector from "@/utils/common/Vector";
 import { LAYOUT, DIMENSIONS } from "@/game-config";
 import { HorizontalDirection } from "@/ts/enums";
 import { IVector, IBoss } from "@/ts/types";
-import { bossExplodingTime, speedX } from "./config";
+import { bossExplodingTime, speedX, score } from "./config";
+import { randomNumInSteps } from "@/utils/common/numbers";
 
 /**
  * Class representing the boss in the game.
@@ -14,6 +15,7 @@ export default class Boss implements IBoss {
   public pos: IVector;
   private direction: HorizontalDirection =
     Math.random() > 0.5 ? HorizontalDirection.Right : HorizontalDirection.Left;
+  public score = randomNumInSteps(score.min, score.max, score.step);
 
   constructor() {
     if (this.direction === HorizontalDirection.Left) {

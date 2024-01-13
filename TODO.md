@@ -1,10 +1,4 @@
-- Fix: make bullets disappear when they hit the floor
-- commit
-
 - Make boss score random (or don't, it doesn't make sense to be random)
-- commit & update README
-
-- Make boss be drawn after the esc message
 - commit & update README
 
 - Add Bullets collision
