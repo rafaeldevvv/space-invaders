@@ -18,6 +18,7 @@ import {
   IPlayer,
   IAlienSet,
   IExplosion,
+  IStateLastScore,
 } from "@/ts/types";
 import shieldLikeWall from "@/plans/walls";
 import * as BOSS_CONFIG from "../Boss/config";
@@ -46,6 +47,7 @@ export default class GameState implements IGameState {
   /** there can be only one player bullet in the game, and this tracks when it is present */
   public isPlayerBulletPresent = false;
   public bulletCollisions: IExplosion[] = [];
+  public lastScore: IStateLastScore = { value: null, id: 0 };
   private timeSinceBossLastAppearance = 0;
   private bossAppearanceInterval = generateRandomBossAppearanceInterval();
 
@@ -230,6 +232,8 @@ export default class GameState implements IGameState {
 
       const alienPos = this.alienSet.getAlienPos(alien.gridPos);
       if (this.env.bulletTouchesObject(b, alienPos, DIMENSIONS.alien)) {
+        this.lastScore.value = alien.score;
+        this.lastScore.id++;
         this.player.score += alien.score;
         this.aliensKilled++;
         this.alienSet.removeAlien(alien);
@@ -259,6 +263,8 @@ export default class GameState implements IGameState {
   private handleBulletContactWithBoss(b: PlayerBullet) {
     if (this.boss === null || this.boss.status !== "alive") return false;
     if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
+      this.lastScore.value = this.boss.score;
+      this.lastScore.id++;
       this.player.score += this.boss.score;
       this.boss.status = "exploding";
       this.bossesKilled++;

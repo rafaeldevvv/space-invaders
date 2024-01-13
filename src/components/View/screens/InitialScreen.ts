@@ -25,6 +25,7 @@ export default class InitialScreen extends BaseCanvasWrapper {
 
     this.ctx.fillStyle = "white";
     this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
     this.ctx.fillText("SPACE", xPixelPos, yPixelPos);
     this.ctx.fillText("INVADERS", xPixelPos, yPixelPos + fontSize);
   }

@@ -1,6 +1,3 @@
-- Add Bullets collision
-- commit & update README
-
 - Implement score showing up when alien or boss is killed
 - commit & update README
 

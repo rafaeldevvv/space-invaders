@@ -3,7 +3,7 @@
  * @author Rafael Maia <https://rafaeldevvv.github.io/portfolio>
  */
 
-import { Size, Coords, TShooters, TAliens, IVector } from "./common";
+import { Size, Coords, TShooters, TAliens, IVector, NumOrNull } from "./common";
 import {
   TStateStatuses,
   PlayerStatuses,
@@ -115,7 +115,7 @@ interface IEnvironment {
   alienSetTouchesPlayer(): boolean;
   handleAlienSetContactWithWall(): void;
   bulletTouchesObject(bullet: IBullet, objPos: Coords, objSize: Size): boolean;
-  bulletTouchesOtherBullet(bullet1: IBullet, bullet2: IBullet): boolean
+  bulletTouchesOtherBullet(bullet1: IBullet, bullet2: IBullet): boolean;
 }
 
 interface IGun {
@@ -182,20 +182,28 @@ interface IWall {
   collide(objPos: Coords, objSize: Size): boolean;
 }
 
-type IExplosion = {
+interface IExplosion {
   /** time since the explosion started */
   timeSinceBeginning: number;
   size: Size;
   pos: Coords;
   duration: number;
   update(timeStep: number): void;
-};
+}
+
+interface IStateLastScore 
+  {
+    value: NumOrNull;
+    id: number;
+  }
+
 
 interface IGameState {
   bullets: IBullet[];
   status: TStateStatuses;
   boss: IBoss | null;
   bulletCollisions: IExplosion[];
+  lastScore: IStateLastScore;
 
   /**
    * The number of bosses the player killed.
@@ -262,5 +270,6 @@ export type {
   ViewConstructor,
   IIterablePieces,
   IteratedPiece,
-  IExplosion
+  IExplosion,
+  IStateLastScore
 };

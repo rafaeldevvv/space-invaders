@@ -1,5 +1,13 @@
 import { LAYOUT, DIMENSIONS } from "@/game-config";
-import { IGameState, IAlien, Size, IBoss, IWall } from "@/ts/types";
+import {
+  IGameState,
+  IAlien,
+  Size,
+  IBoss,
+  IWall,
+  NumOrNull,
+  IStateLastScore,
+} from "@/ts/types";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
 import { colors } from "../config";
 import explosionPlan from "@/plans/explosions";
@@ -8,10 +16,21 @@ import * as playerConfig from "@/components/Player/config";
 import { drawProgressBar } from "../utils";
 
 const explosion = new IterablePieces(explosionPlan);
+const lastScoreAppearanceDuration = 1;
 
 export default class RunningGame extends BaseCanvasWrapper {
+  private lastScore: IStateLastScore = { value: null, id: 0 };
+  private timeSinceLastScoreChange = 0;
+
   public syncState(state: IGameState, timeStep: number) {
     this.clear();
+
+    if (state.lastScore.id !== this.lastScore.id) {
+      this.timeSinceLastScoreChange = 0;
+      this.lastScore.id = state.lastScore.id;
+      this.lastScore.value = state.lastScore.value;
+    }
+    this.timeSinceLastScoreChange += timeStep;
 
     this.drawFloor();
     this.drawPlayer(state.player);
@@ -200,13 +219,55 @@ export default class RunningGame extends BaseCanvasWrapper {
     this.ctx.textBaseline = "top";
     this.ctx.font = `${fontSize}px ${this.fontFamily}`;
 
+    const scoreText = `SCORE ${state.player.score}`;
+    const scoreTextMetrics = this.ctx.measureText(scoreText);
+
     // draw the score of the player
     this.ctx.textAlign = "start";
     this.ctx.fillText(
-      `SCORE ${state.player.score}`,
+      scoreText,
       this.horPixels(LAYOUT.padding.hor),
       yPixelsPadding
     );
+
+    if (
+      this.lastScore.value &&
+      this.timeSinceLastScoreChange < lastScoreAppearanceDuration
+    ) {
+      const progress =
+        this.timeSinceLastScoreChange / lastScoreAppearanceDuration;
+      const stage: 1 | 2 | 3 = progress < 0.2 ? 1 : progress < 0.8 ? 2 : 3;
+
+      let y = yPixelsPadding;
+      let opacity = 1;
+
+      switch (stage) {
+        case 1: {
+          const stageOneProgress = progress / 0.2;
+          opacity = stageOneProgress;
+          y += this.verPixels(3) - this.verPixels(3) * stageOneProgress;
+          break;
+        }
+        case 2: {
+          break;
+        }
+        case 3: {
+          const stageThreeProgress = (progress - 0.8) / 0.2;
+          opacity = 1 - stageThreeProgress;
+          y -= this.verPixels(3) * stageThreeProgress;
+          break;
+        }
+      }
+
+      this.ctx.fillStyle = `rgba(255 255 255 / ${opacity})`;
+      this.ctx.fillText(
+        `+${state.lastScore.value}`,
+        this.horPixels(LAYOUT.padding.hor) +
+          scoreTextMetrics.width +
+          this.horPixels(2),
+        y
+      );
+    }
 
     // draw how many lives the player has
     this.ctx.textAlign = "end";
