@@ -1,6 +1,3 @@
-- Make boss score random (or don't, it doesn't make sense to be random)
-- commit & update README
-
 - Add Bullets collision
 - commit & update README
 

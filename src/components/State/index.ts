@@ -1,6 +1,7 @@
 import Boss from "../Boss";
 import Wall from "../Wall";
 import Player from "../Player";
+import Explosion from "../Explosion";
 import { LAYOUT, DIMENSIONS } from "@/game-config";
 import { randomNumberInFactorRange } from "@/utils/common/numbers";
 import AlienSet from "../AlienSet";
@@ -16,6 +17,7 @@ import {
   IEnvironment,
   IPlayer,
   IAlienSet,
+  IExplosion,
 } from "@/ts/types";
 import shieldLikeWall from "@/plans/walls";
 import * as BOSS_CONFIG from "../Boss/config";
@@ -27,6 +29,11 @@ function generateRandomBossAppearanceInterval() {
 }
 
 /**
+ * The time the explosion of the bullet collision lasts.
+ */
+const bulletCollisionExplosionDuration = 0.3;
+
+/**
  * Class that manages the state of a running game.
  * @implements {IGameState}
  */
@@ -36,7 +43,9 @@ export default class GameState implements IGameState {
   public boss: Boss | null = null;
   public bossesKilled = 0;
   public aliensKilled = 0;
+  /** there can be only one player bullet in the game, and this tracks when it is present */
   public isPlayerBulletPresent = false;
+  public bulletCollisions: IExplosion[] = [];
   private timeSinceBossLastAppearance = 0;
   private bossAppearanceInterval = generateRandomBossAppearanceInterval();
 
@@ -62,6 +71,8 @@ export default class GameState implements IGameState {
   public update(timeStep: number, keys: KeysTracker) {
     if (this.status !== "running") return;
 
+    this.handleCollisions(timeStep);
+
     this.player.update(this, timeStep, keys);
     if (this.player.status === "exploding") return;
 
@@ -84,6 +95,7 @@ export default class GameState implements IGameState {
     if (this.alienSet.alive === 0) {
       this.alienSet = new AlienSet(aliensPlan);
       this.bullets = [];
+      this.isPlayerBulletPresent = false;
       this.env.alienSet = this.alienSet;
       this.player.lives++;
     } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
@@ -97,10 +109,14 @@ export default class GameState implements IGameState {
   private handleBullets(timeStep: number) {
     this.bullets.forEach((bullet) => bullet.update(timeStep));
 
-    const newBullets: IBullet[] = [];
+    let newBullets: IBullet[] = [];
 
     let isSomeAlienKilled = false;
+    /** this is for detecting collision between bullets */
+    let playerBulletCollided = false;
     for (const b of this.bullets) {
+      /* continue basically means "remove bullet" in this loop */
+
       const outOfBounds = b.isOutOfBounds();
       if (outOfBounds) {
         if (b.from === "player") this.isPlayerBulletPresent = false;
@@ -112,14 +128,23 @@ export default class GameState implements IGameState {
           b as AlienBullet
         );
         if (touchedPlayer) continue;
-      } else {
+      } else if (b.from === "player") {
+        if (playerBulletCollided) {
+          this.isPlayerBulletPresent = false;
+          continue;
+        }
+
         const touchedAlien = this.handleBulletContactWithAlien(
           b as PlayerBullet
         );
-        const touchedBoss = this.handleBulletContactWithBoss(b as PlayerBullet);
-
         if (!isSomeAlienKilled) isSomeAlienKilled = touchedAlien;
-        if (touchedAlien || touchedBoss) {
+        if (touchedAlien) {
+          this.isPlayerBulletPresent = false;
+          continue;
+        }
+
+        const touchedBoss = this.handleBulletContactWithBoss(b as PlayerBullet);
+        if (touchedBoss) {
           this.isPlayerBulletPresent = false;
           continue;
         }
@@ -131,9 +156,39 @@ export default class GameState implements IGameState {
         continue;
       }
 
+      if (b.from === "alien") {
+        const playerBullet = this.bullets.find((b) => b.from === "player");
+        if (playerBullet) {
+          const touchedPlayerBullet = this.env.bulletTouchesOtherBullet(
+            b,
+            playerBullet
+          );
+          if (touchedPlayerBullet) {
+            this.bulletCollisions.push(
+              new Explosion(
+                DIMENSIONS.bulletCollision,
+                {
+                  y: playerBullet.pos.y,
+                  x: playerBullet.pos.x + this.player.gun.bulletSize.w / 2,
+                },
+                bulletCollisionExplosionDuration
+              )
+            );
+            playerBulletCollided = true;
+            continue;
+          }
+        }
+      }
+
       newBullets.push(b);
     }
 
+    if (this.isPlayerBulletPresent && playerBulletCollided) {
+      // need to filter here because if the player bullet is checked before the
+      // bullet that it collides with, it is included in newBullets.
+      newBullets = newBullets.filter((b) => b.from !== "player");
+      this.isPlayerBulletPresent = false;
+    }
     if (isSomeAlienKilled) this.alienSet.adapt();
     this.bullets = newBullets;
   }
@@ -204,7 +259,6 @@ export default class GameState implements IGameState {
   private handleBulletContactWithBoss(b: PlayerBullet) {
     if (this.boss === null || this.boss.status !== "alive") return false;
     if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
-      console.log("BOSS SCORE:", this.boss.score)
       this.player.score += this.boss.score;
       this.boss.status = "exploding";
       this.bossesKilled++;
@@ -248,6 +302,13 @@ export default class GameState implements IGameState {
     ) {
       this.boss = null;
     }
+  }
+
+  private handleCollisions(timeStep: number) {
+    this.bulletCollisions.forEach((c) => c.update(timeStep));
+    this.bulletCollisions = this.bulletCollisions.filter(
+      (c) => c.timeSinceBeginning < c.duration
+    );
   }
 
   /**

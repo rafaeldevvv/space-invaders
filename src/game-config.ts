@@ -39,6 +39,7 @@ const DIMENSIONS = {
     h: 7.5,
   },
   floorHeight: 1,
+  bulletCollision: { w: 2, h: 1.5 }  
 } as const;
 
 const ACTION_KEYS = {

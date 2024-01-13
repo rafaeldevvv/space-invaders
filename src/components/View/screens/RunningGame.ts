@@ -17,6 +17,7 @@ export default class RunningGame extends BaseCanvasWrapper {
     this.drawPlayer(state.player);
     this.drawAlienSet(state.alienSet);
     this.drawBullets(state.bullets);
+    this.drawCollisions(state.bulletCollisions);
     this.drawWalls(state.env.walls);
     this.drawMetadata(state, timeStep);
     this.drawPressEscMessage();
@@ -251,5 +252,14 @@ export default class RunningGame extends BaseCanvasWrapper {
     this.ctx.textBaseline = "top";
 
     this.ctx.fillText('Press "Esc" to pause/unpause', xPixelPos, yPixelPos);
+  }
+
+  private drawCollisions(collisions: IGameState["bulletCollisions"]) {
+    for (const c of collisions) {
+      this.drawExplosion(
+        { y: c.pos.y - c.size.h / 2, x: c.pos.x - c.size.w / 2 },
+        c.size
+      );
+    }
   }
 }

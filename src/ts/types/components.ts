@@ -115,6 +115,7 @@ interface IEnvironment {
   alienSetTouchesPlayer(): boolean;
   handleAlienSetContactWithWall(): void;
   bulletTouchesObject(bullet: IBullet, objPos: Coords, objSize: Size): boolean;
+  bulletTouchesOtherBullet(bullet1: IBullet, bullet2: IBullet): boolean
 }
 
 interface IGun {
@@ -144,6 +145,7 @@ interface IPlayer {
   score: number;
   status: PlayerStatuses;
   timeSinceResurrection: number;
+  gun: IGun;
   fire(): IBullet;
   resetPos(): void;
   update(state: IGameState, timeStep: number, keys: KeysTracker): void;
@@ -155,9 +157,7 @@ interface IWall {
    */
   readonly pieces: IIterablePieces;
 
-  /**
-   * The size of each piece of the wall.
-   */
+  /** The size of each piece of the wall. */
   readonly pieceSize: Size;
   readonly pos: Coords;
   readonly size: Size;
@@ -182,10 +182,20 @@ interface IWall {
   collide(objPos: Coords, objSize: Size): boolean;
 }
 
+type IExplosion = {
+  /** time since the explosion started */
+  timeSinceBeginning: number;
+  size: Size;
+  pos: Coords;
+  duration: number;
+  update(timeStep: number): void;
+};
+
 interface IGameState {
   bullets: IBullet[];
   status: TStateStatuses;
   boss: IBoss | null;
+  bulletCollisions: IExplosion[];
 
   /**
    * The number of bosses the player killed.
@@ -251,5 +261,6 @@ export type {
   AlienBullet,
   ViewConstructor,
   IIterablePieces,
-  IteratedPiece
+  IteratedPiece,
+  IExplosion
 };

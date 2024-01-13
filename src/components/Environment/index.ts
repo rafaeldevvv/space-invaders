@@ -1,7 +1,14 @@
 import Alien from "../Alien";
 import { DIMENSIONS } from "@/game-config";
 import overlap from "@/utils/common/overlap";
-import { Size, IAlienSet, IPlayer, IWall, IBullet, IEnvironment } from "@/ts/types";
+import {
+  Size,
+  IAlienSet,
+  IPlayer,
+  IWall,
+  IBullet,
+  IEnvironment,
+} from "@/ts/types";
 
 /**
  * Class representing the Game Environment responsible
@@ -53,5 +60,9 @@ export default class GameEnv implements IEnvironment {
       }
     }
     return false;
+  }
+
+  public bulletTouchesOtherBullet(bullet1: IBullet, bullet2: IBullet) {
+    return this.bulletTouchesObject(bullet1, bullet2.pos, bullet2.size);
   }
 }
