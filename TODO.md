@@ -1,6 +1,3 @@
-- Implement score showing up when alien or boss is killed
-- commit & update README
-
 - Implement mobile controls
   - You might need to change your approach regarding the keys
     - Idea 1: Actions instead of keys.

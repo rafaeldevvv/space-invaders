@@ -1164,6 +1164,9 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - ['File name differs from already included file name only in casing' on relative path with same casing](https://stackoverflow.com/questions/51197940/file-name-differs-from-already-included-file-name-only-in-casing-on-relative-p)
 - [Javascript - function with optional parameters as object?](https://stackoverflow.com/questions/27735855/javascript-function-with-optional-parameters-as-object)
 - [How to un-commit last un-pushed git commit without losing the changes](https://stackoverflow.com/questions/19859486/how-to-un-commit-last-un-pushed-git-commit-without-losing-the-changes)
+- [https://www.w3schools.com/jsref/canvas_measuretext.asp#:~:text=Description,writing%20it%20on%20the%20canvas.](https://www.w3schools.com/jsref/canvas_measuretext.asp#:~:text=Description,writing%20it%20on%20the%20canvas.)
+- [CanvasRenderingContext2D: measureText() method](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText)
+- [TextMetrics](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics)
 
 #### Comments
 

@@ -19,6 +19,9 @@ const explosion = new IterablePieces(explosionPlan);
 const lastScoreAppearanceDuration = 1;
 
 export default class RunningGame extends BaseCanvasWrapper {
+  /* i've decided to put the last score animation here because 
+  it is a matter of how the view will present it, the animation thus 
+  should not be part of the business logic */
   private lastScore: IStateLastScore = { value: null, id: 0 };
   private timeSinceLastScoreChange = 0;
 
@@ -29,6 +32,10 @@ export default class RunningGame extends BaseCanvasWrapper {
       this.timeSinceLastScoreChange = 0;
       this.lastScore.id = state.lastScore.id;
       this.lastScore.value = state.lastScore.value;
+
+      /* can't do `this.lastScore = state.lastScore` 
+      cuz im using a mutable approach and `this.lastScore`
+      would always have the last values */
     }
     this.timeSinceLastScoreChange += timeStep;
 
@@ -210,25 +217,35 @@ export default class RunningGame extends BaseCanvasWrapper {
    * @param state
    */
   private drawMetadata(state: IGameState, timeStep: number) {
-    // draw hearts to show player's lives
-    // draw score
     const fontSize = this.getFontSize("md");
     const yPixelsPadding = this.verPixels(LAYOUT.padding.ver);
 
-    this.ctx.fillStyle = "#fff";
     this.ctx.textBaseline = "top";
     this.ctx.font = `${fontSize}px ${this.fontFamily}`;
 
-    const scoreText = `SCORE ${state.player.score}`;
-    const scoreTextMetrics = this.ctx.measureText(scoreText);
-
-    // draw the score of the player
-    this.ctx.textAlign = "start";
-    this.ctx.fillText(
-      scoreText,
+    this.drawScore(
+      state.player.score,
       this.horPixels(LAYOUT.padding.hor),
       yPixelsPadding
     );
+
+    // draw how many fps the game is running at
+    this.drawFPS(timeStep, this.horPixels(50), yPixelsPadding);
+
+    // draw how many lives the player has
+    this.drawPlayerLives(
+      state.player.lives,
+      this.horPixels(100 - LAYOUT.padding.hor),
+      yPixelsPadding
+    );
+  }
+
+  private drawScore(score: number, x: number, y: number) {
+    this.ctx.fillStyle = "#fff";
+    this.ctx.textAlign = "start";
+    const scoreText = `SCORE ${score.toString().padStart(6, "0")}`;
+    this.ctx.fillText(scoreText, x, y);
+    const scoreTextMetrics = this.ctx.measureText(scoreText);
 
     if (
       this.lastScore.value &&
@@ -236,51 +253,77 @@ export default class RunningGame extends BaseCanvasWrapper {
     ) {
       const progress =
         this.timeSinceLastScoreChange / lastScoreAppearanceDuration;
-      const stage: 1 | 2 | 3 = progress < 0.2 ? 1 : progress < 0.8 ? 2 : 3;
 
-      let y = yPixelsPadding;
-      let opacity = 1;
-
-      switch (stage) {
-        case 1: {
-          const stageOneProgress = progress / 0.2;
-          opacity = stageOneProgress;
-          y += this.verPixels(3) - this.verPixels(3) * stageOneProgress;
-          break;
-        }
-        case 2: {
-          break;
-        }
-        case 3: {
-          const stageThreeProgress = (progress - 0.8) / 0.2;
-          opacity = 1 - stageThreeProgress;
-          y -= this.verPixels(3) * stageThreeProgress;
-          break;
-        }
-      }
-
-      this.ctx.fillStyle = `rgba(255 255 255 / ${opacity})`;
-      this.ctx.fillText(
-        `+${state.lastScore.value}`,
+      this.drawLastScoreAnimation(
+        this.lastScore.value,
         this.horPixels(LAYOUT.padding.hor) +
           scoreTextMetrics.width +
           this.horPixels(2),
-        y
+        y,
+        progress
       );
     }
+  }
 
-    // draw how many lives the player has
-    this.ctx.textAlign = "end";
-    this.ctx.fillText(
-      `Lives ${state.player.lives}`,
-      this.horPixels(100 - LAYOUT.padding.hor),
-      yPixelsPadding
-    );
+  private drawLastScoreAnimation(
+    score: number,
+    x: number,
+    baseY: number,
+    progress: number
+  ) {
+    /* 
+      Stage 1: The text is appearing upwards, varying its opacity from transparent to opaque.
+      Stage 2: The text is totally opaque and still in the screen. This is the most lasting stage.
+      Stage 3: The text is disappearing upwards, varying its opacity from opaque to transparent.
 
-    // draw how many fps the game is running at
+      Each stage has its own progress based on the original progress (progress parameter).
+    */
+
+    const stage: 1 | 2 | 3 = progress < 0.2 ? 1 : progress < 0.8 ? 2 : 3;
+
+    let y = baseY;
+    let opacity = 1;
+
+    /* it doesn't move if we are in stage two */
+    const translation = stage !== 2 ? this.verPixels(3) : 0;
+
+    switch (stage) {
+      case 1: {
+        const stageOneProgress = progress / 0.2;
+        opacity = stageOneProgress;
+        /* `1 - stageOneProgress` cuz we're going bottom 
+        up here, from below the base vertical position */
+        y += translation * (1 - stageOneProgress);
+        break;
+      }
+      case 2: {
+        break;
+      }
+      case 3: {
+        const stageThreeProgress = (progress - 0.8) / 0.2;
+        /* from opaque to transparent, so it is the opposite */
+        opacity = 1 - stageThreeProgress;
+        /* we're going bottom up here, above the base vertical position */
+        y -= translation * stageThreeProgress;
+        break;
+      }
+    }
+
+    this.ctx.fillStyle = `rgba(255 255 255 / ${opacity})`;
+    this.ctx.fillText(`+${score}`, x, y);
+  }
+
+  private drawFPS(timeStep: number, x: number, y: number) {
     const fps = Math.round(1 / timeStep);
+    this.ctx.fillStyle = "#fff";
     this.ctx.textAlign = "center";
-    this.ctx.fillText(`${fps} FPS`, this.horPixels(50), yPixelsPadding);
+    this.ctx.fillText(`${fps} FPS`, x, y);
+  }
+
+  private drawPlayerLives(lives: number, x: number, y: number) {
+    this.ctx.fillStyle = "#fff";
+    this.ctx.textAlign = "end";
+    this.ctx.fillText(`LIVES ${lives}`, x, y);
   }
 
   private drawPauseHint() {
@@ -290,7 +333,7 @@ export default class RunningGame extends BaseCanvasWrapper {
       hintYPos = this.verPixels(50) - hintHeight / 2;
 
     this.ctx.fillStyle = "#fff";
-    // the `- 3` part is just an adjustment
+    // the `- 4` part is just an adjustment
     this.ctx.fillRect(hintXPos, hintYPos - 4, hintWidth, hintHeight);
 
     const fontSize = this.getFontSize("lg");
