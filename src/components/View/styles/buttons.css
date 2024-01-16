@@ -1,0 +1,80 @@
+button {
+   background: none;
+   cursor: pointer;
+   font-family: inherit;
+}
+
+.btn-container {
+   position: fixed;
+   inset: auto auto 2.5% 50%;
+   transform: translate(-50%);
+   display: grid;
+   pointer-events: none;
+   gap: .8rem;
+}
+
+.btn-container--state-start {
+   grid-template-areas: "start";
+}
+
+.btn-container--state-running {
+   grid-template-areas:
+      'fire  fire'
+      'left  right'
+      'pause pause';
+}
+
+.btn-container--state-lost {
+   grid-template-areas: "restart";
+}
+
+.btn-container__btn {
+   font-size: 1.7rem;
+   border: 1px solid white;
+   border-radius: .5rem;
+   pointer-events: all;
+   background-color: black;
+   color: white;
+   padding: .5rem 3rem;
+   position: relative;
+   z-index: 0;
+}
+
+.btn-container__btn::before {
+   content: '';
+   border-radius: .5rem;
+   inset: 0;
+   position: absolute;
+   background-color: hsl(0 0% 0% / .6);
+   z-index: -1;
+   transition: inset 60ms ease-in-out;
+}
+
+.btn-container__btn:hover::before,
+.btn-container__btn:active::before {
+   inset: -.3rem;
+}
+
+.fire-btn {
+   grid-area: fire;
+}
+
+.move-right-btn {
+   grid-area: right;
+}
+
+.move-left-btn {
+   grid-area: left;
+}
+
+.pause-btn {
+   grid-area: pause;
+}
+
+.start-btn {
+   grid-area: start;
+}
+
+.restart-btn {
+   grid-area: restart;
+}

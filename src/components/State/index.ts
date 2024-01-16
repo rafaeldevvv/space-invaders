@@ -10,7 +10,6 @@ import GameEnv from "../Environment";
 import {
   IBullet,
   IGameState,
-  KeysTracker,
   PlayerBullet,
   AlienBullet,
   IWall,
@@ -19,6 +18,7 @@ import {
   IAlienSet,
   IExplosion,
   IStateLastScore,
+  RunningActionsTracker,
 } from "@/ts/types";
 import shieldLikeWall from "@/plans/walls";
 import * as BOSS_CONFIG from "../Boss/config";
@@ -70,12 +70,12 @@ export default class GameState implements IGameState {
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
    */
-  public update(timeStep: number, keys: KeysTracker) {
+  public update(timeStep: number, actions: RunningActionsTracker) {
     if (this.status !== "running") return;
 
     this.handleCollisions(timeStep);
 
-    this.player.update(this, timeStep, keys);
+    this.player.update(this, timeStep, actions);
     if (this.player.status === "exploding") return;
 
     this.alienSet.update(timeStep);

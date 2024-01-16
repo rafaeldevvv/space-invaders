@@ -39,7 +39,7 @@ const DIMENSIONS = {
     h: 7.5,
   },
   floorHeight: 1,
-  bulletCollision: { w: 2, h: 1.5 }  
+  bulletCollision: { w: 2, h: 1.5 },
 } as const;
 
 const ACTION_KEYS = {
@@ -51,4 +51,33 @@ const ACTION_KEYS = {
   pauseGame: "Escape",
 } as const;
 
-export { ACTION_KEYS, LAYOUT, DIMENSIONS };
+const KEY_ACTIONS = {
+  ArrowRight: "moveRight",
+  ArrowLeft: "moveLeft",
+  [" "]: ["fire", "startGame", "retartGame"],
+  Escape: "pause",
+} as const;
+
+const START_GAME_KEY_ACTIONS = {
+  [" "]: "startGame",
+} as const;
+
+const LOST_GAME_KEY_ACTIONS = {
+  [" "]: "restartGame",
+} as const;
+
+const RUNNING_GAME_KEY_ACTIONS = {
+  ArrowRight: "moveRight",
+  ArrowLeft: "moveLeft",
+  [" "]: "fire",
+} as const;
+
+export {
+  ACTION_KEYS,
+  LAYOUT,
+  DIMENSIONS,
+  START_GAME_KEY_ACTIONS,
+  LOST_GAME_KEY_ACTIONS,
+  RUNNING_GAME_KEY_ACTIONS,
+  KEY_ACTIONS,
+};

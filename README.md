@@ -1167,6 +1167,12 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [https://www.w3schools.com/jsref/canvas_measuretext.asp#:~:text=Description,writing%20it%20on%20the%20canvas.](https://www.w3schools.com/jsref/canvas_measuretext.asp#:~:text=Description,writing%20it%20on%20the%20canvas.)
 - [CanvasRenderingContext2D: measureText() method](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText)
 - [TextMetrics](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics)
+- [Fundamentals of data structures: Dictionaries](https://en.wikibooks.org/wiki/A-level_Computing/AQA/Paper_1/Fundamentals_of_data_structures/Dictionaries)
+- [Is there a data structure that can get value by key and get key by value both in Python?](https://stackoverflow.com/questions/25479479/is-there-a-data-structure-that-can-get-value-by-key-and-get-key-by-value-both-in)
+- [Google Search Operators: The Complete List (44 Advanced Operators)](https://ahrefs.com/blog/google-advanced-search-operators/)
+- [Array.prototype.splice()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)
+- [How to remove all listeners in an element? [duplicate]](https://stackoverflow.com/questions/9251837/how-to-remove-all-listeners-in-an-element)
+- [CSS media query for whether a physical keyboard is attached](https://stackoverflow.com/questions/36976117/css-media-query-for-whether-a-physical-keyboard-is-attached)
 
 #### Comments
 

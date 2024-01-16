@@ -10,7 +10,7 @@ import {
   AlienSetAlienStates,
   BossStatuses,
 } from "./status";
-import { KeysTracker, KeyboardEventHandler } from "./events";
+import { KeyboardEventHandler, RunningActionsTracker } from "./events";
 
 /**
  * A wrapper for a set of {@link Alien}s
@@ -148,7 +148,7 @@ interface IPlayer {
   gun: IGun;
   fire(): IBullet;
   resetPos(): void;
-  update(state: IGameState, timeStep: number, keys: KeysTracker): void;
+  update(state: IGameState, timeStep: number, actions: RunningActionsTracker): void;
 }
 
 interface IWall {
@@ -221,7 +221,7 @@ interface IGameState {
   alienSet: IAlienSet;
   player: IPlayer;
   env: IEnvironment;
-  update(timeStep: number, keys: KeysTracker): void;
+  update(timeStep: number, actions: RunningActionsTracker): void;
 }
 
 interface GameStateConstructor {
@@ -229,8 +229,15 @@ interface GameStateConstructor {
   start(plan: string): IGameState;
 }
 
+interface ViewHandlers {
+  onPauseGame: () => void;
+  onStartGame: () => void;
+  onRestartGame: () => void;
+}
+
 type ViewConstructor = new (
   state: IGameState,
+  handlers: ViewHandlers,
   parentElement: HTMLElement
 ) => IView<IGameState>;
 
@@ -238,11 +245,8 @@ interface IView<State> {
   syncState(state: State, timeStep: number): void;
   adaptDisplaySize(): void;
 
-  /**
-   * Tracks the keys of the game as a map object from Key to Boolean.
-   */
-  trackedKeys: KeysTracker;
-  addKeyHandler(key: string, handler: KeyboardEventHandler): void;
+  /** tracks the actions of the game */
+  actions: RunningActionsTracker;
 }
 
 type IteratedPiece = { row: number; column: number; piece: boolean };
@@ -271,5 +275,6 @@ export type {
   IIterablePieces,
   IteratedPiece,
   IExplosion,
-  IStateLastScore
+  IStateLastScore,
+  ViewHandlers
 };

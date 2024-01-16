@@ -8,4 +8,24 @@ type KeysTracker = MappedObjectFromUnion<GameKeys, boolean>;
 type KeyboardEventHandler = (e: KeyboardEvent) => void;
 type GameKeys = " " | "ArrowLeft" | "ArrowRight";
 
-export type { KeysTracker, KeyboardEventHandler, GameKeys };
+type RunningScreenActions = "moveRight" | "moveLeft" | "fire";
+
+type StartScreenActions = "startGame";
+type LostScreenActions = "restartGame";
+
+type Actions = RunningScreenActions & StartScreenActions & LostScreenActions;
+type RunningActionsTracker = MappedObjectFromUnion<
+  RunningScreenActions,
+  boolean
+>;
+
+export type {
+  KeysTracker,
+  KeyboardEventHandler,
+  GameKeys,
+  Actions,
+  RunningActionsTracker,
+  RunningScreenActions,
+  StartScreenActions,
+  LostScreenActions,
+};

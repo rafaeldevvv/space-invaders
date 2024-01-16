@@ -30,6 +30,10 @@ export function getElementInnerDimensions(element: HTMLElement): PixelSize {
   };
 }
 
+type Unregisterable = {
+  unregister: () => void;
+};
+
 /**
  * Keeps track of which keyboard keys are currently held down.
  *
@@ -37,22 +41,32 @@ export function getElementInnerDimensions(element: HTMLElement): PixelSize {
  * @returns - An object whose property names are the strings within `keys` and values are booleans.
  */
 export function trackKeys<Type extends string>(
-  keys: Type[]
-): MappedObjectFromUnion<Type, boolean> {
-  const down = {} as MappedObjectFromUnion<Type, boolean>;
-  keys.forEach((key) => (down[key] = false));
+  keys: Type[],
+  onKeyChange?: (key: Type, pressed: boolean) => void
+): MappedObjectFromUnion<Type, boolean> & Unregisterable {
+  const down = {} as MappedObjectFromUnion<Type, boolean> & Unregisterable;
+  keys.forEach(
+    (key) => ((down as MappedObjectFromUnion<Type, boolean>)[key] = false)
+  );
 
   function onPressKey(e: KeyboardEvent) {
     for (const key of keys) {
       if (e.key === key) {
         e.preventDefault();
-        down[e.key as Type] = e.type === "keydown";
+        const pressed = e.type === "keydown";
+        (down as MappedObjectFromUnion<Type, boolean>)[e.key as Type] = pressed;
+        if (onKeyChange) onKeyChange(key as Type, pressed);
       }
     }
   }
 
   window.addEventListener("keydown", onPressKey);
   window.addEventListener("keyup", onPressKey);
+  
+  down.unregister = () => {
+    window.removeEventListener("keydown", onPressKey);
+    window.removeEventListener("keyup", onPressKey);
+  };
 
   return down;
 }
@@ -107,7 +121,7 @@ export interface ProgressBarOptions {
 
 /**
  * Draws a progress bar onto the canvas.
- * 
+ *
  * @param ctx - The 2d context of the canvas.
  * @param progress - The progress, which has to be a value between 0 and 1.
  * @param pos - The pos of the progress bar in pixels.
@@ -130,4 +144,32 @@ export function drawProgressBar(
   ctx.fillRect(pos.x, pos.y, positiveWidth, size.h);
   ctx.fillStyle = negativeColor;
   ctx.fillRect(pos.x + positiveWidth, pos.y, negativeWidth, size.h);
+}
+
+type ShallowHTMLAttributes = {
+  className: string;
+} & {
+  [Event in keyof GlobalEventHandlersEventMap as `on${Event & string}`]+?: (
+    event: GlobalEventHandlersEventMap[Event]
+  ) => void;
+};
+
+type a = keyof EventListenerObject;
+export function elt<Type extends keyof HTMLElementTagNameMap>(
+  type: Type,
+  attrs: ShallowHTMLAttributes | null,
+  ...children: (Node | string)[]
+): HTMLElementTagNameMap[Type] {
+  const element = document.createElement(type);
+  if (attrs) Object.assign(element, attrs);
+
+  for (const child of children) {
+    if (typeof child === "string") {
+      element.textContent = child;
+    } else {
+      element.appendChild(child);
+    }
+  }
+
+  return element;
 }

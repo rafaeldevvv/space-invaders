@@ -24,27 +24,21 @@ export default class GamePresenter {
   ) {
     this.State = State;
     this.state = State.start(aliensPlan);
-    this.view = new View(this.state, parent);
+    this.view = new View(
+      this.state,
+      {
+        onPauseGame: this.handlePause.bind(this),
+        onStartGame: this.handleStartGame.bind(this),
+        onRestartGame: this.handleRestartGame.bind(this),
+      },
+      parent
+    );
     this.view.syncState(this.state, 0);
 
     this.runGame();
-    this.addEventHandlers();
   }
 
-  private addEventHandlers() {
-    this.view.addKeyHandler(ACTION_KEYS.pauseGame, this.handlePause.bind(this));
-    this.view.addKeyHandler(
-      ACTION_KEYS.startGame,
-      this.handleStartGame.bind(this)
-    );
-    this.view.addKeyHandler(
-      ACTION_KEYS.restartGame,
-      this.handleRestartGame.bind(this)
-    );
-  }
-
-  private handlePause(this: GamePresenter, e: KeyboardEvent) {
-    e.preventDefault();
+  private handlePause(this: GamePresenter) {
     if (this.state.status !== "running" && this.state.status !== "paused") {
       return;
     }
@@ -57,17 +51,13 @@ export default class GamePresenter {
     }
   }
 
-  private handleStartGame(this: GamePresenter, e: KeyboardEvent) {
-    e.preventDefault();
-
+  private handleStartGame(this: GamePresenter) {
     if (this.state.status === "start") {
       this.state.status = "running";
     }
   }
 
-  private handleRestartGame(this: GamePresenter, e: KeyboardEvent) {
-    e.preventDefault();
-
+  private handleRestartGame(this: GamePresenter) {
     if (this.state.status === "lost") {
       this.state = this.State.start(aliensPlan);
       this.state.status = "running";
@@ -84,7 +74,7 @@ export default class GamePresenter {
       return false;
     }
 
-    this.state.update(timeStep, this.view.trackedKeys);
+    this.state.update(timeStep, this.view.actions);
     this.view.syncState(this.state, timeStep);
 
     return true;

@@ -1,13 +1,13 @@
 import Gun from "../Gun";
 import Vector from "@/utils/common/Vector";
 import {
-  KeysTracker,
   IPlayer,
   IVector,
   PlayerStatuses,
   IGameState,
   IBullet,
   IGun,
+  RunningActionsTracker,
 } from "@/ts/types";
 import { DIMENSIONS, LAYOUT, ACTION_KEYS } from "@/game-config";
 import { xSpeed, explodingTime, revivingTime } from "./config";
@@ -56,24 +56,24 @@ export default class Player implements IPlayer {
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys are currently held down.
    */
-  public update(state: IGameState, timeStep: number, keys: KeysTracker) {
+  public update(state: IGameState, timeStep: number, actions: RunningActionsTracker) {
     const movedX = new Vector(timeStep * xSpeed, 0);
 
     this.handleStatus(timeStep);
 
     // The player can only move and fire when they are not exploding
     if (this.status !== "exploding") {
-      if (keys[ACTION_KEYS.moveLeft] && this.pos.x > LAYOUT.padding.hor) {
+      if (actions.moveLeft && this.pos.x > LAYOUT.padding.hor) {
         this.pos = this.pos.minus(movedX);
       } else if (
-        keys[ACTION_KEYS.moveRight] &&
+        actions.moveRight &&
         this.pos.x + DIMENSIONS.player.w < 100 - LAYOUT.padding.hor
       ) {
         this.pos = this.pos.plus(movedX);
       }
 
       if (
-        keys[ACTION_KEYS.fire] &&
+        actions.fire &&
         !state.isPlayerBulletPresent &&
         !state.alienSet.entering // the player can only fire when the alien set is not entering into the view
       ) {

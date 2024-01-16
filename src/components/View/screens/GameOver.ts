@@ -1,11 +1,59 @@
-import { drawTwinkleMessage } from "../utils";
+import { drawTwinkleMessage, elt } from "../utils";
 import { IGameState } from "@/ts/types";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
 import { GAMEOVER_SCREEN_LAYOUT } from "../config";
+import { ACTION_KEYS } from "@/game-config";
 
 export default class GameOver extends BaseCanvasWrapper {
-  syncState(state: IGameState) {
-    this.clear();
+  private buttons: HTMLDivElement = elt("div", {
+    className: "btn-container btn-container--state-restart",
+  });
+
+  private unregisterFunctions: (() => void)[] = [];
+
+  constructor(
+    canvas: HTMLCanvasElement,
+    private readonly onRestartGame: () => void
+  ) {
+    super(canvas);
+    this.setUpControlMethods();
+  }
+
+  private handleKeydown(e: KeyboardEvent) {
+    if (e.key === ACTION_KEYS.restartGame) {
+      e.preventDefault();
+      this.onRestartGame();
+    }
+  }
+
+  private setUpControlMethods() {
+    document.body.appendChild(this.buttons);
+    const handler = (e: KeyboardEvent) => this.handleKeydown(e);
+    window.addEventListener("keydown", handler);
+
+    this.unregisterFunctions.push(() => {
+      window.removeEventListener("keydown", handler);
+    });
+
+    this.createMobileControls();
+  }
+
+  private createMobileControls() {
+    const restartBtn = elt(
+      "button",
+      {
+        className: "restart-btn btn-container__btn",
+        onclick: this.onRestartGame,
+      },
+      "restart"
+    );
+
+    this.buttons.appendChild(restartBtn);
+  }
+
+  public syncState(state: IGameState) {
+    this.clearScreen();
+    if (this.buttons.textContent === "") this.setUpControlMethods();
     this.drawTitle();
     this.drawStateData(state);
 
@@ -17,6 +65,12 @@ export default class GameOver extends BaseCanvasWrapper {
       fontSize: this.getFontSize("md"),
       fontFamily: this.fontFamily,
     });
+  }
+
+  public unset() {
+    this.buttons.textContent = "";
+    this.buttons.remove();
+    window.removeEventListener("keydown", this.handleKeydown);
   }
 
   private drawTitle() {

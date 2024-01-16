@@ -1,19 +1,31 @@
-import { LAYOUT, DIMENSIONS } from "@/game-config";
+import {
+  LAYOUT,
+  DIMENSIONS,
+  RUNNING_GAME_KEY_ACTIONS,
+  ACTION_KEYS,
+} from "@/game-config";
 import {
   IGameState,
   IAlien,
   Size,
   IBoss,
   IWall,
-  NumOrNull,
   IStateLastScore,
+  RunningScreenActions,
 } from "@/ts/types";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
 import { colors } from "../config";
 import explosionPlan from "@/plans/explosions";
 import IterablePieces from "@/utils/common/IterablePieces";
 import * as playerConfig from "@/components/Player/config";
-import { drawProgressBar } from "../utils";
+import { drawProgressBar, trackKeys, elt } from "../utils";
+
+function findTouch(touches: TouchList, id: number) {
+  for (let i = 0; i < touches.length; i++) {
+    if (touches[i].identifier === id) return touches[i];
+  }
+  return null;
+}
 
 const explosion = new IterablePieces(explosionPlan);
 const lastScoreAppearanceDuration = 1;
@@ -25,8 +37,158 @@ export default class RunningGame extends BaseCanvasWrapper {
   private lastScore: IStateLastScore = { value: null, id: 0 };
   private timeSinceLastScoreChange = 0;
 
+  private buttons: HTMLDivElement = elt("div", {
+    className: "btn-container btn-container--state-running",
+  });
+
+  private unregisterFunctions: (() => void)[] = [];
+
+  constructor(
+    canvas: HTMLCanvasElement,
+    private readonly syncAction: (
+      action: RunningScreenActions,
+      isHappening: boolean
+    ) => void,
+    private onPauseGame: () => void
+  ) {
+    super(canvas);
+    this.setUpControlMethods();
+  }
+
+  private setUpControlMethods() {
+    document.body.appendChild(this.buttons);
+    
+    const keys = Object.keys(
+      RUNNING_GAME_KEY_ACTIONS
+    ) as (keyof typeof RUNNING_GAME_KEY_ACTIONS)[];
+
+    const trackedKeys = trackKeys([...keys], (key, pressed) => {
+      const action = RUNNING_GAME_KEY_ACTIONS[key];
+      this.syncAction(action, pressed);
+    });
+    this.unregisterFunctions.push(trackedKeys.unregister);
+
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === ACTION_KEYS.pauseGame) {
+        e.preventDefault();
+        this.onPauseGame();
+      }
+    };
+    window.addEventListener("keydown", handleKeydown);
+    this.unregisterFunctions.push(() => {
+      window.removeEventListener("keydown", handleKeydown);
+    });
+
+    this.createMobileControls();
+  }
+
+  private manageEltTouchesForAction(
+    elt: HTMLElement,
+    action: RunningScreenActions
+  ) {
+    let id: number | null = null;
+
+    const handleStart = (ev: TouchEvent) => {
+      const touches = ev.touches;
+      const touch = touches[0];
+      id = touch.identifier;
+      this.syncAction(action, true);
+      elt.addEventListener("touchmove", handleMove);
+      elt.addEventListener("touchend", handleEnd);
+      elt.addEventListener("touchcancel", handleEnd);
+    };
+
+    const cancelActionEndMove = () => {
+      this.syncAction(action, false);
+      elt.removeEventListener("touchend", handleEnd);
+      elt.removeEventListener("touchmove", handleMove);
+      elt.removeEventListener("touchcancel", handleEnd);
+    };
+
+    const handleMove = (ev: TouchEvent) => {
+      const touches = ev.touches;
+      const touch = findTouch(touches, id || -1);
+      if (touch) {
+        const { top, left, right, bottom } = elt.getBoundingClientRect();
+        const { clientX: x, clientY: y } = touch;
+
+        if (x > left && x < right && y > top && y < bottom) {
+          this.syncAction(action, true);
+        } else {
+          cancelActionEndMove();
+        }
+      } else {
+        cancelActionEndMove();
+      }
+    };
+
+    const handleEnd = () => {
+      cancelActionEndMove();
+    };
+
+    elt.addEventListener("touchstart", handleStart);
+
+    this.unregisterFunctions.push(() => {
+      elt.removeEventListener("touchstart", handleStart);
+      elt.removeEventListener("touchmove", handleMove);
+      elt.removeEventListener("touchend", handleEnd);
+      elt.removeEventListener("touchcancel", handleEnd);
+    });
+  }
+
+  private createMobileControls() {
+    const fireBtn = elt(
+        "button",
+        {
+          className: "fire-btn btn-container__btn",
+        },
+        "fire"
+      ),
+      moveRightBtn = elt(
+        "button",
+        {
+          className: "move-right-btn btn-container__btn",
+        },
+        "right"
+      ),
+      moveLeftBtn = elt(
+        "button",
+        {
+          className: "move-left-btn btn-container__btn",
+        },
+        "left"
+      ),
+      pauseBtn = elt(
+        "button",
+        {
+          className: "pause-btn btn-container__btn",
+          onclick: () => {
+            this.onPauseGame();
+          },
+        },
+        "pause"
+      );
+
+    this.manageEltTouchesForAction(moveLeftBtn, "moveLeft");
+    this.manageEltTouchesForAction(moveRightBtn, "moveRight");
+    this.manageEltTouchesForAction(fireBtn, "fire");
+
+    this.buttons.appendChild(fireBtn);
+    this.buttons.appendChild(moveLeftBtn);
+    this.buttons.appendChild(moveRightBtn);
+    this.buttons.appendChild(pauseBtn);
+  }
+
+  public unset() {
+    this.buttons.textContent = "";
+    this.buttons.remove();
+    this.unregisterFunctions.forEach((f) => f());
+    this.unregisterFunctions = [];
+  }
+
   public syncState(state: IGameState, timeStep: number) {
-    this.clear();
+    this.clearScreen();
+    if (this.buttons.textContent === "") this.setUpControlMethods();
 
     if (state.lastScore.id !== this.lastScore.id) {
       this.timeSinceLastScoreChange = 0;

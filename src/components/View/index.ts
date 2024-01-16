@@ -1,11 +1,11 @@
 import {
-  KeysTracker,
-  KeyboardEventHandler,
   IGameState,
   IView,
+  RunningActionsTracker,
+  RunningScreenActions,
+  ViewHandlers,
 } from "@/ts/types";
-import { ACTION_KEYS } from "@/game-config";
-import { getElementInnerDimensions, trackKeys } from "./utils";
+import { getElementInnerDimensions } from "./utils";
 import { GAME_DISPLAY } from "./config";
 
 import InitialScreen from "./screens/InitialScreen";
@@ -26,8 +26,7 @@ export default class CanvasView implements IView<IGameState> {
   private runningGameScreen: RunningGame;
   private gameOverScreen: GameOver;
 
-  public trackedKeys = {} as KeysTracker;
-  private keysHandlers: Map<string, KeyboardEventHandler[]> = new Map();
+  public actions = {} as RunningActionsTracker;
 
   /**
    * Creates a view component for the game that uses the Canvas API.
@@ -35,7 +34,11 @@ export default class CanvasView implements IView<IGameState> {
    * @param state - The initial state of the game.
    * @param parent - The HTML Element used to display the view.
    */
-  constructor(public state: IGameState, parent: HTMLElement) {
+  constructor(
+    public state: IGameState,
+    private handlers: ViewHandlers,
+    parent: HTMLElement
+  ) {
     this.canvas = document.createElement("canvas");
 
     this.canvas.style.display = "block";
@@ -43,9 +46,13 @@ export default class CanvasView implements IView<IGameState> {
 
     parent.appendChild(this.canvas);
 
-    this.initialScreen = new InitialScreen(this.canvas);
-    this.runningGameScreen = new RunningGame(this.canvas);
-    this.gameOverScreen = new GameOver(this.canvas);
+    this.initialScreen = new InitialScreen(this.canvas, handlers.onStartGame);
+    this.runningGameScreen = new RunningGame(
+      this.canvas,
+      this.syncAction.bind(this),
+      handlers.onPauseGame
+    );
+    this.gameOverScreen = new GameOver(this.canvas, handlers.onRestartGame);
 
     this.defineEventListeners();
     this.adaptDisplaySize();
@@ -79,18 +86,29 @@ export default class CanvasView implements IView<IGameState> {
    * @param state - A new game state.
    */
   public syncState(this: CanvasView, state: IGameState, timeStep: number) {
+    if (state.status === "lost") {
+      const actions = Object.keys(this.actions) as RunningScreenActions[];
+      actions.forEach((a) => (this.actions[a] = false));
+    }
+    
     switch (state.status) {
-      case "paused":
-      case "running": {
-        this.runningGameScreen.syncState(state, timeStep);
-        break;
-      }
       case "start": {
         this.initialScreen.syncState();
+        this.runningGameScreen.unset();
+        this.gameOverScreen.unset();
+        break;
+      }
+      case "paused":
+      case "running": {
+        this.gameOverScreen.unset();
+        this.initialScreen.unset();
+        this.runningGameScreen.syncState(state, timeStep);
         break;
       }
       case "lost": {
         this.gameOverScreen.syncState(state);
+        this.initialScreen.unset();
+        this.runningGameScreen.unset();
         break;
       }
       default: {
@@ -100,32 +118,11 @@ export default class CanvasView implements IView<IGameState> {
     }
   }
 
-  public addKeyHandler(
-    this: CanvasView,
-    key: string,
-    handler: KeyboardEventHandler
-  ) {
-    if (this.keysHandlers.has(key)) {
-      const handlers = this.keysHandlers.get(key)!;
-      this.keysHandlers.set(key, [...handlers, handler]);
-    } else {
-      this.keysHandlers.set(key, [handler]);
-    }
-  }
-
   private defineEventListeners() {
     window.addEventListener("resize", () => this.adaptDisplaySize());
-    window.addEventListener("keydown", (e) => {
-      if (this.keysHandlers.has(e.key)) {
-        const handlers = this.keysHandlers.get(e.key)!;
-        handlers.forEach((h) => h(e));
-      }
-    });
+  }
 
-    this.trackedKeys = trackKeys([
-      ACTION_KEYS.moveLeft,
-      ACTION_KEYS.moveRight,
-      ACTION_KEYS.fire,
-    ]);
+  private syncAction(action: RunningScreenActions, pressed: boolean) {
+    this.actions[action] = pressed;
   }
 }
