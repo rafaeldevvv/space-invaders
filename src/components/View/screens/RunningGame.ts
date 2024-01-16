@@ -27,6 +27,13 @@ function findTouch(touches: TouchList, id: number) {
   return null;
 }
 
+function findUntrackedTouch(touches: TouchList, ids: number[]) {
+  for (let i = 0; i < touches.length; i++) {
+    if (!ids.some((id) => id === touches[i].identifier)) return touches[i];
+  }
+  return null;
+}
+
 const explosion = new IterablePieces(explosionPlan);
 const lastScoreAppearanceDuration = 1;
 
@@ -42,6 +49,7 @@ export default class RunningGame extends BaseCanvasWrapper {
   });
 
   private unregisterFunctions: (() => void)[] = [];
+  private trackedTouchIds: number[] = [];
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -57,7 +65,7 @@ export default class RunningGame extends BaseCanvasWrapper {
 
   private setUpControlMethods() {
     document.body.appendChild(this.buttons);
-    
+
     const keys = Object.keys(
       RUNNING_GAME_KEY_ACTIONS
     ) as (keyof typeof RUNNING_GAME_KEY_ACTIONS)[];
@@ -90,12 +98,14 @@ export default class RunningGame extends BaseCanvasWrapper {
 
     const handleStart = (ev: TouchEvent) => {
       const touches = ev.touches;
-      const touch = touches[0];
-      id = touch.identifier;
-      this.syncAction(action, true);
-      elt.addEventListener("touchmove", handleMove);
-      elt.addEventListener("touchend", handleEnd);
-      elt.addEventListener("touchcancel", handleEnd);
+      const touch = findUntrackedTouch(touches, this.trackedTouchIds);
+      if (touch) {
+        id = touch.identifier;
+        this.syncAction(action, true);
+        elt.addEventListener("touchmove", handleMove);
+        elt.addEventListener("touchend", handleEnd);
+        elt.addEventListener("touchcancel", handleEnd);
+      }
     };
 
     const cancelActionEndMove = () => {
@@ -103,11 +113,14 @@ export default class RunningGame extends BaseCanvasWrapper {
       elt.removeEventListener("touchend", handleEnd);
       elt.removeEventListener("touchmove", handleMove);
       elt.removeEventListener("touchcancel", handleEnd);
+      this.trackedTouchIds = this.trackedTouchIds.filter(
+        (trackedId) => trackedId !== id
+      );
     };
 
     const handleMove = (ev: TouchEvent) => {
       const touches = ev.touches;
-      const touch = findTouch(touches, id || -1);
+      const touch = findTouch(touches, id!); // id should not be null if touch is moving
       if (touch) {
         const { top, left, right, bottom } = elt.getBoundingClientRect();
         const { clientX: x, clientY: y } = touch;
@@ -133,6 +146,9 @@ export default class RunningGame extends BaseCanvasWrapper {
       elt.removeEventListener("touchmove", handleMove);
       elt.removeEventListener("touchend", handleEnd);
       elt.removeEventListener("touchcancel", handleEnd);
+      this.trackedTouchIds = this.trackedTouchIds.filter(
+        (trackedId) => trackedId !== id
+      );
     });
   }
 
@@ -405,7 +421,7 @@ export default class RunningGame extends BaseCanvasWrapper {
   private drawScore(score: number, x: number, y: number) {
     this.ctx.fillStyle = "#fff";
     this.ctx.textAlign = "start";
-    const scoreText = `SCORE ${score.toString().padStart(6, "0")}`;
+    const scoreText = `SCORE ${score.toString().padStart(5, "0")}`;
     this.ctx.fillText(scoreText, x, y);
     const scoreTextMetrics = this.ctx.measureText(scoreText);
 

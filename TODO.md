@@ -1,9 +1,4 @@
-- Implement mobile controls
-  - You might need to change your approach regarding the keys
-    - Idea 1: Actions instead of keys.
-  - When you implement the styles for the mobile buttons, put them into 
-  a css file inside src and import it into the ts file, so that the code is contained within one file.
-- commit & update README
+- Refactor view implementation
 
 - take a a look at the rules of the game in some website
   - try this one: https://www.classicgaming.cc/classics/space-invaders/play-guide

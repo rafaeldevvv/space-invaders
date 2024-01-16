@@ -38,6 +38,7 @@ button {
    padding: .5rem 3rem;
    position: relative;
    z-index: 0;
+   user-select: none;
 }
 
 .btn-container__btn::before {
@@ -77,4 +78,10 @@ button {
 
 .restart-btn {
    grid-area: restart;
+}
+
+@media (pointer: fine) {
+   .btn-container {
+      display: none;
+   }
 }
