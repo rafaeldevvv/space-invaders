@@ -9,7 +9,6 @@ button {
    inset: auto auto 2.5% 50%;
    transform: translate(-50%);
    display: grid;
-   pointer-events: none;
    gap: .8rem;
 }
 
@@ -29,34 +28,24 @@ button {
 
 .btn-container__btn {
    font-size: 1.7rem;
-   border: 1px solid black;
-   border-radius: .5rem;
-   pointer-events: all;
-   background-color: black;
-   color: white;
+   border: 2px solid black;
+   color: black;
    padding: .5rem 1rem;
    position: relative;
    z-index: 0;
    user-select: none;
+   transform: translateY(-7px);
+   box-shadow: 0 7px black;
 }
 
-.btn-container__btn::before {
-   content: '';
-   border-radius: .5rem;
-   inset: 0;
-   position: absolute;
-   background-color: hsl(0 0% 0% / .6);
-   z-index: -1;
-   transition: inset 60ms ease-in-out;
-}
-
-.btn-container__btn:hover::before,
-.btn-container__btn:active::before {
-   inset: -.3rem;
+.btn-container__btn:active {
+   transform: translateY(0px);
+   box-shadow: 0 0px black;
 }
 
 .fire-btn {
    grid-area: fire;
+   background-color: hsl(0 100% 70%);
 }
 
 .move-right-btn {
@@ -67,8 +56,14 @@ button {
    grid-area: left;
 }
 
+.move-right-btn,
+.move-left-btn {
+   background-color: hsl(120 100% 70%);
+}
+
 .pause-btn {
    grid-area: pause;
+   background-color: hsl(240 100% 70%);
 }
 
 .start-btn {
@@ -77,6 +72,11 @@ button {
 
 .restart-btn {
    grid-area: restart;
+}
+
+.start-btn,
+.restart-btn {
+   background-color: hsl(60 100% 55%);
 }
 
 @media (pointer: fine) {
