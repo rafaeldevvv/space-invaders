@@ -1,3 +1,5 @@
+- Update pause button to "unpause" when the game is paused
+
 - Refactor view implementation
 
 - take a a look at the rules of the game in some website

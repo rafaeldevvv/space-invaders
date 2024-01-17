@@ -47,6 +47,7 @@ export default class RunningGame extends BaseCanvasWrapper {
   private buttons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-running",
   });
+  private pauseBtn: HTMLButtonElement | null = null;
 
   private unregisterFunctions: (() => void)[] = [];
   private trackedTouchIds: number[] = [];
@@ -185,6 +186,8 @@ export default class RunningGame extends BaseCanvasWrapper {
         "pause"
       );
 
+    this.pauseBtn = pauseBtn;
+
     this.manageEltTouchesForAction(moveLeftBtn, "moveLeft");
     this.manageEltTouchesForAction(moveRightBtn, "moveRight");
     this.manageEltTouchesForAction(fireBtn, "fire");
@@ -197,6 +200,7 @@ export default class RunningGame extends BaseCanvasWrapper {
 
   public unset() {
     this.buttons.textContent = "";
+    this.pauseBtn = null;
     this.buttons.remove();
     this.unregisterFunctions.forEach((f) => f());
     this.unregisterFunctions = [];
@@ -227,6 +231,7 @@ export default class RunningGame extends BaseCanvasWrapper {
     this.drawPressEscMessage();
     if (state.boss !== null) this.drawBoss(state.boss);
     if (state.status === "paused") this.drawPauseHint();
+    this.pauseBtn!.textContent = state.status === "paused" ? "unpause" : "pause";
   }
 
   private drawFloor() {

@@ -1173,6 +1173,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Array.prototype.splice()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)
 - [How to remove all listeners in an element? [duplicate]](https://stackoverflow.com/questions/9251837/how-to-remove-all-listeners-in-an-element)
 - [CSS media query for whether a physical keyboard is attached](https://stackoverflow.com/questions/36976117/css-media-query-for-whether-a-physical-keyboard-is-attached)
+- [Touch events](https://developer.mozilla.org/en-US/docs/Web/API/Touch_events)
 
 #### Comments
 
@@ -1205,7 +1206,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Using webpack to use require modules in browser](https://stackoverflow.com/questions/40207277/using-webpack-to-use-require-modules-in-browser)
 - [Webpack doesn't resolve properly my alias](https://stackoverflow.com/questions/36365550/webpack-doesnt-resolve-properly-my-alias)
 - [eslint-plugin-import Issue #854](https://github.com/import-js/eslint-plugin-import/issues/854)
-- [What does a trailing slash in the parameter of require.resolve() mean?](https://stackoverflow.com/questions/64413530/what-does-a-trailing-slash-in-the-parameter-of-require-resolve-mean)
+- [What does a trailing slash in the parameter of `require.resolve()` mean?](https://stackoverflow.com/questions/64413530/what-does-a-trailing-slash-in-the-parameter-of-require-resolve-mean)
 - [Field 'browser' doesn't contain a valid alias configuration](https://stackoverflow.com/questions/43037590/field-browser-doesnt-contain-a-valid-alias-configuration)
 
 ## Author
