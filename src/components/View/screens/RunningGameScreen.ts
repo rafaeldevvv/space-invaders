@@ -37,19 +37,18 @@ function findUntrackedTouch(touches: TouchList, ids: number[]) {
 const explosion = new IterablePieces(explosionPlan);
 const lastScoreAppearanceDuration = 1;
 
-export default class RunningGame extends BaseCanvasWrapper {
-  /* i've decided to put the last score animation here because 
-  it is a matter of how the view will present it, the animation thus 
+export default class RunningGameScreen extends BaseCanvasWrapper {
+  /* i've decided to put the last score animation here because
+  it is a matter of how the view will present it, the animation thus
   should not be part of the business logic */
   private lastScore: IStateLastScore = { value: null, id: 0 };
   private timeSinceLastScoreChange = 0;
 
-  private buttons: HTMLDivElement = elt("div", {
+  protected buttons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-running",
   });
   private pauseBtn: HTMLButtonElement | null = null;
 
-  private unregisterFunctions: (() => void)[] = [];
   private trackedTouchIds: number[] = [];
 
   constructor(
@@ -64,14 +63,14 @@ export default class RunningGame extends BaseCanvasWrapper {
     this.setUpControlMethods();
   }
 
-  private setUpControlMethods() {
+  protected setUpControlMethods() {
     document.body.appendChild(this.buttons);
 
     const keys = Object.keys(
       RUNNING_GAME_KEY_ACTIONS
     ) as (keyof typeof RUNNING_GAME_KEY_ACTIONS)[];
 
-    const trackedKeys = trackKeys([...keys], (key, pressed) => {
+    const trackedKeys = trackKeys(keys, (key, pressed) => {
       const action = RUNNING_GAME_KEY_ACTIONS[key];
       this.syncAction(action, pressed);
     });
@@ -91,8 +90,14 @@ export default class RunningGame extends BaseCanvasWrapper {
     this.createMobileControls();
   }
 
-  private manageEltTouchesForAction(
-    elt: HTMLElement,
+  /**
+   * Manages the touch events for the mobile buttons.
+   *
+   * @param btn - The button.
+   * @param action - The action the button is associated with.
+   */
+  protected manageMobileButtonTouchEvents(
+    btn: HTMLButtonElement,
     action: RunningScreenActions
   ) {
     let id: number | null = null;
@@ -103,57 +108,57 @@ export default class RunningGame extends BaseCanvasWrapper {
       if (touch) {
         id = touch.identifier;
         this.syncAction(action, true);
-        elt.addEventListener("touchmove", handleMove);
-        elt.addEventListener("touchend", handleEnd);
-        elt.addEventListener("touchcancel", handleEnd);
+        btn.addEventListener("touchmove", handleMove);
+        btn.addEventListener("touchend", handleEnd);
+        btn.addEventListener("touchcancel", handleEnd);
       }
-    };
-
-    const cancelActionEndMove = () => {
-      this.syncAction(action, false);
-      elt.removeEventListener("touchend", handleEnd);
-      elt.removeEventListener("touchmove", handleMove);
-      elt.removeEventListener("touchcancel", handleEnd);
-      this.trackedTouchIds = this.trackedTouchIds.filter(
-        (trackedId) => trackedId !== id
-      );
     };
 
     const handleMove = (ev: TouchEvent) => {
       const touches = ev.touches;
       const touch = findTouch(touches, id!); // id should not be null if touch is moving
       if (touch) {
-        const { top, left, right, bottom } = elt.getBoundingClientRect();
+        const { top, left, right, bottom } = btn.getBoundingClientRect();
         const { clientX: x, clientY: y } = touch;
 
         if (x > left && x < right && y > top && y < bottom) {
           this.syncAction(action, true);
         } else {
-          cancelActionEndMove();
+          endTouch();
         }
       } else {
-        cancelActionEndMove();
+        endTouch();
       }
     };
 
     const handleEnd = () => {
-      cancelActionEndMove();
+      endTouch();
     };
 
-    elt.addEventListener("touchstart", handleStart);
+    btn.addEventListener("touchstart", handleStart);
+
+    const endTouch = () => {
+      this.syncAction(action, false);
+      btn.removeEventListener("touchend", handleEnd);
+      btn.removeEventListener("touchmove", handleMove);
+      btn.removeEventListener("touchcancel", handleEnd);
+      this.trackedTouchIds = this.trackedTouchIds.filter(
+        (trackedId) => trackedId !== id
+      );
+    };
 
     this.unregisterFunctions.push(() => {
-      elt.removeEventListener("touchstart", handleStart);
-      elt.removeEventListener("touchmove", handleMove);
-      elt.removeEventListener("touchend", handleEnd);
-      elt.removeEventListener("touchcancel", handleEnd);
+      btn.removeEventListener("touchstart", handleStart);
+      btn.removeEventListener("touchmove", handleMove);
+      btn.removeEventListener("touchend", handleEnd);
+      btn.removeEventListener("touchcancel", handleEnd);
       this.trackedTouchIds = this.trackedTouchIds.filter(
         (trackedId) => trackedId !== id
       );
     });
   }
 
-  private createMobileControls() {
+  protected createMobileControls() {
     const fireBtn = elt(
         "button",
         {
@@ -188,9 +193,9 @@ export default class RunningGame extends BaseCanvasWrapper {
 
     this.pauseBtn = pauseBtn;
 
-    this.manageEltTouchesForAction(moveLeftBtn, "moveLeft");
-    this.manageEltTouchesForAction(moveRightBtn, "moveRight");
-    this.manageEltTouchesForAction(fireBtn, "fire");
+    this.manageMobileButtonTouchEvents(moveLeftBtn, "moveLeft");
+    this.manageMobileButtonTouchEvents(moveRightBtn, "moveRight");
+    this.manageMobileButtonTouchEvents(fireBtn, "fire");
 
     this.buttons.appendChild(fireBtn);
     this.buttons.appendChild(moveLeftBtn);
@@ -198,17 +203,13 @@ export default class RunningGame extends BaseCanvasWrapper {
     this.buttons.appendChild(pauseBtn);
   }
 
-  public unset() {
-    this.buttons.textContent = "";
+  public cleanUp() {
+    super.cleanUp();
     this.pauseBtn = null;
-    this.buttons.remove();
-    this.unregisterFunctions.forEach((f) => f());
-    this.unregisterFunctions = [];
   }
 
   public syncState(state: IGameState, timeStep: number) {
     this.clearScreen();
-    if (this.buttons.textContent === "") this.setUpControlMethods();
 
     if (state.lastScore.id !== this.lastScore.id) {
       this.timeSinceLastScoreChange = 0;
@@ -231,7 +232,8 @@ export default class RunningGame extends BaseCanvasWrapper {
     this.drawPressEscMessage();
     if (state.boss !== null) this.drawBoss(state.boss);
     if (state.status === "paused") this.drawPauseHint();
-    this.pauseBtn!.textContent = state.status === "paused" ? "unpause" : "pause";
+    this.pauseBtn!.textContent =
+      state.status === "paused" ? "unpause" : "pause";
   }
 
   private drawFloor() {
@@ -448,6 +450,14 @@ export default class RunningGame extends BaseCanvasWrapper {
     }
   }
 
+  /**
+   * Draws a nice little animation for the score the player just got.
+   *
+   * @param score
+   * @param x - The x position of the animation.
+   * @param baseY - The base vertical positon for the animation.
+   * @param progress - The progress of the animation.
+   */
   private drawLastScoreAnimation(
     score: number,
     x: number,

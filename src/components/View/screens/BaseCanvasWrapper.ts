@@ -30,7 +30,14 @@ export const fontSizes: MappedObjectFromUnion<FontSizes, number> = {
 
 export type FontSizes = "sm" | "md" | "lg" | "xl";
 
-export default class BaseCanvasWrapper {
+export default abstract class BaseCanvasWrapper {
+  protected unregisterFunctions: (() => void)[] = [];
+
+  protected abstract buttons: HTMLDivElement;
+
+  protected abstract setUpControlMethods(): void;
+  protected abstract createMobileControls(): void;
+
   protected fontFamily = "monospace";
 
   protected ctx: CanvasRenderingContext2D;
@@ -102,5 +109,12 @@ export default class BaseCanvasWrapper {
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.ctx.fillStyle = "#000";
     this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+  }
+
+  public cleanUp() {
+    this.buttons.textContent = "";
+    this.buttons.remove();
+    this.unregisterFunctions.forEach(f => f());
+    this.unregisterFunctions = [];
   }
 }

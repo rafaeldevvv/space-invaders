@@ -30,6 +30,9 @@ export function getElementInnerDimensions(element: HTMLElement): PixelSize {
   };
 }
 
+/**
+ * An object that can unregister events.
+ */
 type Unregisterable = {
   unregister: () => void;
 };
@@ -44,7 +47,9 @@ export function trackKeys<Type extends string>(
   keys: Type[],
   onKeyChange?: (key: Type, pressed: boolean) => void
 ): MappedObjectFromUnion<Type, boolean> & Unregisterable {
-  const down = {} as MappedObjectFromUnion<Type, boolean> & Unregisterable;
+  type ReturnedMap = MappedObjectFromUnion<Type, boolean>;
+  
+  const down = {} as ReturnedMap & Unregisterable;
   keys.forEach(
     (key) => ((down as MappedObjectFromUnion<Type, boolean>)[key] = false)
   );
@@ -54,15 +59,15 @@ export function trackKeys<Type extends string>(
       if (e.key === key) {
         e.preventDefault();
         const pressed = e.type === "keydown";
-        (down as MappedObjectFromUnion<Type, boolean>)[e.key as Type] = pressed;
-        if (onKeyChange) onKeyChange(key as Type, pressed);
+        (down as ReturnedMap)[e.key as Type] = pressed;
+        if (onKeyChange) onKeyChange(key, pressed);
       }
     }
   }
 
   window.addEventListener("keydown", onPressKey);
   window.addEventListener("keyup", onPressKey);
-  
+
   down.unregister = () => {
     window.removeEventListener("keydown", onPressKey);
     window.removeEventListener("keyup", onPressKey);

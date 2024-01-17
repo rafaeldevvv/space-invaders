@@ -244,6 +244,7 @@ type ViewConstructor = new (
 interface IView<State> {
   syncState(state: State, timeStep: number): void;
   adaptDisplaySize(): void;
+  cleanUpFor(newStateStatus: TStateStatuses): void;
 
   /** tracks the actions of the game */
   actions: RunningActionsTracker;

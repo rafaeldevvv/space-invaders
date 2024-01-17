@@ -3,14 +3,20 @@ import {
   IView,
   RunningActionsTracker,
   RunningScreenActions,
+  TStateStatuses,
   ViewHandlers,
 } from "@/ts/types";
 import { getElementInnerDimensions } from "./utils";
 import { GAME_DISPLAY } from "./config";
 
 import InitialScreen from "./screens/InitialScreen";
-import GameOver from "./screens/GameOver";
-import RunningGame from "./screens/RunningGame";
+import GameOverScreen from "./screens/GameOverScreen";
+import RunningGameScreen from "./screens/RunningGameScreen";
+
+interface Screen {
+  cleanUp(): void;
+  syncState(state?: IGameState, timeStep?: number): void;
+}
 
 /**
  * Class represeting a view component used to display the game state.
@@ -21,10 +27,7 @@ import RunningGame from "./screens/RunningGame";
 export default class CanvasView implements IView<IGameState> {
   private canvas: HTMLCanvasElement;
 
-  /* screens */
-  private initialScreen: InitialScreen;
-  private runningGameScreen: RunningGame;
-  private gameOverScreen: GameOver;
+  private currentScreen: Screen;
 
   public actions = {} as RunningActionsTracker;
 
@@ -46,13 +49,7 @@ export default class CanvasView implements IView<IGameState> {
 
     parent.appendChild(this.canvas);
 
-    this.initialScreen = new InitialScreen(this.canvas, handlers.onStartGame);
-    this.runningGameScreen = new RunningGame(
-      this.canvas,
-      this.syncAction.bind(this),
-      handlers.onPauseGame
-    );
-    this.gameOverScreen = new GameOver(this.canvas, handlers.onRestartGame);
+    this.currentScreen = new InitialScreen(this.canvas, handlers.onStartGame);
 
     this.defineEventListeners();
     this.adaptDisplaySize();
@@ -81,41 +78,52 @@ export default class CanvasView implements IView<IGameState> {
   }
 
   /**
+   * Cleans up the view for the next screen to appear.
+   *
+   * @param newStateStatus - The new status of the state.
+   */
+  public cleanUpFor(newStateStatus: TStateStatuses) {
+    switch (newStateStatus) {
+      case "start": {
+        break;
+      }
+      case "running":
+      case "paused": {
+        this.currentScreen.cleanUp();
+        this.currentScreen = new RunningGameScreen(
+          this.canvas,
+          this.syncAction.bind(this),
+          this.handlers.onPauseGame
+        );
+        break;
+      }
+      case "lost": {
+        this.currentScreen.cleanUp();
+        this.currentScreen = new GameOverScreen(
+          this.canvas,
+          this.handlers.onRestartGame
+        );
+        break;
+      }
+    }
+  }
+
+  /**
    * Synchonizes the view with a new model (state).
+   * Even though the game is using a mutable approach,
+   * this handles new states because maybe i can change
+   * my mind later.
    *
    * @param state - A new game state.
    */
   public syncState(this: CanvasView, state: IGameState, timeStep: number) {
+    this.state = state;
     if (state.status === "lost") {
       const actions = Object.keys(this.actions) as RunningScreenActions[];
       actions.forEach((a) => (this.actions[a] = false));
     }
-    
-    switch (state.status) {
-      case "start": {
-        this.initialScreen.syncState();
-        this.runningGameScreen.unset();
-        this.gameOverScreen.unset();
-        break;
-      }
-      case "paused":
-      case "running": {
-        this.gameOverScreen.unset();
-        this.initialScreen.unset();
-        this.runningGameScreen.syncState(state, timeStep);
-        break;
-      }
-      case "lost": {
-        this.gameOverScreen.syncState(state);
-        this.initialScreen.unset();
-        this.runningGameScreen.unset();
-        break;
-      }
-      default: {
-        const _never: never = state.status;
-        throw new Error("Unexpected state status", _never);
-      }
-    }
+
+    this.currentScreen.syncState(state, timeStep);
   }
 
   private defineEventListeners() {

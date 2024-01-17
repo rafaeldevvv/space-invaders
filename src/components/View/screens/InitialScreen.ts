@@ -4,11 +4,9 @@ import { drawTwinkleMessage, elt } from "../utils";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
 
 export default class InitialScreen extends BaseCanvasWrapper {
-  private buttons: HTMLDivElement = elt("div", {
+  protected buttons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-start",
   });
-
-  unregisterFunctions: (() => void)[] = [];
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -17,16 +15,15 @@ export default class InitialScreen extends BaseCanvasWrapper {
     super(canvas);
     this.setUpControlMethods();
   }
-  
-  private handleKeydown(this: InitialScreen, e: KeyboardEvent) {
+
+  protected handleKeydown(this: InitialScreen, e: KeyboardEvent) {
     if (ACTION_KEYS.startGame === e.key) {
       e.preventDefault();
-      console.log(this.onStartGame);
       this.onStartGame();
     }
   }
-  
-  private setUpControlMethods() {
+
+  protected setUpControlMethods() {
     document.body.appendChild(this.buttons);
     const handler = (e: KeyboardEvent) => this.handleKeydown(e);
     window.addEventListener("keydown", handler);
@@ -36,7 +33,7 @@ export default class InitialScreen extends BaseCanvasWrapper {
     this.createMobileControls();
   }
 
-  private createMobileControls() {
+  protected createMobileControls() {
     const startBtn = elt(
       "button",
       {
@@ -49,16 +46,8 @@ export default class InitialScreen extends BaseCanvasWrapper {
     this.buttons.appendChild(startBtn);
   }
 
-  public unset() {
-    this.buttons.textContent = "";
-    this.buttons.remove();
-    this.unregisterFunctions.forEach(f => f());
-    this.unregisterFunctions = [];
-  }
-
   syncState() {
     this.clearScreen();
-    if (this.buttons.textContent === "") this.setUpControlMethods();
 
     this.drawTitle();
     const messagePos = this.getPixelPos({

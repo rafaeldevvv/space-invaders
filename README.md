@@ -1174,6 +1174,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [How to remove all listeners in an element? [duplicate]](https://stackoverflow.com/questions/9251837/how-to-remove-all-listeners-in-an-element)
 - [CSS media query for whether a physical keyboard is attached](https://stackoverflow.com/questions/36976117/css-media-query-for-whether-a-physical-keyboard-is-attached)
 - [Touch events](https://developer.mozilla.org/en-US/docs/Web/API/Touch_events)
+- [Does removing an element also remove its event listeners? [duplicate]](https://stackoverflow.com/questions/18986520/does-removing-an-element-also-remove-its-event-listeners)
 
 #### Comments
 

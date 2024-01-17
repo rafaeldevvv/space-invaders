@@ -4,12 +4,10 @@ import BaseCanvasWrapper from "./BaseCanvasWrapper";
 import { GAMEOVER_SCREEN_LAYOUT } from "../config";
 import { ACTION_KEYS } from "@/game-config";
 
-export default class GameOver extends BaseCanvasWrapper {
-  private buttons: HTMLDivElement = elt("div", {
+export default class GameOverScreen extends BaseCanvasWrapper {
+  protected buttons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-restart",
   });
-
-  private unregisterFunctions: (() => void)[] = [];
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -26,7 +24,7 @@ export default class GameOver extends BaseCanvasWrapper {
     }
   }
 
-  private setUpControlMethods() {
+  protected setUpControlMethods() {
     document.body.appendChild(this.buttons);
     const handler = (e: KeyboardEvent) => this.handleKeydown(e);
     window.addEventListener("keydown", handler);
@@ -38,7 +36,7 @@ export default class GameOver extends BaseCanvasWrapper {
     this.createMobileControls();
   }
 
-  private createMobileControls() {
+  protected createMobileControls() {
     const restartBtn = elt(
       "button",
       {
@@ -53,7 +51,7 @@ export default class GameOver extends BaseCanvasWrapper {
 
   public syncState(state: IGameState) {
     this.clearScreen();
-    if (this.buttons.textContent === "") this.setUpControlMethods();
+
     this.drawTitle();
     this.drawStateData(state);
 
@@ -65,12 +63,6 @@ export default class GameOver extends BaseCanvasWrapper {
       fontSize: this.getFontSize("md"),
       fontFamily: this.fontFamily,
     });
-  }
-
-  public unset() {
-    this.buttons.textContent = "";
-    this.buttons.remove();
-    window.removeEventListener("keydown", this.handleKeydown);
   }
 
   private drawTitle() {

@@ -4,9 +4,9 @@ import {
   GameStateConstructor,
   ViewConstructor,
 } from "@/ts/types";
-import { ACTION_KEYS } from "@/game-config";
 import aliensPlan from "@/plans/alien-set";
 import { runAnimation } from "./utils";
+import { TStateStatuses } from "@/ts/types";
 
 /**
  * A class responsible for managing the flow of information
@@ -16,6 +16,7 @@ export default class GamePresenter {
   State: GameStateConstructor;
   state: IGameState;
   view: IView<IGameState>;
+  private status: TStateStatuses = "start";
 
   constructor(
     State: GameStateConstructor,
@@ -69,6 +70,14 @@ export default class GamePresenter {
   }
 
   private frame(this: GamePresenter, timeStep: number) {
+    if (this.state.status !== this.status) {
+      /* i could do it in handleStartGame or handleRestartGame,
+      but it wouldn't capture the change to "lost", plus this handles all
+      status changes */
+      this.view.cleanUpFor(this.state.status);
+      this.status = this.state.status;
+    }
+
     if (this.state.status === "paused") {
       this.view.syncState(this.state, timeStep);
       return false;
