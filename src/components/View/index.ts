@@ -13,6 +13,8 @@ import InitialScreen from "./screens/InitialScreen";
 import GameOverScreen from "./screens/GameOverScreen";
 import RunningGameScreen from "./screens/RunningGameScreen";
 
+import "./styles/buttons.css";
+
 interface Screen {
   cleanUp(): void;
   syncState(state?: IGameState, timeStep?: number): void;

@@ -1,6 +1,4 @@
-- Update pause button to "unpause" when the game is paused
-
-- Refactor view implementation
+- Import the css code for the buttons into the view component.
 
 - take a a look at the rules of the game in some website
   - try this one: https://www.classicgaming.cc/classics/space-invaders/play-guide
