@@ -376,7 +376,7 @@ eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {
   \********************************/
 /***/ ((__unused_webpack_module, exports) => {
 
-eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst defaultAliensPlan = `\r\nZZZZZZZZZZ\r\nYYYYYYYYYY\r\nYYYYYYYYYY\r\nXXXXXXXXXX\r\nXXXXXXXXXX\r\n`;\nexports[\"default\"] = defaultAliensPlan;\n\n\n//# sourceURL=webpack://space-invaders/./src/plans/alien-set.ts?");
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst defaultAliensPlan = `\r\nZZZZZZZZZZZ\r\nYYYYYYYYYYY\r\nYYYYYYYYYYY\r\nXXXXXXXXXXX\r\nXXXXXXXXXXX\r\n`;\nexports[\"default\"] = defaultAliensPlan;\n\n\n//# sourceURL=webpack://space-invaders/./src/plans/alien-set.ts?");
 
 /***/ }),
 
