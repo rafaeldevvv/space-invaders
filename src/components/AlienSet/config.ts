@@ -5,5 +5,5 @@
  * for it to reach the edge
  */
 export const stepToEdgeAdjustment = 1.33;
-export const timeDecreaseFactor = 0.965;
+export const timeDecreaseFactor = 0.96;
 export const entranceSpeed = 30;

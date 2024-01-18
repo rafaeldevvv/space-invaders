@@ -27,7 +27,7 @@ export default class AlienSet implements IAlienSet {
    * So, each time a new alien set appears, its going to be lower
    * than the previous one.
    */
-  private baseYPos = LAYOUT.padding.ver + 12 + AlienSet.instancesCreated * 1.5;
+  private baseYPos = LAYOUT.padding.ver + 12 + AlienSet.instancesCreated * 2;
 
   public pos: IVector;
   public size: Size;
