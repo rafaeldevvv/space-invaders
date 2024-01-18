@@ -92,7 +92,7 @@ interface IBoss {
   status: BossStatuses;
   pos: IVector;
   score: number;
-  update(timeStep: number): void;
+  update(state: IGameState, timeStep: number): void;
   isOutOfBounds(): boolean;
 }
 
@@ -204,6 +204,7 @@ interface IGameState {
   boss: IBoss | null;
   bulletCollisions: IExplosion[];
   lastScore: IStateLastScore;
+  numOfPlayerFires: number;
 
   /**
    * The number of bosses the player killed.

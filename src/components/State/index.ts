@@ -48,6 +48,7 @@ export default class GameState implements IGameState {
   public isPlayerBulletPresent = false;
   public bulletCollisions: IExplosion[] = [];
   public lastScore: IStateLastScore = { value: null, id: 0 };
+  public numOfPlayerFires: number = 0;
   private timeSinceBossLastAppearance = 0;
   private bossAppearanceInterval = generateRandomBossAppearanceInterval();
 
@@ -100,6 +101,7 @@ export default class GameState implements IGameState {
       this.isPlayerBulletPresent = false;
       this.env.alienSet = this.alienSet;
       this.player.lives++;
+      this.numOfPlayerFires = 0;
     } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
       this.status = "lost";
       AlienSet.instancesCreated = 0;
@@ -294,11 +296,11 @@ export default class GameState implements IGameState {
   }
 
   private handleBoss(timeStep: number) {
-    if (this.boss !== null) this.boss.update(timeStep);
+    if (this.boss !== null) this.boss.update(this, timeStep);
     else this.timeSinceBossLastAppearance += timeStep;
 
     if (this.timeSinceBossLastAppearance >= this.bossAppearanceInterval) {
-      this.boss = new Boss();
+      this.boss = new Boss(this);
       this.timeSinceBossLastAppearance = 0;
       this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
     }

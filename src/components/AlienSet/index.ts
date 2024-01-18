@@ -69,7 +69,6 @@ export default class AlienSet implements IAlienSet {
    * @param plan - A string represeting an arranged set of aliens.
    */
   constructor(plan: Plan) {
-    console.log(`AlienSet base y pos is ${this.baseYPos}`);
     if (!alienTypesRegExp.test(plan)) {
       throw new Error(
         `Invalid character(s) in plan ${plan}. Consider using only valid characters (${alienTypes.join(

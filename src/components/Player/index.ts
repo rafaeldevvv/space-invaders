@@ -79,6 +79,8 @@ export default class Player implements IPlayer {
       ) {
         state.bullets.push(this.fire());
         state.isPlayerBulletPresent = true;
+        state.numOfPlayerFires++;
+        console.log(state.numOfPlayerFires);
       }
     }
   }
