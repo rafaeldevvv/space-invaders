@@ -102,6 +102,7 @@ export default class GameState implements IGameState {
       this.player.lives++;
     } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
       this.status = "lost";
+      AlienSet.instancesCreated = 0;
     }
   }
 

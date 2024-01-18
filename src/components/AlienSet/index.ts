@@ -1,11 +1,4 @@
-import {
-  Size,
-  TAliens,
-  IAlienSet,
-  IVector,
-  IAlien,
-  Plan
-} from "@/ts/types";
+import { Size, TAliens, IAlienSet, IVector, IAlien, Plan } from "@/ts/types";
 import Vector from "@/utils/common/Vector";
 import { alienTypesRegExp, alienTypes } from "../Alien/config";
 import Alien from "../Alien";
@@ -13,7 +6,6 @@ import { HorizontalDirection } from "@/ts/enums";
 import { DIMENSIONS, LAYOUT } from "@/game-config";
 import {
   entranceSpeed,
-  baseYPos,
   timeDecreaseFactor,
   stepToEdgeAdjustment,
 } from "./config";
@@ -24,6 +16,19 @@ import { adaptPos, adaptSize, removeDeadRowsAndColumns } from "./utils";
  * @implements {IAlienSet}
  */
 export default class AlienSet implements IAlienSet {
+  /**
+   * Tracks how many instances have been created.
+   * It must be set to 0 when the game is lost.
+   */
+  static instancesCreated = 0;
+
+  /**
+   * The base Y pos is based on how many instances have been created.
+   * So, each time a new alien set appears, its going to be lower
+   * than the previous one.
+   */
+  private baseYPos = LAYOUT.padding.ver + 12 + AlienSet.instancesCreated * 1.5;
+
   public pos: IVector;
   public size: Size;
 
@@ -64,6 +69,7 @@ export default class AlienSet implements IAlienSet {
    * @param plan - A string represeting an arranged set of aliens.
    */
   constructor(plan: Plan) {
+    console.log(`AlienSet base y pos is ${this.baseYPos}`);
     if (!alienTypesRegExp.test(plan)) {
       throw new Error(
         `Invalid character(s) in plan ${plan}. Consider using only valid characters (${alienTypes.join(
@@ -102,6 +108,8 @@ export default class AlienSet implements IAlienSet {
         return Alien.create(ch as TAliens, { x, y });
       });
     });
+
+    AlienSet.instancesCreated++;
   }
 
   /**
@@ -114,10 +122,10 @@ export default class AlienSet implements IAlienSet {
       this.pos = this.pos.plus(new Vector(0, entranceSpeed * timeStep));
 
       /* if it is in the place where it is supposed to be initially */
-      if (this.pos.y >= baseYPos) {
+      if (this.pos.y >= this.baseYPos) {
         this.entering = false;
         /* adjustment */
-        this.pos.y = baseYPos;
+        this.pos.y = this.baseYPos;
       } else return;
     }
 
