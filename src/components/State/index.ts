@@ -26,7 +26,7 @@ import * as BOSS_CONFIG from "../Boss/config";
 import aliensPlan from "@/plans/alien-set";
 
 function generateRandomBossAppearanceInterval() {
-  return randomNumberInFactorRange(BOSS_CONFIG.baseAppearanceInterval, 0.2);
+  return randomNumberInFactorRange(BOSS_CONFIG.baseAppearanceInterval, 0.1);
 }
 
 /**
@@ -47,7 +47,7 @@ export default class GameState implements IGameState {
   /** there can be only one player bullet in the game, and this tracks when it is present */
   public isPlayerBulletPresent = false;
   public bulletCollisions: IExplosion[] = [];
-  public lastScore: IStateLastScore = { value: null, id: 0 };
+  public lastScore: IStateLastScore = { value: null, id: null };
   public numOfPlayerFires: number = 0;
   private timeSinceBossLastAppearance = 0;
   private bossAppearanceInterval = generateRandomBossAppearanceInterval();
@@ -236,7 +236,8 @@ export default class GameState implements IGameState {
       const alienPos = this.alienSet.getAlienPos(alien.gridPos);
       if (this.env.bulletTouchesObject(b, alienPos, DIMENSIONS.alien)) {
         this.lastScore.value = alien.score;
-        this.lastScore.id++;
+        if (this.lastScore.id !== null) this.lastScore.id++;
+        else this.lastScore.id = 0;
         this.player.score += alien.score;
         this.aliensKilled++;
         this.alienSet.removeAlien(alien);
@@ -267,7 +268,8 @@ export default class GameState implements IGameState {
     if (this.boss === null || this.boss.status !== "alive") return false;
     if (this.env.bulletTouchesObject(b, this.boss.pos, DIMENSIONS.boss)) {
       this.lastScore.value = this.boss.score;
-      this.lastScore.id++;
+      if (this.lastScore.id !== null) this.lastScore.id++;
+      else this.lastScore.id = 0;
       this.player.score += this.boss.score;
       this.boss.status = "exploding";
       this.bossesKilled++;

@@ -194,7 +194,7 @@ interface IExplosion {
 interface IStateLastScore 
   {
     value: NumOrNull;
-    id: number;
+    id: NumOrNull;
   }
 
 

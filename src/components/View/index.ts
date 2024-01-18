@@ -89,8 +89,7 @@ export default class CanvasView implements IView<IGameState> {
       case "start": {
         break;
       }
-      case "running":
-      case "paused": {
+      case "running": {
         this.currentScreen.cleanUp();
         this.currentScreen = new RunningGameScreen(
           this.canvas,

@@ -70,10 +70,14 @@ export default class GamePresenter {
   }
 
   private frame(this: GamePresenter, timeStep: number) {
-    if (this.state.status !== this.status) {
+    this.state.update(timeStep, this.view.actions);
+
+    /* We don't want to clean up when we go from "running" to "paused"
+    or vice-versa, so we check if the previous status was "paused" and
+    inside the clean up function, we don't handle clean up for "paused" */
+    if (this.state.status !== this.status && this.status !== "paused") {
       /* i could do it in handleStartGame or handleRestartGame,
-      but it wouldn't capture the change to "lost", plus this handles all
-      status changes */
+      but it wouldn't capture the change to "lost" */
       this.view.cleanUpFor(this.state.status);
       this.status = this.state.status;
     }
@@ -83,7 +87,6 @@ export default class GamePresenter {
       return false;
     }
 
-    this.state.update(timeStep, this.view.actions);
     this.view.syncState(this.state, timeStep);
 
     return true;

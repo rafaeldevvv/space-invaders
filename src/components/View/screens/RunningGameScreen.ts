@@ -41,7 +41,7 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
   /* i've decided to put the last score animation here because
   it is a matter of how the view will present it, the animation thus
   should not be part of the business logic */
-  private lastScore: IStateLastScore = { value: null, id: 0 };
+  private lastScore: IStateLastScore = { value: null, id: null };
   private timeSinceLastScoreChange = 0;
 
   protected buttons: HTMLDivElement = elt("div", {

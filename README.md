@@ -1175,6 +1175,8 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [CSS media query for whether a physical keyboard is attached](https://stackoverflow.com/questions/36976117/css-media-query-for-whether-a-physical-keyboard-is-attached)
 - [Touch events](https://developer.mozilla.org/en-US/docs/Web/API/Touch_events)
 - [Does removing an element also remove its event listeners? [duplicate]](https://stackoverflow.com/questions/18986520/does-removing-an-element-also-remove-its-event-listeners)
+- [PLAY GUIDE FOR SPACE INVADERS](https://www.classicgaming.cc/classics/space-invaders/play-guide)
+- [SPACE INVADER SOUNDS](https://www.classicgaming.cc/classics/space-invaders/sounds)
 
 #### Comments
 
@@ -1186,6 +1188,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [TypeDoc](https://typedoc.org/) - It generates a documentation for TSCode.
 - [`typedoc` NPM package](https://www.npmjs.com/package/typedoc)
 - [TS: What is TSDoc?](https://medium.com/suyeonme/ts-what-is-tsdoc-6e11427c9704)
+- [@use JSDoc](https://jsdoc.app/tags-inline-link)
 
 #### ESLint
 
