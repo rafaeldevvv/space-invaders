@@ -139,11 +139,6 @@ export default class AlienSet implements IAlienSet {
       this.timeStepSum = 0;
     }
 
-    // if it moved down, decreases the updateTime
-    if (movedY > 0) {
-      this.timeToUpdate *= timeDecreaseFactor;
-    }
-
     if (movedY !== 0 || movedX !== 0) {
       this.removeDeadAliens();
     }
@@ -247,6 +242,8 @@ export default class AlienSet implements IAlienSet {
   public removeAlien(alien: IAlien) {
     this.aliens[alien.gridPos.y][alien.gridPos.x] = "exploding";
     this.alive--;
+    /* each time an alien is killed, the alien set speed increases */
+    this.timeToUpdate *= timeDecreaseFactor;
   }
 
   private removeDeadAliens() {
