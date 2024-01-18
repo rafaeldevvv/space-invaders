@@ -111,6 +111,7 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
         btn.addEventListener("touchmove", handleMove);
         btn.addEventListener("touchend", handleEnd);
         btn.addEventListener("touchcancel", handleEnd);
+        btn.classList.add("active");
       }
     };
 
@@ -145,16 +146,15 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
       this.trackedTouchIds = this.trackedTouchIds.filter(
         (trackedId) => trackedId !== id
       );
+      btn.classList.remove("active");
     };
-
+    
     this.unregisterFunctions.push(() => {
       btn.removeEventListener("touchstart", handleStart);
       btn.removeEventListener("touchmove", handleMove);
       btn.removeEventListener("touchend", handleEnd);
       btn.removeEventListener("touchcancel", handleEnd);
-      this.trackedTouchIds = this.trackedTouchIds.filter(
-        (trackedId) => trackedId !== id
-      );
+      btn.classList.remove("active");
     });
   }
 
@@ -206,6 +206,7 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
   public cleanUp() {
     super.cleanUp();
     this.pauseBtn = null;
+    this.trackedTouchIds = [];
   }
 
   public syncState(state: IGameState, timeStep: number) {

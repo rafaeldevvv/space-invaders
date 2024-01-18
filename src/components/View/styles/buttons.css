@@ -38,7 +38,7 @@ button {
    box-shadow: 0 7px black;
 }
 
-.btn-container__btn:active {
+.btn-container__btn.active {
    transform: translateY(0px);
    box-shadow: 0 0px black;
 }
