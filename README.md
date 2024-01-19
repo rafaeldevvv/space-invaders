@@ -1177,6 +1177,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Does removing an element also remove its event listeners? [duplicate]](https://stackoverflow.com/questions/18986520/does-removing-an-element-also-remove-its-event-listeners)
 - [PLAY GUIDE FOR SPACE INVADERS](https://www.classicgaming.cc/classics/space-invaders/play-guide)
 - [SPACE INVADER SOUNDS](https://www.classicgaming.cc/classics/space-invaders/sounds)
+- [Disable Pinch Zoom on Mobile Web](https://stackoverflow.com/questions/11689353/disable-pinch-zoom-on-mobile-web)
 
 #### Comments
 
