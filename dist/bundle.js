@@ -226,7 +226,7 @@ eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {
   \*****************************************/
 /***/ ((__unused_webpack_module, exports) => {
 
-eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nexports.revivingTime = exports.explodingTime = exports.xSpeed = void 0;\nexports.xSpeed = 30, exports.explodingTime = 1, exports.revivingTime = 3;\n\n\n//# sourceURL=webpack://space-invaders/./src/components/Player/config.ts?");
+eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nexports.revivingTime = exports.explodingTime = exports.xSpeed = void 0;\nexports.xSpeed = 30, exports.explodingTime = 1, exports.revivingTime = 1.5;\n\n\n//# sourceURL=webpack://space-invaders/./src/components/Player/config.ts?");
 
 /***/ }),
 

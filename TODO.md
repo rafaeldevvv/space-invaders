@@ -1,5 +1,3 @@
-- Decrease the time for player to revive.
-
 - Make the assets, styles and so on (or maybe make something similar to the wall for the pixel art images)
   - Add images
   - Add sounds
