@@ -103,6 +103,7 @@ export default class GameState implements IGameState {
       this.env.alienSet = this.alienSet;
       this.player.lives++;
       this.numOfPlayerFires = 0;
+      this.boss = null;
     } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
       this.status = "lost";
       const { bestScore, score } = this.player;
