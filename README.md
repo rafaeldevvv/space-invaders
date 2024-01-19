@@ -1178,6 +1178,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [PLAY GUIDE FOR SPACE INVADERS](https://www.classicgaming.cc/classics/space-invaders/play-guide)
 - [SPACE INVADER SOUNDS](https://www.classicgaming.cc/classics/space-invaders/sounds)
 - [Disable Pinch Zoom on Mobile Web](https://stackoverflow.com/questions/11689353/disable-pinch-zoom-on-mobile-web)
+- [Adverbs of Frequency: Types](https://langeek.co/en/grammar/course/473/adverbs-of-frequency#:~:text=Indefinite%20Adverbs%20of%20Frequency,-Indefinite%20adverbs%20of&text=frequently%20→%2070%25,hardly%20ever%20→%205%25)
 
 #### Comments
 

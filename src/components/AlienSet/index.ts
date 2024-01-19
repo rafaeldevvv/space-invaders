@@ -107,7 +107,7 @@ export default class AlienSet implements IAlienSet {
     this.yStep =
       (LAYOUT.playerYPos - (baseYPos + this.size.h)) / stepsToReachPlayer +
       0.01;
-    // 0.01 is just an adjustment, without it, the number of vertical 
+    // 0.01 is just an adjustment, without it, the number of vertical
     // steps would be stepsToReachPlayer + 1
 
     /* the thing here is that from the 2nd alien set to the 9th,
@@ -127,8 +127,6 @@ export default class AlienSet implements IAlienSet {
         return Alien.create(ch as TAliens, { x, y });
       });
     });
-
-    console.log("Number of alien set instances created:", AlienSet.instancesCreated, "\nstarted at y:", this.initialYPos);
   }
 
   /**

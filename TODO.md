@@ -2,9 +2,10 @@
   - try this one: https://www.classicgaming.cc/classics/space-invaders/play-guide
   - Implement wiggly shots
   - When an invader's missile collides with a player's laser shot, the player's shot is always destroyed but the invader's missile occasionally survives, almost certainly if it is a wiggly missile.
-  - The invaders travel sideways and each time they touch the side they drop down 1 line. On screen 1 they need to drop 11 lines to reach the bottom and 'invade'. From screen 2 through to screen 9 they start progressively lower down the screen. At screen 10 the game reverts to the screen 1 start position and the cycle begins again.
 
 - Add best score using local storage.
+
+- remove boss when new alien set appears.
 
 - Make the assets, styles and so on (or maybe make something similar to the wall for the pixel art images)
   - Add images
@@ -23,7 +24,7 @@
 - Remember to try using webpack to load assets such as css and images
 - commit & update README
 
-- Minify the code (look for an html plugin for that)
+- Minify the code (look for an webpack plugin for that)
 - commit & update README
 
 - See more tags available for TSDoc comments.

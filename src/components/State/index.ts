@@ -180,7 +180,8 @@ export default class GameState implements IGameState {
               )
             );
             playerBulletCollided = true;
-            continue;
+            /* the alien set bullet occasionally (30%) survives */
+            if (Math.random() > .3) continue;
           }
         }
       }
