@@ -20,10 +20,11 @@ export default class Gun implements IGun {
    * @param baseFireInterval - The time it takes for the gun to fire again.
    */
   constructor(
-    public owner: TShooters,
-    private bulletSpeed: number,
-    public bulletSize: Size,
-    private baseFireInterval: number
+    public readonly owner: TShooters,
+    private readonly bulletSpeed: number,
+    public readonly bulletSize: Size,
+    private readonly baseFireInterval: number,
+    private readonly bulletWobble?: number,
   ) {
     // to give a random initial fireInterval
     this.fireInterval =

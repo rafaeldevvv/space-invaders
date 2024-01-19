@@ -13,18 +13,18 @@ import { TStateStatuses } from "@/ts/types";
  * between model (state) and view (display).
  */
 export default class GamePresenter {
-  State: GameStateConstructor;
-  state: IGameState;
-  view: IView<IGameState>;
+  private state: IGameState;
+  private view: IView<IGameState>;
   private status: TStateStatuses = "start";
+  private bestScore: number;
 
   constructor(
-    State: GameStateConstructor,
+    private readonly State: GameStateConstructor,
     View: ViewConstructor,
     parent: HTMLElement
   ) {
-    this.State = State;
-    this.state = State.start(aliensPlan);
+    this.bestScore = this.getBestScore();
+    this.state = State.start(aliensPlan, this.bestScore);
     this.view = new View(
       this.state,
       {
@@ -37,6 +37,16 @@ export default class GamePresenter {
     this.view.syncState(this.state, 0);
 
     this.runGame();
+  }
+
+  private getBestScore() {
+    const bestScore = localStorage.getItem("bestScore");
+    return bestScore === null ? 0 : Number(bestScore);
+  }
+
+  private setBestScore(score: number) {
+    localStorage.setItem("bestScore", score.toString());
+    this.bestScore = score;
   }
 
   private handlePause(this: GamePresenter) {
@@ -60,7 +70,7 @@ export default class GamePresenter {
 
   private handleRestartGame(this: GamePresenter) {
     if (this.state.status === "lost") {
-      this.state = this.State.start(aliensPlan);
+      this.state = this.State.start(aliensPlan, this.bestScore);
       this.state.status = "running";
     }
   }
@@ -80,6 +90,10 @@ export default class GamePresenter {
       but it wouldn't capture the change to "lost" */
       this.view.cleanUpFor(this.state.status);
       this.status = this.state.status;
+
+      if (this.status === "lost" && this.bestScore < this.state.player.bestScore) {
+        this.setBestScore(this.state.player.score);
+      }
     }
 
     if (this.state.status === "paused") {

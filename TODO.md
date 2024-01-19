@@ -1,8 +1,3 @@
-- take a a look at the rules of the game in some website
-  - try this one: https://www.classicgaming.cc/classics/space-invaders/play-guide
-  - Implement wiggly shots
-  - When an invader's missile collides with a player's laser shot, the player's shot is always destroyed but the invader's missile occasionally survives, almost certainly if it is a wiggly missile.
-
 - Add best score using local storage.
 
 - remove boss when new alien set appears.
@@ -13,7 +8,10 @@
   - Add font (vt323)
 - commit & update README
 
-- Add alien scores to start screen
+- Implement wiggly shots
+- When an invader's missile collides with a player's laser shot, the player's shot is always destroyed but the invader's missile occasionally survives, almost certainly if it is a wiggly missile.
+
+- Add alien scores and best score to start screen
 - commit & update README
 
 - Refactor the code

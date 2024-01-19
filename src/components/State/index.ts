@@ -58,6 +58,7 @@ export default class GameState implements IGameState {
    * @param alienSet - The aliens.
    * @param player - The player.
    * @param env - The game environment.
+   * @param bestScore - The best score of the player at the moment the class instantiated.
    */
   constructor(
     public alienSet: IAlienSet,
@@ -104,6 +105,8 @@ export default class GameState implements IGameState {
       this.numOfPlayerFires = 0;
     } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
       this.status = "lost";
+      const { bestScore, score } = this.player;
+      this.player.bestScore = score > bestScore ? score : bestScore;
       AlienSet.instancesCreated = 0;
     }
   }
@@ -181,7 +184,7 @@ export default class GameState implements IGameState {
             );
             playerBulletCollided = true;
             /* the alien set bullet occasionally (30%) survives */
-            if (Math.random() > .3) continue;
+            if (Math.random() > 0.3) continue;
           }
         }
       }
@@ -329,9 +332,9 @@ export default class GameState implements IGameState {
    * @param plan - A string represeting an arranged set of aliens.
    * @returns - A initial state for the game.
    */
-  static start(plan: string) {
+  static start(plan: string, bestScore: number) {
     const alienSet = new AlienSet(plan);
-    const player = new Player();
+    const player = new Player(bestScore);
 
     const gap = (100 - LAYOUT.wallsSize.w * LAYOUT.numWalls) / 5;
 

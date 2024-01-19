@@ -143,6 +143,7 @@ interface IPlayer {
   pos: IVector;
   lives: number;
   score: number;
+  bestScore: number;
   status: PlayerStatuses;
   timeSinceResurrection: number;
   gun: IGun;
@@ -227,7 +228,7 @@ interface IGameState {
 
 interface GameStateConstructor {
   new (alienSet: IAlienSet, player: IPlayer, env: IEnvironment): IGameState;
-  start(plan: string): IGameState;
+  start(plan: string, bestScore: number): IGameState;
 }
 
 interface ViewHandlers {

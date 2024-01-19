@@ -84,7 +84,7 @@ export default class GameOverScreen extends BaseCanvasWrapper {
     const {
       bossesKilled,
       aliensKilled,
-      player: { score },
+      player: { score, bestScore },
     } = state;
 
     const subtitleFontSize = this.getFontSize("md");
@@ -97,12 +97,17 @@ export default class GameOverScreen extends BaseCanvasWrapper {
     this.ctx.fillText(
       `You killed ${aliensKilled} ${aliens} and ${bossesKilled} ${bosses}`,
       this.horPixels(50),
-      this.verPixels(50)
+      this.verPixels(45)
     );
     this.ctx.fillText(
       `Your score is ${score}`,
       this.horPixels(50),
-      this.verPixels(57)
+      this.verPixels(52)
+    );
+    this.ctx.fillText(
+      `Your best score is ${bestScore}`,
+      this.horPixels(50),
+      this.verPixels(59)
     );
   }
 }

@@ -31,6 +31,8 @@ export default class Player implements IPlayer {
   private timeSinceExplosion: number = 0;
   public timeSinceResurrection = 0;
 
+  constructor(public bestScore: number) {}
+
   /**
    * Fires a player bullet.
    *
