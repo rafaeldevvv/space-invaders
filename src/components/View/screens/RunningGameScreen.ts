@@ -12,9 +12,11 @@ import {
   IWall,
   IStateLastScore,
   RunningScreenActions,
+  IIterablePieces,
+  PixelSize,
 } from "@/ts/types";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
-import { colors } from "../config";
+import { colors, aliensPieces, bossPieces, playerPieces } from "../config";
 import explosionPlan from "@/plans/explosions";
 import IterablePieces from "@/utils/common/IterablePieces";
 import * as playerConfig from "@/components/Player/config";
@@ -148,7 +150,7 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
       );
       btn.classList.remove("active");
     };
-    
+
     this.unregisterFunctions.push(() => {
       btn.removeEventListener("touchstart", handleStart);
       btn.removeEventListener("touchmove", handleMove);
@@ -265,7 +267,7 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
       };
 
       if (alien !== "exploding") {
-        this.drawAlien(alien, alienPos);
+        this.drawAlien(alien, alienPos, alienSet.aliensStage);
       } else {
         this.drawExplosion(alienPos, DIMENSIONS.alien);
       }
@@ -278,34 +280,45 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
     this.ctx.fillRect(x, y, w, h);
   }
 
-  private drawAlien(alien: IAlien, pos: Coords) {
+  private drawAlien(alien: IAlien, pos: Coords, stage: 0 | 1) {
     const { w, h } = this.getPixelSize(DIMENSIONS.alien);
     const { x, y } = this.getPixelPos(pos);
 
-    this.ctx.fillStyle = colors[alien.alienType];
-    this.ctx.fillRect(x, y, w, h);
+    const pieces = aliensPieces[alien.alienType][stage];
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.drawPieces(pieces, {
+      w: w / pieces.numOfColumns,
+      h: h / pieces.numOfRows,
+    });
+    this.ctx.restore();
+  }
+
+  private drawPieces(
+    pieces: IIterablePieces,
+    pieceSize: PixelSize,
+    color = "#fff"
+  ) {
+    this.ctx.fillStyle = color;
+    const { w, h } = pieceSize;
+    for (const { piece, row, column } of pieces) {
+      if (!piece) continue;
+      this.ctx.fillRect(column * w, row * h, w, h);
+    }
   }
 
   private drawExplosion(pos: Coords, size: Size, color = "#fff") {
     const { w, h } = this.getPixelSize(size);
     const { x, y } = this.getPixelPos(pos);
 
-    const pieceHeight = h / explosion.pieces.length,
-      pieceWidth = w / explosion.pieces[0].length;
+    const pieceHeight = h / explosion.numOfRows,
+      pieceWidth = w / explosion.numOfColumns;
 
     this.ctx.save();
     this.ctx.translate(x, y);
 
-    this.ctx.fillStyle = color;
-    for (const { piece, row, column } of explosion) {
-      if (!piece) continue;
-      this.ctx.fillRect(
-        column * pieceWidth,
-        row * pieceHeight,
-        pieceWidth,
-        pieceHeight
-      );
-    }
+    this.drawPieces(explosion, { w: pieceWidth, h: pieceHeight }, color);
+
     this.ctx.restore();
   }
 
@@ -351,8 +364,17 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
         );
       }
 
-      this.ctx.fillStyle = `rgba(255 255 255 / ${progress})`;
-      this.ctx.fillRect(x, y, w, h);
+      this.ctx.save();
+      this.ctx.translate(x, y);
+
+      const color = `rgba(255 255 255 / ${progress})`;
+      this.drawPieces(
+        playerPieces,
+        { w: w / playerPieces.numOfColumns, h: h / playerPieces.numOfRows },
+        color
+      );
+
+      this.ctx.restore();
     }
   }
 
@@ -363,8 +385,19 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
       const { x, y } = this.getPixelPos(boss.pos);
       const { w, h } = this.getPixelSize(DIMENSIONS.boss);
 
-      this.ctx.fillStyle = colors.boss;
-      this.ctx.fillRect(x, y, w, h);
+      this.ctx.save();
+      this.ctx.translate(x, y);
+
+      this.drawPieces(
+        bossPieces,
+        {
+          w: w / bossPieces.numOfColumns,
+          h: h / bossPieces.numOfRows,
+        },
+        colors.boss
+      );
+
+      this.ctx.restore();
     }
   }
 

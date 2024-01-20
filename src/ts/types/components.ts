@@ -21,6 +21,7 @@ interface IAlienSet {
   numColumns: number;
   numRows: number;
   aliens: AlienSetAlienStates[][];
+  aliensStage: 0 | 1;
 
   /**
    * The number of aliens that are currently alive.
@@ -149,7 +150,11 @@ interface IPlayer {
   gun: IGun;
   fire(): IBullet;
   resetPos(): void;
-  update(state: IGameState, timeStep: number, actions: RunningActionsTracker): void;
+  update(
+    state: IGameState,
+    timeStep: number,
+    actions: RunningActionsTracker
+  ): void;
 }
 
 interface IWall {
@@ -192,12 +197,10 @@ interface IExplosion {
   update(timeStep: number): void;
 }
 
-interface IStateLastScore 
-  {
-    value: NumOrNull;
-    id: NumOrNull;
-  }
-
+interface IStateLastScore {
+  value: NumOrNull;
+  id: NumOrNull;
+}
 
 interface IGameState {
   bullets: IBullet[];
@@ -256,6 +259,8 @@ type IteratedPiece = { row: number; column: number; piece: boolean };
 
 interface IIterablePieces {
   pieces: boolean[][];
+  numOfColumns: number;
+  numOfRows: number;
   breakPiece(column: number, row: number): void;
   [Symbol.iterator](): Generator<IteratedPiece>;
 }
@@ -279,5 +284,5 @@ export type {
   IteratedPiece,
   IExplosion,
   IStateLastScore,
-  ViewHandlers
+  ViewHandlers,
 };

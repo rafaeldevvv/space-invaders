@@ -1,4 +1,8 @@
 import { TAliens } from "@/ts/types";
+import { X, Z, Y } from "@/plans/aliens";
+import bossPlan from "@/plans/boss";
+import IterablePieces from "@/utils/common/IterablePieces";
+import playerPlan from "@/plans/player";
 
 export const INITIAL_SCREEN_LAYOUT = {
   titleYPos: 30,
@@ -26,3 +30,13 @@ export const colors: {
   Z: "pink",
   boss: "#f77",
 };
+
+export const aliensPieces = {
+  X: [new IterablePieces(X[0]), new IterablePieces(X[1])],
+  Y: [new IterablePieces(Y[0]), new IterablePieces(Y[1])],
+  Z: [new IterablePieces(Z[0]), new IterablePieces(Z[1])],
+} as const;
+
+export const bossPieces = new IterablePieces(bossPlan);
+
+export const playerPieces = new IterablePieces(playerPlan);

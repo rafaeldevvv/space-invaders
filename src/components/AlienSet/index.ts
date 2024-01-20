@@ -39,6 +39,7 @@ export default class AlienSet implements IAlienSet {
 
   public numColumns: number;
   public numRows: number;
+  public aliensStage: 0 | 1 = 0;
 
   /**
    * The aliens in the set. Each item is an instance of {@link Alien},
@@ -158,6 +159,7 @@ export default class AlienSet implements IAlienSet {
 
     if (movedY !== 0 || movedX !== 0) {
       this.removeDeadAliens();
+      this.aliensStage = this.aliensStage === 1 ? 0 : 1;
     }
 
     // update position

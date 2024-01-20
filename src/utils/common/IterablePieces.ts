@@ -12,17 +12,23 @@ export default class IterablePieces implements IIterablePieces {
    */
   public pieces: boolean[][];
 
+  public numOfRows: number;
+  public numOfColumns: number;
+
   /**
    * @param plan - A plan reprenseting the matrix of pieces.
    * @param solidCharacter - A character representing a solid piece,
    * which maps to true in the matrix. Any other character us mapped to false.
    */
   constructor(plan: Plan, solidCharacter = "#") {
-    this.pieces = readSolidPlan(plan, solidCharacter);
+    const pieces = readSolidPlan(plan, solidCharacter);
+    this.pieces = pieces;
+    this.numOfColumns = pieces[0].length;
+    this.numOfRows = pieces.length;
   }
 
   breakPiece(column: number, row: number) {
-   this.pieces[row][column] = false;
+    this.pieces[row][column] = false;
   }
 
   /**
