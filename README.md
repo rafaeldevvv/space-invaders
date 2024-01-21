@@ -1179,6 +1179,11 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [SPACE INVADER SOUNDS](https://www.classicgaming.cc/classics/space-invaders/sounds)
 - [Disable Pinch Zoom on Mobile Web](https://stackoverflow.com/questions/11689353/disable-pinch-zoom-on-mobile-web)
 - [Adverbs of Frequency: Types](https://langeek.co/en/grammar/course/473/adverbs-of-frequency#:~:text=Indefinite%20Adverbs%20of%20Frequency,-Indefinite%20adverbs%20of&text=frequently%20→%2070%25,hardly%20ever%20→%205%25)
+- [Invaders Image Reference](https://static.wikia.nocookie.net/villains/images/9/9b/Spaceinvaders.png/revision/latest?cb=20130815215326)
+- [HTMLAudioElement: Audio() constructor](https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement/Audio)
+- [HTMLAudioElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement)
+- [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement#events)
+- [Codepen Space Invaders example](https://codepen.io/adelciotto/pen/WNzRYy)
 
 #### Comments
 

@@ -2,8 +2,8 @@ import Vector from "@/utils/common/Vector";
 import { LAYOUT, DIMENSIONS } from "@/game-config";
 import { HorizontalDirection } from "@/ts/enums";
 import { IVector, IBoss, IGameState } from "@/ts/types";
-import { bossExplodingTime, speedX, score } from "./config";
-import { randomNumInSteps } from "@/utils/common/numbers";
+import { bossExplodingTime, speedX } from "./config";
+import audios from "@/audios";
 
 /**
  * Class representing the boss in the game.
@@ -13,6 +13,7 @@ export default class Boss implements IBoss {
   public timeSinceDeath = 0;
   public status: "alive" | "exploding" | "dead" = "alive";
   public pos: IVector;
+  public stopPitch: () => void;
   private numOfPlayerFires: number;
   private direction: HorizontalDirection =
     Math.random() > 0.5 ? HorizontalDirection.Right : HorizontalDirection.Left;
@@ -24,6 +25,7 @@ export default class Boss implements IBoss {
     } else {
       this.pos = new Vector(-DIMENSIONS.boss.w, LAYOUT.bossYPos);
     }
+    this.stopPitch = audios.boss_lowpitch();
   }
 
   /**

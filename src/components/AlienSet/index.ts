@@ -12,6 +12,8 @@ import {
   baseYPos,
 } from "./config";
 import { adaptPos, adaptSize, removeDeadRowsAndColumns } from "./utils";
+import audios from "@/audios";
+import { randomNum } from "@/utils/common/numbers";
 
 /**
  * A class represeting a set of {@link Alien}s
@@ -158,6 +160,7 @@ export default class AlienSet implements IAlienSet {
     }
 
     if (movedY !== 0 || movedX !== 0) {
+      audios.fastInvader(Math.ceil(randomNum(0, 4)) as 1 | 2 | 3 | 4);
       this.removeDeadAliens();
       this.aliensStage = this.aliensStage === 1 ? 0 : 1;
     }
@@ -263,6 +266,7 @@ export default class AlienSet implements IAlienSet {
     this.alive--;
     /* each time an alien is killed, the alien set speed increases */
     this.timeToUpdate *= timeDecreaseFactor;
+    audios.alienKilled();
   }
 
   private removeDeadAliens() {

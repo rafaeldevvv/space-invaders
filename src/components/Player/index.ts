@@ -11,6 +11,7 @@ import {
 } from "@/ts/types";
 import { DIMENSIONS, LAYOUT, ACTION_KEYS } from "@/game-config";
 import { xSpeed, explodingTime, revivingTime } from "./config";
+import audios from "@/audios";
 
 /**
  * Class representing the player.
@@ -42,7 +43,7 @@ export default class Player implements IPlayer {
     /* from the center of the player */
     const bulletPosX =
       this.pos.x + DIMENSIONS.player.w / 2 - this.gun.bulletSize.w / 2;
-
+    audios.shoot();
     return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up")!;
   }
 

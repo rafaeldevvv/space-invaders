@@ -22,6 +22,7 @@ import {
 } from "@/ts/types";
 import shieldLikeWall from "@/plans/walls";
 import * as BOSS_CONFIG from "../Boss/config";
+import audios from "@/audios";
 
 import aliensPlan from "@/plans/alien-set";
 
@@ -103,9 +104,13 @@ export default class GameState implements IGameState {
       this.env.alienSet = this.alienSet;
       this.player.lives++;
       this.numOfPlayerFires = 0;
-      this.boss = null;
+      if (this.boss !== null) {
+        this.boss.stopPitch();
+        this.boss = null;
+      }
     } else if (this.player.lives < 1 || this.env.alienSetTouchesPlayer()) {
       this.status = "lost";
+      this.boss?.stopPitch();
       const { bestScore, score } = this.player;
       this.player.bestScore = score > bestScore ? score : bestScore;
       AlienSet.instancesCreated = 0;
@@ -222,6 +227,7 @@ export default class GameState implements IGameState {
     ) {
       this.player.lives--;
       this.player.status = "exploding";
+      audios.explosion();
       return true;
     }
     return false;
@@ -277,8 +283,10 @@ export default class GameState implements IGameState {
       else this.lastScore.id = 0;
       this.player.score += this.boss.score;
       this.boss.status = "exploding";
+      this.boss.stopPitch();
       this.bossesKilled++;
       this.bossAppearanceInterval = generateRandomBossAppearanceInterval();
+      audios.alienKilled();
       return true;
     }
   }
@@ -316,6 +324,7 @@ export default class GameState implements IGameState {
       this.boss &&
       (this.boss.isOutOfBounds() || this.boss.status === "dead")
     ) {
+      this.boss.stopPitch();
       this.boss = null;
     }
   }

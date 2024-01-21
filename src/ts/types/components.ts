@@ -93,6 +93,7 @@ interface IBoss {
   status: BossStatuses;
   pos: IVector;
   score: number;
+  stopPitch(): void;
   update(state: IGameState, timeStep: number): void;
   isOutOfBounds(): boolean;
 }
