@@ -561,7 +561,7 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
 
     this.ctx.fillStyle = "#fff";
     // the `- 4` part is just an adjustment
-    this.ctx.fillRect(hintXPos, hintYPos - 4, hintWidth, hintHeight);
+    this.ctx.fillRect(hintXPos, hintYPos - this.verPixels(.1), hintWidth, hintHeight);
 
     const fontSize = this.getFontSize("lg");
     this.ctx.fillStyle = "#000";

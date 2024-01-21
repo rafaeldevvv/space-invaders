@@ -38,7 +38,7 @@ export default abstract class BaseCanvasWrapper {
   protected abstract setUpControlMethods(): void;
   protected abstract createMobileControls(): void;
 
-  protected fontFamily = "monospace";
+  protected fontFamily = "'VT323', monospace";
 
   protected ctx: CanvasRenderingContext2D;
   constructor(protected canvas: HTMLCanvasElement) {
