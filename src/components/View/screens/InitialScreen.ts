@@ -65,12 +65,12 @@ export default class InitialScreen extends BaseCanvasWrapper {
     this.ctx.font = `${fontSize}px ${this.fontFamily}`;
 
     const xPixelPos = this.horPixels(50),
-      yPixelPos = this.verPixels(30);
+      yPixelPos = this.verPixels(23);
 
     this.ctx.fillStyle = "white";
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
     this.ctx.fillText("SPACE", xPixelPos, yPixelPos);
-    this.ctx.fillText("INVADERS", xPixelPos, yPixelPos + fontSize);
+    this.ctx.fillText("INVADERS", xPixelPos, yPixelPos + this.verPixels(12));
   }
 }

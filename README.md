@@ -1184,6 +1184,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [HTMLAudioElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement)
 - [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement#events)
 - [Codepen Space Invaders example](https://codepen.io/adelciotto/pen/WNzRYy)
+- [VT323](https://fonts.google.com/specimen/VT323?query=vt323)
 
 #### Comments
 

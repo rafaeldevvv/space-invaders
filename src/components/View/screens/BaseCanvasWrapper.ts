@@ -25,7 +25,7 @@ export const fontSizes: MappedObjectFromUnion<FontSizes, number> = {
   sm: 2.5,
   md: 4,
   lg: 6,
-  xl: 10,
+  xl: 12,
 };
 
 export type FontSizes = "sm" | "md" | "lg" | "xl";

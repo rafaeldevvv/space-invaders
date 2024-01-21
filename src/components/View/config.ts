@@ -6,12 +6,12 @@ import playerPlan from "@/plans/player";
 
 export const INITIAL_SCREEN_LAYOUT = {
   titleYPos: 30,
-  pressMessageYPos: 75,
+  pressMessageYPos: 80,
 } as const;
 
 export const GAMEOVER_SCREEN_LAYOUT = {
   titleYPos: 16,
-  pressMessageYPos: 75,
+  pressMessageYPos: 80,
 } as const;
 
 export const GAME_DISPLAY = {

@@ -69,7 +69,7 @@ export default class GameOverScreen extends BaseCanvasWrapper {
     const titleFontSize = this.getFontSize("xl");
 
     const xPixelPos = this.horPixels(50),
-      yPixelPos = this.verPixels(16);
+      yPixelPos = this.verPixels(11);
 
     this.ctx.font = `${titleFontSize}px ${this.fontFamily}`;
     this.ctx.fillStyle = "#f77";
@@ -77,7 +77,7 @@ export default class GameOverScreen extends BaseCanvasWrapper {
     this.ctx.textBaseline = "top";
 
     this.ctx.fillText("GAME", xPixelPos, yPixelPos);
-    this.ctx.fillText("OVER", xPixelPos, this.verPixels(27));
+    this.ctx.fillText("OVER", xPixelPos, yPixelPos + this.verPixels(11));
   }
 
   private drawStateData(state: IGameState) {
