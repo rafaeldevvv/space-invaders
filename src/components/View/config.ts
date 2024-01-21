@@ -3,6 +3,7 @@ import { X, Z, Y } from "@/plans/aliens";
 import bossPlan from "@/plans/boss";
 import IterablePieces from "@/utils/common/IterablePieces";
 import playerPlan from "@/plans/player";
+import wigglyBullet from "@/plans/wiggly-bullet";
 
 export const INITIAL_SCREEN_LAYOUT = {
   titleYPos: 30,
@@ -40,3 +41,8 @@ export const aliensPieces = {
 export const bossPieces = new IterablePieces(bossPlan);
 
 export const playerPieces = new IterablePieces(playerPlan);
+
+export const wigglyBulletPieces = [
+  new IterablePieces(wigglyBullet[0]),
+  new IterablePieces(wigglyBullet[1]),
+];

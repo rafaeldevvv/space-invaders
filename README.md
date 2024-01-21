@@ -1142,6 +1142,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Typescript: accessing an array element does not account for the possibility of undefined return values](https://stackoverflow.com/questions/50647399/typescript-accessing-an-array-element-does-not-account-for-the-possibility-of-u)
 - [Suggestion: option to include undefined in index signatures](https://github.com/Microsoft/TypeScript/issues/13778)
 - [Canvas API - Drawing text](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text)
+- [CanvasRenderingContext2D: font property](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font)
 - [Difference between Single Responsibility Principle and Separation of Concerns](https://stackoverflow.com/questions/1724469/difference-between-single-responsibility-principle-and-separation-of-concerns)
 - [Enums](https://www.typescriptlang.org/docs/handbook/enums.html)
 - [Property accessors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Property_accessors)

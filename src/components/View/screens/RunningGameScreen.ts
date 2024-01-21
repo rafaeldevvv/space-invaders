@@ -16,7 +16,13 @@ import {
   PixelSize,
 } from "@/ts/types";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
-import { colors, aliensPieces, bossPieces, playerPieces } from "../config";
+import {
+  colors,
+  aliensPieces,
+  bossPieces,
+  playerPieces,
+  wigglyBulletPieces,
+} from "../config";
 import explosionPlan from "@/plans/explosions";
 import IterablePieces from "@/utils/common/IterablePieces";
 import * as playerConfig from "@/components/Player/config";
@@ -332,8 +338,20 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
     const { x, y } = this.getPixelPos(bullet.pos);
     const { w, h } = this.getPixelSize(bullet.size);
 
-    this.ctx.fillStyle = bullet.from === "alien" ? "limegreen" : "white";
-    this.ctx.fillRect(x, y, w, h);
+    if (bullet.wiggly) {
+      const stage = Math.round(performance.now() / 200) % 2 === 1 ? 1 : 0;
+      const stagePieces = wigglyBulletPieces[stage];
+      this.ctx.save();
+      this.ctx.translate(x, y);
+      this.drawPieces(stagePieces, {
+        w: w / stagePieces.numOfColumns,
+        h: h / stagePieces.numOfRows,
+      });
+      this.ctx.restore();
+    } else {
+      this.ctx.fillStyle = "#fff";
+      this.ctx.fillRect(x, y, w, h);
+    }
   }
 
   private drawPlayer(player: IGameState["player"]) {
@@ -561,7 +579,12 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
 
     this.ctx.fillStyle = "#fff";
     // the `- 4` part is just an adjustment
-    this.ctx.fillRect(hintXPos, hintYPos - this.verPixels(.1), hintWidth, hintHeight);
+    this.ctx.fillRect(
+      hintXPos,
+      hintYPos - this.verPixels(0.1),
+      hintWidth,
+      hintHeight
+    );
 
     const fontSize = this.getFontSize("lg");
     this.ctx.fillStyle = "#000";

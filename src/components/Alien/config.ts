@@ -37,6 +37,6 @@ export const alienTypesConfig: MappedObjectFromUnion<TAliens, AlienTypeConfig> =
     },
     Z: {
       score: 30,
-      gunConfig: [80, { w: 1.5, h: 3 }, 40000],
+      gunConfig: [80, { w: 1.5, h: 3 }, 40000, true],
     },
   };

@@ -18,7 +18,8 @@ export default class Bullet implements IBullet {
     public readonly from: TShooters,
     public pos: IVector,
     public readonly speed: IVector,
-    public readonly size: Size
+    public readonly size: Size,
+    public readonly wiggly: boolean = false
   ) {}
 
   /**

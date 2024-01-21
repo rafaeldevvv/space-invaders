@@ -103,6 +103,7 @@ interface IBullet {
   pos: IVector;
   readonly speed: IVector;
   readonly size: Size;
+  readonly wiggly: boolean,
   update(timeStep: number): void;
   isOutOfBounds(): boolean;
 }

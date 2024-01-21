@@ -24,7 +24,7 @@ export default class Gun implements IGun {
     private readonly bulletSpeed: number,
     public readonly bulletSize: Size,
     private readonly baseFireInterval: number,
-    private readonly bulletWobble?: number,
+    private readonly isBulletWiggly = false,
   ) {
     // to give a random initial fireInterval
     this.fireInterval =
@@ -48,7 +48,8 @@ export default class Gun implements IGun {
       this.owner,
       pos,
       new Vector(0, direction === "up" ? -this.bulletSpeed : this.bulletSpeed),
-      this.bulletSize
+      this.bulletSize,
+      this.isBulletWiggly
     );
 
     if (this.baseFireInterval === 0) {
