@@ -189,8 +189,12 @@ export default class GameState implements IGameState {
               )
             );
             playerBulletCollided = true;
-            /* the alien set bullet occasionally (30%) survives */
-            if (Math.random() > 0.3) continue;
+
+            /* 
+            alien bullets occasionally (30%) survive.
+            wiggly bullets almost certainly (90%) survive. */
+            const chance = b.wiggly ? 0.9 : 0.3;
+            if (Math.random() > chance) continue;
           }
         }
       }
