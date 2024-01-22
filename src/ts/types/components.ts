@@ -252,9 +252,18 @@ type ViewConstructor = new (
 interface IView<State> {
   syncState(state: State, timeStep: number): void;
   adaptDisplaySize(): void;
+  /**
+   * Cleans up the current screen for the next screen
+   * by removing event listeners, dom elements and so on.
+   * It doesn't handle clean up from "running" to "pause" 
+   * or vice-versa, though, because both statuses happen in
+   * the same screen.
+   * 
+   * @param newStateStatus - The status represeting the new screen.
+   */
   cleanUpFor(newStateStatus: TStateStatuses): void;
 
-  /** tracks the actions of the game */
+  /** tracks the actions the user took in the game */
   actions: RunningActionsTracker;
 }
 
