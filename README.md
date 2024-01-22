@@ -1221,6 +1221,8 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [eslint-plugin-import Issue #854](https://github.com/import-js/eslint-plugin-import/issues/854)
 - [What does a trailing slash in the parameter of `require.resolve()` mean?](https://stackoverflow.com/questions/64413530/what-does-a-trailing-slash-in-the-parameter-of-require-resolve-mean)
 - [Field 'browser' doesn't contain a valid alias configuration](https://stackoverflow.com/questions/43037590/field-browser-doesnt-contain-a-valid-alias-configuration)
+- [JavaScript Canvas - change the opacity of image](https://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image)
+- [Canvas API - Using images](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images)
 
 ## Author
 

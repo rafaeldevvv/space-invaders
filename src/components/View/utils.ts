@@ -178,3 +178,17 @@ export function elt<Type extends keyof HTMLElementTagNameMap>(
 
   return element;
 }
+
+export function findTouch(touches: TouchList, id: number) {
+  for (let i = 0; i < touches.length; i++) {
+    if (touches[i].identifier === id) return touches[i];
+  }
+  return null;
+}
+
+export function findUntrackedTouch(touches: TouchList, ids: number[]) {
+  for (let i = 0; i < touches.length; i++) {
+    if (!ids.some((id) => id === touches[i].identifier)) return touches[i];
+  }
+  return null;
+}

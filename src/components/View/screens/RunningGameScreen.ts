@@ -26,21 +26,16 @@ import {
 import explosionPlan from "@/plans/explosions";
 import IterablePieces from "@/utils/common/IterablePieces";
 import * as playerConfig from "@/components/Player/config";
-import { drawProgressBar, trackKeys, elt } from "../utils";
+import {
+  drawProgressBar,
+  trackKeys,
+  elt,
+  findTouch,
+  findUntrackedTouch,
+} from "../utils";
 
-function findTouch(touches: TouchList, id: number) {
-  for (let i = 0; i < touches.length; i++) {
-    if (touches[i].identifier === id) return touches[i];
-  }
-  return null;
-}
-
-function findUntrackedTouch(touches: TouchList, ids: number[]) {
-  for (let i = 0; i < touches.length; i++) {
-    if (!ids.some((id) => id === touches[i].identifier)) return touches[i];
-  }
-  return null;
-}
+const playerImage = new Image(100, 100);
+playerImage.src = "./assets/images/spaceship.png";
 
 const explosion = new IterablePieces(explosionPlan);
 const lastScoreAppearanceDuration = 1;
@@ -384,13 +379,9 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
 
       this.ctx.save();
       this.ctx.translate(x, y);
-
-      const color = `rgba(255 255 255 / ${progress})`;
-      this.drawPieces(
-        playerPieces,
-        { w: w / playerPieces.numOfColumns, h: h / playerPieces.numOfRows },
-        color
-      );
+      
+      this.ctx.globalAlpha = progress;
+      this.ctx.drawImage(playerImage, 0, 0, w, h);
 
       this.ctx.restore();
     }
