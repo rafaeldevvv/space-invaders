@@ -2,6 +2,31 @@ import { ACTION_KEYS } from "@/game-config";
 import { INITIAL_SCREEN_LAYOUT } from "../config";
 import { drawTwinkleMessage, elt } from "../utils";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
+import { alienTypesConfig } from "@/components/Alien/config";
+import { aliensPieces, bossPieces } from "../config";
+import { alienTypes } from "@/components/Alien/config";
+import { IIterablePieces, Size } from "@/ts/types";
+
+type TAlienTypes = (typeof alienTypes)[number];
+
+type ScoreShowcase = {
+  pieces: IIterablePieces;
+  score: number | null;
+  iconSize: Size;
+};
+
+const scoreShowcases: ScoreShowcase[] = (
+  Object.keys(alienTypesConfig) as TAlienTypes[]
+).map((c) => ({
+  pieces: aliensPieces[c][0],
+  score: alienTypesConfig[c].score,
+  iconSize: { w: 3.5, h: 5 },
+}));
+scoreShowcases.push({
+  pieces: bossPieces,
+  score: null,
+  iconSize: { w: 6, h: 6.5 },
+});
 
 export default class InitialScreen extends BaseCanvasWrapper {
   protected buttons: HTMLDivElement = elt("div", {
@@ -50,6 +75,7 @@ export default class InitialScreen extends BaseCanvasWrapper {
     this.clearScreen();
 
     this.drawTitle();
+    this.drawScores();
     const messagePos = this.getPixelPos({
       y: INITIAL_SCREEN_LAYOUT.pressMessageYPos,
       x: 50,
@@ -65,12 +91,49 @@ export default class InitialScreen extends BaseCanvasWrapper {
     this.ctx.font = `${fontSize}px ${this.fontFamily}`;
 
     const xPixelPos = this.horPixels(50),
-      yPixelPos = this.verPixels(23);
+      yPixelPos = this.verPixels(18);
 
     this.ctx.fillStyle = "white";
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
     this.ctx.fillText("SPACE", xPixelPos, yPixelPos);
     this.ctx.fillText("INVADERS", xPixelPos, yPixelPos + this.verPixels(12));
+  }
+
+  drawScores() {
+    const baseY = 43;
+
+    const baseX = this.horPixels(43);
+    const gap = this.horPixels(1.5);
+
+    this.ctx.font = `${this.getFontSize("md")}px ${this.fontFamily}`;
+    this.ctx.textBaseline = "middle";
+    this.ctx.textAlign = "start";
+
+    scoreShowcases.forEach(({ iconSize, pieces, score }, i) => {
+      const { w, h } = this.getPixelSize(iconSize);
+      const y = this.verPixels(baseY + i * 7);
+
+      this.ctx.save();
+      this.ctx.translate(baseX, y);
+
+      this.ctx.save();
+
+      this.ctx.translate(-w, 0);
+      this.drawPieces(pieces, {
+        w: w / pieces.numOfColumns,
+        h: h / pieces.numOfRows,
+      });
+
+      this.ctx.restore();
+
+      this.ctx.translate(gap, h / 2);
+      this.ctx.fillText("=", 0, 0);
+      const equalSignMeasures = this.ctx.measureText("=");
+      this.ctx.translate(gap + equalSignMeasures.width, 0);
+      this.ctx.fillText(score === null ? "????" : score + " points", 0, 0);
+
+      this.ctx.restore();
+    });
   }
 }

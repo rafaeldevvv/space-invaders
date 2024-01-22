@@ -295,19 +295,6 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
     this.ctx.restore();
   }
 
-  private drawPieces(
-    pieces: IIterablePieces,
-    pieceSize: PixelSize,
-    color = "#fff"
-  ) {
-    this.ctx.fillStyle = color;
-    const { w, h } = pieceSize;
-    for (const { piece, row, column } of pieces) {
-      if (!piece) continue;
-      this.ctx.fillRect(column * w, row * h, w, h);
-    }
-  }
-
   private drawExplosion(pos: Coords, size: Size, color = "#fff") {
     const { w, h } = this.getPixelSize(size);
     const { x, y } = this.getPixelPos(pos);

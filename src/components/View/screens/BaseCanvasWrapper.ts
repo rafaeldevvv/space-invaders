@@ -5,6 +5,7 @@ import {
   Coords,
   TAliens,
   MappedObjectFromUnion,
+  IIterablePieces,
 } from "@/ts/types";
 
 export const colors: {
@@ -114,7 +115,20 @@ export default abstract class BaseCanvasWrapper {
   public cleanUp() {
     this.buttons.textContent = "";
     this.buttons.remove();
-    this.unregisterFunctions.forEach(f => f());
+    this.unregisterFunctions.forEach((f) => f());
     this.unregisterFunctions = [];
+  }
+
+  protected drawPieces(
+    pieces: IIterablePieces,
+    pieceSize: PixelSize,
+    color = "#fff"
+  ) {
+    this.ctx.fillStyle = color;
+    const { w, h } = pieceSize;
+    for (const { piece, row, column } of pieces) {
+      if (!piece) continue;
+      this.ctx.fillRect(column * w, row * h, w, h);
+    }
   }
 }
