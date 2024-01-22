@@ -57,8 +57,10 @@ export default class GamePresenter {
 
     if (this.state.status === "paused") {
       this.state.status = "running";
+      this.state.boss?.startPitch();
       this.runGame();
     } else {
+      this.state.boss?.stopPitch();
       this.state.status = "paused";
     }
   }
@@ -92,7 +94,10 @@ export default class GamePresenter {
       this.view.cleanUpFor(this.state.status);
       this.status = this.state.status;
 
-      if (this.status === "lost" && this.bestScore < this.state.player.bestScore) {
+      if (
+        this.status === "lost" &&
+        this.bestScore < this.state.player.bestScore
+      ) {
         this.setBestScore(this.state.player.score);
       }
     }

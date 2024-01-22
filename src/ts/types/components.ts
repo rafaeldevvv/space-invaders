@@ -93,6 +93,7 @@ interface IBoss {
   status: BossStatuses;
   pos: IVector;
   score: number;
+  startPitch(): IBoss["stopPitch"];
   stopPitch(): void;
   update(state: IGameState, timeStep: number): void;
   isOutOfBounds(): boolean;
@@ -103,7 +104,7 @@ interface IBullet {
   pos: IVector;
   readonly speed: IVector;
   readonly size: Size;
-  readonly wiggly: boolean,
+  readonly wiggly: boolean;
   update(timeStep: number): void;
   isOutOfBounds(): boolean;
 }

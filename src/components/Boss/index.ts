@@ -25,7 +25,11 @@ export default class Boss implements IBoss {
     } else {
       this.pos = new Vector(-DIMENSIONS.boss.w, LAYOUT.bossYPos);
     }
-    this.stopPitch = audios.boss_lowpitch();
+    this.stopPitch = this.startPitch();
+  }
+
+  public startPitch() {
+    return audios.boss_lowpitch();
   }
 
   /**
