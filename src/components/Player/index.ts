@@ -5,11 +5,11 @@ import {
   IVector,
   PlayerStatuses,
   IGameState,
-  IBullet,
   IGun,
   RunningActionsTracker,
+  PlayerBullet,
 } from "@/ts/types";
-import { DIMENSIONS, LAYOUT, ACTION_KEYS } from "@/game-config";
+import { DIMENSIONS, LAYOUT } from "@/game-config";
 import { xSpeed, explodingTime, revivingTime } from "./config";
 import audios from "@/audios";
 
@@ -18,6 +18,9 @@ import audios from "@/audios";
  * @implements {IPlayer}
  */
 export default class Player implements IPlayer {
+  /**
+   * What kind of object it is.
+   */
   public readonly actorType = "player" as const;
 
   private baseXPos = 50 - DIMENSIONS.player.w / 2;
@@ -29,22 +32,29 @@ export default class Player implements IPlayer {
   public lives = 3;
   public score = 0;
   public status: PlayerStatuses = "alive";
+  /** time since it exploded(was killed) */
   private timeSinceExplosion: number = 0;
+
+  /** The time since the player revived. */
   public timeSinceResurrection = 0;
 
+  /**
+   * @param bestScore - The best score the player has ever gotten.
+   */
   constructor(public bestScore: number) {}
 
   /**
-   * Fires a player bullet.
+   * Fires a player bullet. It always return a bullet, but the 
+   * player can only fire one bullet at a time.
    *
    * @returns - A player bullet.
    */
-  public fire(): IBullet {
+  public fire(): PlayerBullet {
     /* from the center of the player */
     const bulletPosX =
       this.pos.x + DIMENSIONS.player.w / 2 - this.gun.bulletSize.w / 2;
     audios.shoot();
-    return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up")!;
+    return this.gun.fire(new Vector(bulletPosX, this.pos.y), "up")! as PlayerBullet;
   }
 
   public resetPos() {
@@ -53,11 +63,12 @@ export default class Player implements IPlayer {
 
   /**
    * Updates the Player and pushes a new bullet into the state
-   * if {@link ACTION_KEYS.fire} is pressed and there's no player
+   * if {@link RunningActionsTracker.fire} is true and there's no player
    * bullet present in the game.
    *
+   * @param state - The current state of the game.
    * @param timeStep - The time in seconds that has passed since the last update.
-   * @param keys - An object that tracks which keys are currently held down.
+   * @param actions - An object representing actions that the user is currently performing.
    */
   public update(
     state: IGameState,
@@ -91,6 +102,9 @@ export default class Player implements IPlayer {
     }
   }
 
+  /**
+   * Handles the status change of the player.
+   */
   private handleStatus(timeStep: number) {
     if (this.status === "exploding") {
       this.timeSinceExplosion += timeStep;

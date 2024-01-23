@@ -7,7 +7,6 @@ import {
 import aliensPlan from "@/plans/alien-set";
 import { runAnimation } from "./utils";
 import { TStateStatuses } from "@/ts/types";
-import audios from "@/audios";
 
 /**
  * A class responsible for managing the flow of information
@@ -15,7 +14,7 @@ import audios from "@/audios";
  */
 export default class GamePresenter {
   private state: IGameState;
-  private view: IView<IGameState>;
+  private view: IView;
   private status: TStateStatuses = "start";
   private bestScore: number;
 

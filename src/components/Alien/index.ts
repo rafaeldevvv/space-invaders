@@ -1,6 +1,6 @@
 import { DIMENSIONS } from "@/game-config";
 import Vector from "@/utils/common/Vector";
-import { Coords, IGun, IAlien, TAliens } from "@/ts/types";
+import { Coords, IGun, IAlien, TAliens, AlienBullet } from "@/ts/types";
 import { alienTypesConfig } from "./config";
 import Gun from "@/components/Gun";
 
@@ -9,6 +9,9 @@ import Gun from "@/components/Gun";
  * @implements {IAlien}
  */
 export default class Alien implements IAlien {
+  /**
+   * What kind of object it is.
+   */
   public readonly actorType = "alien" as const;
 
   /**
@@ -32,12 +35,15 @@ export default class Alien implements IAlien {
    * @param alienPos - The position from where the alien fires.
    * @returns - The fired bullet or null if the gun wasn't able to fire.
    */
-  public fire(alienPos: Coords) {
+  public fire(alienPos: Coords): AlienBullet | null {
     /* bullet is fired from the center of the alien */
     const bulletX =
       alienPos.x + DIMENSIONS.alien.w / 2 - this.gun.bulletSize.w / 2;
 
-    return this.gun.fire(new Vector(bulletX, alienPos.y), "down");
+    return this.gun.fire(
+      new Vector(bulletX, alienPos.y),
+      "down"
+    ) as AlienBullet | null;
   }
 
   /**
@@ -45,7 +51,7 @@ export default class Alien implements IAlien {
    *
    * @param ch - The type of the alien represented by a character.
    * @param gridPos - The position of the alien within the grid.
-   * @returns - A specific alien type.
+   * @returns - An alien with properties tailored for its type.
    */
   public static create(ch: TAliens | ".", gridPos: Coords) {
     if (ch === ".") {

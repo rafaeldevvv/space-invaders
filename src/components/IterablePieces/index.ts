@@ -1,9 +1,11 @@
 import { IIterablePieces, IteratedPiece, Plan } from "@/ts/types";
-import readSolidPlan from "./readSolidPlan";
+import readSolidPlan from "../../utils/common/readSolidPlan";
 
 /**
- * Class representing a matrix of iterable pieces,
- * implementing an iterator for the matrix.
+ * Class representing pieces of a 2-dimensional object.
+ * `true` values mean the piece is solid (should be rendered
+ * and taken into account). `false` values mean the piece is not
+ * solid and should not be taken into account.
  */
 export default class IterablePieces implements IIterablePieces {
   /**
@@ -12,8 +14,14 @@ export default class IterablePieces implements IIterablePieces {
    */
   public pieces: boolean[][];
 
-  public numOfRows: number;
+  /**
+   * The number of columns of the matrix.
+   */
   public numOfColumns: number;
+  /**
+   * The number of rows of the matrix.
+   */
+  public numOfRows: number;
 
   /**
    * @param plan - A plan reprenseting the matrix of pieces.
@@ -27,14 +35,19 @@ export default class IterablePieces implements IIterablePieces {
     this.numOfRows = pieces.length;
   }
 
+  /**
+   * Turns the piece in the specified row and column into a non-solid piece (`false`).
+   *
+   * @param column
+   * @param row
+   */
   breakPiece(column: number, row: number) {
     this.pieces[row][column] = false;
   }
 
   /**
-   * Iterates over the pieces.
-   *
-   * @yields
+   * A generator that iterates through the matrix of pieces.
+   * @yields {IteratedPiece} on each iteration.
    */
   *[Symbol.iterator](): Generator<IteratedPiece> {
     const rows = this.pieces.length;

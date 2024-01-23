@@ -34,12 +34,16 @@ export const fontSizes: MappedObjectFromUnion<FontSizes, number> = {
 export type FontSizes = "sm" | "md" | "lg" | "xl";
 
 export default abstract class BaseCanvasWrapper implements Screen {
+  /** An array of functions to be called on clean up to remove event handlers. */
   protected unregisterFunctions: (() => void)[] = [];
 
+  /** The container of the buttons. */
   protected abstract mobileButtons: HTMLDivElement;
 
+  /** Sets up event handlers to handle user input. */
   protected abstract setUpControlMethods(): void;
   protected abstract createMobileControls(): void;
+  /** Synchronizes the screen with the current state. */
   public abstract syncState(state?: IGameState, timeStep?: number): void;
 
   protected fontFamily = "'VT323', monospace";
@@ -115,6 +119,7 @@ export default abstract class BaseCanvasWrapper implements Screen {
     this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
   }
 
+  /** Cleans screen's side effects such as event handlers, dom nodes and so on. */
   public cleanUp() {
     this.mobileButtons.textContent = "";
     this.mobileButtons.remove();

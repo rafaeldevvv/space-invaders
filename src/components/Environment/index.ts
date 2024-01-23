@@ -20,7 +20,7 @@ export default class GameEnv implements IEnvironment {
   /**
    * Initializes the game environment.
    *
-   * @param alienSet - The aliens.
+   * @param alienSet - The alien set.
    * @param player - The player.
    * @param walls - The walls.
    */
@@ -31,9 +31,9 @@ export default class GameEnv implements IEnvironment {
   ) {}
 
   /**
-   * Checks whether the alien set has reached the wall.
+   * Checks whether the alien set has reached the player.
    *
-   * @returns - A boolean value that says whether the alien set has reached a wall.
+   * @returns - A boolean value that says whether the alien set has reached the player.
    */
   public alienSetTouchesPlayer() {
     return this.alienSet.pos.y + this.alienSet.size.h >= this.player.pos.y;
@@ -51,6 +51,9 @@ export default class GameEnv implements IEnvironment {
     return overlap(bullet.pos, bullet.size, objPos, objSize);
   }
 
+  /**
+   * Handles what happens when the alien set touches a wall.
+   */
   public handleAlienSetContactWithWall() {
     for (const wall of this.walls) {
       for (const { alien } of this.alienSet) {

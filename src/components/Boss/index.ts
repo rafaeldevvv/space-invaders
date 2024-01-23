@@ -13,6 +13,10 @@ export default class Boss implements IBoss {
   public timeSinceDeath = 0;
   public status: "alive" | "exploding" | "dead" = "alive";
   public pos: IVector;
+
+  /**
+   * Stops the annoying sound of the boss.
+   */
   public stopPitch: () => void;
   private numOfPlayerFires: number;
   private direction: HorizontalDirection =
@@ -28,6 +32,9 @@ export default class Boss implements IBoss {
     this.stopPitch = this.startPitch();
   }
 
+  /**
+   * Starts the annoying sound of the boss.
+   */
   public startPitch() {
     return audios.boss_lowpitch();
   }

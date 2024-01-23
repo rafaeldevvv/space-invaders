@@ -22,7 +22,7 @@ import {
   wigglyBulletPieces,
 } from "../config";
 import explosionPlan from "@/plans/explosions";
-import IterablePieces from "@/utils/common/IterablePieces";
+import IterablePieces from "@/components/IterablePieces";
 import * as playerConfig from "@/components/Player/config";
 import {
   drawProgressBar,

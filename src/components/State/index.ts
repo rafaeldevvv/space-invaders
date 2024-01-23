@@ -43,12 +43,26 @@ export default class GameState implements IGameState {
   public bullets: IBullet[] = [];
   public status: "lost" | "running" | "start" | "paused" = "start";
   public boss: Boss | null = null;
+  /**
+   * The number of bosses the player killed.
+   */
   public bossesKilled = 0;
+  /**
+   * The number of aiens the player killed.
+   */
   public aliensKilled = 0;
   /** there can be only one player bullet in the game, and this tracks when it is present */
   public isPlayerBulletPresent = false;
+  /**
+   * When bullets collide they leave behind a little explosion.
+   * This array tracks all those collisions to render them.
+   */
   public bulletCollisions: IExplosion[] = [];
   public lastScore: IStateLastScore = { value: null, id: null };
+  /**
+   * How many times the player fired since the 
+   * current alien set appeared.
+   */
   public numOfPlayerFires: number = 0;
   private timeSinceBossLastAppearance = 0;
   private bossAppearanceInterval = generateRandomBossAppearanceInterval();
@@ -71,7 +85,7 @@ export default class GameState implements IGameState {
    * Updates the state of the game, including player, bullets, walls and aliens.
    *
    * @param timeStep - The time in seconds that has passed since the last update.
-   * @param keys - An object that tracks which keys on the keyboard are currently being pressed down.
+   * @param actions - The actions the player is currently performing.
    */
   public update(timeStep: number, actions: RunningActionsTracker) {
     if (this.status !== "running") return;
@@ -344,6 +358,7 @@ export default class GameState implements IGameState {
    * Creates a basic initial game state.
    *
    * @param plan - A string represeting an arranged set of aliens.
+   * @param bestScore - The best score the player got in previous states.
    * @returns - A initial state for the game.
    */
   static start(plan: string, bestScore: number) {

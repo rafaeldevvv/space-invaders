@@ -71,20 +71,13 @@ export default class Gun implements IGun {
   }
 
   /**
-   * Updates the time that has passed since the last shot.
-   *
-   * @param timeStep
+   * Updates the gun.
    */
   update(timeStep: number) {
     if (this.baseFireInterval === 0) return;
     this.timeSinceLastShot += timeStep * 1000;
   }
 
-  /**
-   * Checks whether the gun can be fired.
-   *
-   * @returns - A boolean value saying whether the gun can fire.
-   */
   canFire() {
     if (this.baseFireInterval === 0) return true;
     return this.timeSinceLastShot >= this.fireInterval;

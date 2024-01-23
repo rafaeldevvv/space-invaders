@@ -13,6 +13,7 @@ export default class Bullet implements IBullet {
    * @param pos - The position from where the bullet was fired.
    * @param speed - The speed of the bullet.
    * @param size - The size of the bullet.
+   * @param wiggly - Whether the bullet is a wiggly bullet.
    */
   constructor(
     public readonly from: TShooters,

@@ -1,6 +1,6 @@
 import { Size, Coords, IWall, IIterablePieces, Plan } from "@/ts/types";
 import overlap from "@/utils/common/overlap";
-import IterablePieces from "@/utils/common/IterablePieces";
+import IterablePieces from "@/components/IterablePieces";
 
 /**
  * Class representing a wall in the game.
@@ -9,16 +9,17 @@ import IterablePieces from "@/utils/common/IterablePieces";
  */
 export default class Wall implements IWall {
   /**
-   * The pieces of the wall as a matrix.
+   * The pieces of the wall as a matrix of boolean values.
    */
   readonly pieces: IIterablePieces;
+  /** the size of each piece of the wall. All pieces have the same size. */
   readonly pieceSize: Size;
 
   /**
    *
    * @param pos
    * @param size
-   * @param plan - A string representing how the pieces are arranged in the wall.
+   * @param plan - A string representing how the pieces are arranged.
    */
   constructor(
     public readonly pos: Coords,
@@ -35,11 +36,11 @@ export default class Wall implements IWall {
   }
 
   /**
-   * Gets the position of a piece of the wall within the whole display screen in percentage values.
+   * Calculates the absolute position of a piece of the wall within the view.
    *
-   * @param column - The column in which the piece is.
-   * @param row - The row in which the piece is.
-   * @returns - The position of the piece within the whole display in percentage values.
+   * @param column - The column of the piece.
+   * @param row - The row of the piece
+   * @returns - The position of the piece as a {@link Coords} object.
    */
   getPiecePos(column: number, row: number): Coords {
     return {

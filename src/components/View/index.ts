@@ -22,11 +22,12 @@ import "./styles/buttons.css";
  *
  * @implements {IView<IGameState>}
  */
-export default class CanvasView implements IView<IGameState> {
+export default class CanvasView implements IView {
   private canvas: HTMLCanvasElement;
 
   private currentScreen: Screen;
 
+  /** The actions the player is currently performing. */
   public actions = {} as RunningActionsTracker;
 
   /**
@@ -55,7 +56,7 @@ export default class CanvasView implements IView<IGameState> {
   }
 
   /**
-   * Sets the size of the canvas based on the size of the its parent element.
+   * Adapts the size of the canvas based on the size of the its parent element.
    */
   public adaptDisplaySize(this: CanvasView) {
     let canvasWidth = Math.min(
@@ -76,9 +77,13 @@ export default class CanvasView implements IView<IGameState> {
   }
 
   /**
-   * Cleans up the view for the next screen to appear.
+   * Cleans up the current screen for the next screen
+   * by removing event listeners, dom elements and so on.
+   * It doesn't handle clean up from "running" to "pause"
+   * or vice-versa, though, because both statuses happen in
+   * the same screen.
    *
-   * @param newStateStatus - The new status of the state.
+   * @param newStateStatus - The status represeting the new screen.
    */
   public cleanUpFor(newStateStatus: TStateStatuses) {
     switch (newStateStatus) {

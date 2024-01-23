@@ -49,11 +49,18 @@ export default class AlienSet implements IAlienSet {
 
   public numColumns: number;
   public numRows: number;
+
+  /**
+   * Tracks how the aliens should be rendered.
+   * This is useful to render the aliens differently
+   * when the alien set moves.
+   */
   public aliensStage: 0 | 1 = 0;
 
   /**
    * The aliens in the set. Each item is an instance of {@link Alien},
-   * "exploding" (it has just been killed by an alien)
+   * "exploding" (it has just been killed by the player) or null (not
+   * exploding and not alive).
    */
   public aliens: (Alien | null | "exploding")[][];
 
@@ -243,6 +250,9 @@ export default class AlienSet implements IAlienSet {
     return movedX;
   }
 
+  /**
+   * Adapts the alien set, so that it has a correct size and position.
+   */
   public adapt() {
     adaptPos(this);
     adaptSize(this);
@@ -265,9 +275,6 @@ export default class AlienSet implements IAlienSet {
 
   /**
    * Removes an alien from the set.
-   *
-   * @param x - The X position of the alien within the grid.
-   * @param y - The Y position of the alien within the grid.
    */
   public removeAlien(alien: IAlien) {
     this.aliens[alien.gridPos.y][alien.gridPos.x] = "exploding";
@@ -277,6 +284,9 @@ export default class AlienSet implements IAlienSet {
     audios.alienKilled();
   }
 
+  /**
+   * Turns `"exploding"` in {@link AlienSet.aliens} into `null`.
+   */
   private removeDeadAliens() {
     for (const { alien, row, column } of this) {
       if (alien === "exploding") {

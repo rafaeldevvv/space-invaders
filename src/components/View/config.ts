@@ -1,7 +1,7 @@
 import { TAliens } from "@/ts/types";
 import { X, Z, Y } from "@/plans/aliens";
 import bossPlan from "@/plans/boss";
-import IterablePieces from "@/utils/common/IterablePieces";
+import IterablePieces from "@/components/IterablePieces";
 import playerPlan from "@/plans/player";
 import wigglyBullet from "@/plans/wiggly-bullet";
 
