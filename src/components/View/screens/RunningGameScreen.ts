@@ -272,12 +272,6 @@ export default class RunningGameScreen extends BaseScreen {
         this.drawExplosion(alienPos, DIMENSIONS.alien);
       }
     }
-
-    /* this is meant for tests, remove it later */
-    const { x, y } = this.getPixelPos(alienSet.pos);
-    const { w, h } = this.getPixelSize(alienSet.size);
-    this.ctx.fillStyle = "rgba(255,255,255,0.4)";
-    this.ctx.fillRect(x, y, w, h);
   }
 
   private drawAlien(alien: IAlien, pos: Coords, stage: 0 | 1) {
