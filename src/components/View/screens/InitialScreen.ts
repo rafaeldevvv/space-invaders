@@ -4,26 +4,24 @@ import { drawTwinkleMessage, elt } from "../utils";
 import BaseScreen from "./BaseScreen";
 import { alienTypesConfig } from "@/components/Alien/config";
 import { aliensPieces, bossPieces } from "../config";
-import { alienTypes } from "@/components/Alien/config";
-import { IGameState, IIterablePieces, Size } from "@/ts/types";
+import { IGameState, IIterablePieces, Size, TAliens } from "@/ts/types";
 
-type TAlienTypes = (typeof alienTypes)[number];
-
-type ScoreShowcase = {
+type InvaderScore = {
   pieces: IIterablePieces;
   score: number | null;
   iconSize: Size;
-  color?: string;
+  color: string;
 };
 
-const scoreShowcases: ScoreShowcase[] = (
-  Object.keys(alienTypesConfig) as TAlienTypes[]
+const invadersScores: InvaderScore[] = (
+  Object.keys(alienTypesConfig) as TAliens[]
 ).map((c) => ({
   pieces: aliensPieces[c][0],
   score: alienTypesConfig[c].score,
   iconSize: { w: 3.5, h: 5 },
+  color: "#fff",
 }));
-scoreShowcases.push({
+invadersScores.push({
   pieces: bossPieces,
   score: null,
   iconSize: { w: 6, h: 6.5 },
@@ -31,7 +29,7 @@ scoreShowcases.push({
 });
 
 export default class InitialScreen extends BaseScreen {
-  protected buttons: HTMLDivElement = elt("div", {
+  protected mobileButtons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-start",
   });
 
@@ -51,7 +49,7 @@ export default class InitialScreen extends BaseScreen {
   }
 
   protected setUpControlMethods() {
-    document.body.appendChild(this.buttons);
+    document.body.appendChild(this.mobileButtons);
     const handler = (e: KeyboardEvent) => this.handleKeydown(e);
     window.addEventListener("keydown", handler);
     this.unregisterFunctions.push(() => {
@@ -70,7 +68,7 @@ export default class InitialScreen extends BaseScreen {
       "start"
     );
 
-    this.buttons.appendChild(startBtn);
+    this.mobileButtons.appendChild(startBtn);
   }
 
   syncState(state: IGameState) {
@@ -120,25 +118,30 @@ export default class InitialScreen extends BaseScreen {
   }
 
   protected drawScores() {
-    const baseY = 43;
+    const baseYPos = 43;
 
-    const baseX = this.horPixels(43);
+    /* the position of the right edge of the icon */
+    const baseXPos = this.horPixels(43);
+    /* the space between the icon, the equals sign and the score */
     const gap = this.horPixels(1.5);
 
-    this.ctx.font = `${this.getFontSize("md")}px ${this.fontFamily}`;
-    this.ctx.textBaseline = "middle";
-    this.ctx.textAlign = "start";
+    const { ctx } = this;
 
-    scoreShowcases.forEach(({ iconSize, pieces, score, color }, i) => {
+    ctx.font = `${this.getFontSize("md")}px ${this.fontFamily}`;
+    ctx.fillStyle = "#fff";
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "start";
+
+    invadersScores.forEach(({ iconSize, pieces, score, color }, i) => {
       const { w, h } = this.getPixelSize(iconSize);
-      const y = this.verPixels(baseY + i * 7);
+      const y = this.verPixels(baseYPos + i * 7);
 
-      this.ctx.save();
-      this.ctx.translate(baseX, y);
+      ctx.save();
+      ctx.translate(baseXPos, y);
 
-      this.ctx.save();
+      ctx.save();
 
-      this.ctx.translate(-w, 0);
+      ctx.translate(-w, 0);
       this.drawPieces(
         pieces,
         {
@@ -148,15 +151,15 @@ export default class InitialScreen extends BaseScreen {
         color
       );
 
-      this.ctx.restore();
+      ctx.restore();
 
-      this.ctx.translate(gap, h / 2);
-      this.ctx.fillText("=", 0, 0);
-      const equalSignMeasures = this.ctx.measureText("=");
-      this.ctx.translate(gap + equalSignMeasures.width, 0);
-      this.ctx.fillText(score === null ? "????" : score + " points", 0, 0);
+      ctx.translate(gap, h / 2);
+      ctx.fillText("=", 0, 0);
+      const equalsSignMetrics = ctx.measureText("=");
+      ctx.translate(gap + equalsSignMetrics.width, 0);
+      ctx.fillText(score === null ? "????" : score + " points", 0, 0);
 
-      this.ctx.restore();
+      ctx.restore();
     });
   }
 }

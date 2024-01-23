@@ -5,7 +5,7 @@ import { GAMEOVER_SCREEN_LAYOUT } from "../config";
 import { ACTION_KEYS } from "@/game-config";
 
 export default class GameOverScreen extends BaseScreen {
-  protected buttons: HTMLDivElement = elt("div", {
+  protected mobileButtons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-restart",
   });
 
@@ -25,7 +25,7 @@ export default class GameOverScreen extends BaseScreen {
   }
 
   protected setUpControlMethods() {
-    document.body.appendChild(this.buttons);
+    document.body.appendChild(this.mobileButtons);
     const handler = (e: KeyboardEvent) => this.handleKeydown(e);
     window.addEventListener("keydown", handler);
 
@@ -46,7 +46,7 @@ export default class GameOverScreen extends BaseScreen {
       "restart"
     );
 
-    this.buttons.appendChild(restartBtn);
+    this.mobileButtons.appendChild(restartBtn);
   }
 
   public syncState(state: IGameState) {

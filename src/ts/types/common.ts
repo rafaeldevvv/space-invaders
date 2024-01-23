@@ -47,6 +47,9 @@ type TShooters = "player" | "alien";
  * `Z` represents the highest level alien.
  */
 const alienTypes = ["X", "Y", "Z"] as const;
+/**
+ * String characters represeting aliens.
+ */
 type TAliens = (typeof alienTypes)[number];
 
 /**

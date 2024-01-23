@@ -46,7 +46,7 @@ export default class RunningGameScreen extends BaseScreen {
   private lastScore: IStateLastScore = { value: null, id: null };
   private timeSinceLastScoreChange = 0;
 
-  protected buttons: HTMLDivElement = elt("div", {
+  protected mobileButtons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-running",
   });
   private pauseBtn: HTMLButtonElement | null = null;
@@ -66,7 +66,7 @@ export default class RunningGameScreen extends BaseScreen {
   }
 
   protected setUpControlMethods() {
-    document.body.appendChild(this.buttons);
+    document.body.appendChild(this.mobileButtons);
 
     const keys = Object.keys(
       RUNNING_GAME_KEY_ACTIONS
@@ -199,10 +199,10 @@ export default class RunningGameScreen extends BaseScreen {
     this.manageMobileButtonTouchEvents(moveRightBtn, "moveRight");
     this.manageMobileButtonTouchEvents(fireBtn, "fire");
 
-    this.buttons.appendChild(fireBtn);
-    this.buttons.appendChild(moveLeftBtn);
-    this.buttons.appendChild(moveRightBtn);
-    this.buttons.appendChild(pauseBtn);
+    this.mobileButtons.appendChild(fireBtn);
+    this.mobileButtons.appendChild(moveLeftBtn);
+    this.mobileButtons.appendChild(moveRightBtn);
+    this.mobileButtons.appendChild(pauseBtn);
   }
 
   public cleanUp() {

@@ -7,7 +7,7 @@ import {
   MappedObjectFromUnion,
   IIterablePieces,
   Screen,
-  IGameState
+  IGameState,
 } from "@/ts/types";
 
 export const colors: {
@@ -36,7 +36,7 @@ export type FontSizes = "sm" | "md" | "lg" | "xl";
 export default abstract class BaseCanvasWrapper implements Screen {
   protected unregisterFunctions: (() => void)[] = [];
 
-  protected abstract buttons: HTMLDivElement;
+  protected abstract mobileButtons: HTMLDivElement;
 
   protected abstract setUpControlMethods(): void;
   protected abstract createMobileControls(): void;
@@ -116,8 +116,8 @@ export default abstract class BaseCanvasWrapper implements Screen {
   }
 
   public cleanUp() {
-    this.buttons.textContent = "";
-    this.buttons.remove();
+    this.mobileButtons.textContent = "";
+    this.mobileButtons.remove();
     this.unregisterFunctions.forEach((f) => f());
     this.unregisterFunctions = [];
   }
