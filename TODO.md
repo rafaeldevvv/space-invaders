@@ -1,6 +1,3 @@
-- Add best score to start screen
-- commit & update README
-
 - Refactor the code
 - commit & update README
 

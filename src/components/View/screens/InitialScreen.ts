@@ -24,7 +24,7 @@ const invadersScores: InvaderScore[] = (
 invadersScores.push({
   pieces: bossPieces,
   score: null,
-  iconSize: { w: 6, h: 6.5 },
+  iconSize: { w: 8, h: 6.5 },
   color: "#f77",
 });
 
