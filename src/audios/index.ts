@@ -1,12 +1,22 @@
-const explosion = new Audio("./assets/audios/explosion.wav"),
-  fastInvader1 = new Audio("./assets/audios/fastinvader1.wav"),
-  fastInvader2 = new Audio("./assets/audios/fastinvader2.wav"),
-  fastInvader3 = new Audio("./assets/audios/fastinvader3.wav"),
-  fastInvader4 = new Audio("./assets/audios/fastinvader4.wav"),
-  alienKilled = new Audio("./assets/audios/invaderkilled.wav"),
-  shoot = new Audio("./assets/audios/shoot.wav"),
-  boss_highpitch = new Audio("./assets/audios/ufo_highpitch.wav"),
-  boss_lowpitch = new Audio("./assets/audios/ufo_lowpitch.wav");
+import ExplosionAudio from "./explosion.wav";
+import FastInvader1 from "./fastinvader1.wav";
+import FastInvader2 from "./fastinvader2.wav";
+import FastInvader3 from "./fastinvader3.wav";
+import FastInvader4 from "./fastinvader4.wav";
+import InvaderKilled from "./invaderkilled.wav";
+import Shoot from "./shoot.wav";
+import Boss_Highpitch from "./ufo_highpitch.wav";
+import Boss_Lowpitch from "./ufo_lowpitch.wav";
+
+const explosion = new Audio(ExplosionAudio),
+  fastInvader1 = new Audio(FastInvader1),
+  fastInvader2 = new Audio(FastInvader2),
+  fastInvader3 = new Audio(FastInvader3),
+  fastInvader4 = new Audio(FastInvader4),
+  alienKilled = new Audio(InvaderKilled),
+  shoot = new Audio(Shoot),
+  boss_highpitch = new Audio(Boss_Highpitch),
+  boss_lowpitch = new Audio(Boss_Lowpitch);
 
 function checkAndPlay(media: HTMLMediaElement) {
   if (media.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
@@ -66,7 +76,7 @@ const audios = {
   boss_lowpitch() {
     checkAndPlay(boss_lowpitch);
     return repeat(boss_lowpitch);
-  }
+  },
 };
 
 export default audios;

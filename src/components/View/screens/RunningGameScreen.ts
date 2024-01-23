@@ -12,7 +12,7 @@ import {
   IWall,
   IStateLastScore,
   RunningScreenActions,
-  Coords
+  Coords,
 } from "@/ts/types";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
 import {
@@ -32,8 +32,9 @@ import {
   findUntrackedTouch,
 } from "../utils";
 
+import PlayerImage from "../images/spaceship.png";
 const playerImage = new Image(100, 100);
-playerImage.src = "./assets/images/spaceship.png";
+playerImage.src = PlayerImage;
 
 const explosion = new IterablePieces(explosionPlan);
 const lastScoreAppearanceDuration = 1;
@@ -364,7 +365,7 @@ export default class RunningGameScreen extends BaseCanvasWrapper {
 
       this.ctx.save();
       this.ctx.translate(x, y);
-      
+
       this.ctx.globalAlpha = progress;
       this.ctx.drawImage(playerImage, 0, 0, w, h);
 

@@ -1186,8 +1186,13 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement#events)
 - [Codepen Space Invaders example](https://codepen.io/adelciotto/pen/WNzRYy)
 - [VT323](https://fonts.google.com/specimen/VT323?query=vt323)
-- [Intro to the TSConfig Reference](https://www.typescriptlang.org/tsconfig#noEmit)
+- [Field 'browser' doesn't contain a valid alias configuration](https://stackoverflow.com/questions/43037590/field-browser-doesnt-contain-a-valid-alias-configuration)
+- [JavaScript Canvas - change the opacity of image](https://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image)
+- [Canvas API - Using images](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images)
+- [Intro to the TSConfig Reference](https://www.typescriptlang.org/tsconfig)
 - [conventional-commit-types](https://github.com/pvdlg/conventional-commit-types)
+- [Serving mp3 files using the webpack file loader](https://stackoverflow.com/questions/38252453/serving-mp3-files-using-the-webpack-file-loader)
+- [How to import a sound file into react typescript component?](https://stackoverflow.com/questions/59247861/how-to-import-a-sound-file-into-react-typescript-component)
 
 #### Comments
 
@@ -1222,9 +1227,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Webpack doesn't resolve properly my alias](https://stackoverflow.com/questions/36365550/webpack-doesnt-resolve-properly-my-alias)
 - [eslint-plugin-import Issue #854](https://github.com/import-js/eslint-plugin-import/issues/854)
 - [What does a trailing slash in the parameter of `require.resolve()` mean?](https://stackoverflow.com/questions/64413530/what-does-a-trailing-slash-in-the-parameter-of-require-resolve-mean)
-- [Field 'browser' doesn't contain a valid alias configuration](https://stackoverflow.com/questions/43037590/field-browser-doesnt-contain-a-valid-alias-configuration)
-- [JavaScript Canvas - change the opacity of image](https://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image)
-- [Canvas API - Using images](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images)
+- [Asset Management](https://webpack.js.org/guides/asset-management)
 
 ## Author
 

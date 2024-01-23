@@ -59,7 +59,11 @@ export default class Player implements IPlayer {
    * @param timeStep - The time in seconds that has passed since the last update.
    * @param keys - An object that tracks which keys are currently held down.
    */
-  public update(state: IGameState, timeStep: number, actions: RunningActionsTracker) {
+  public update(
+    state: IGameState,
+    timeStep: number,
+    actions: RunningActionsTracker
+  ) {
     const movedX = new Vector(timeStep * xSpeed, 0);
 
     this.handleStatus(timeStep);

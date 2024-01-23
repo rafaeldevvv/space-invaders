@@ -1,4 +1,12 @@
-import { Size, TAliens, IAlienSet, IVector, IAlien, Plan, Coords } from "@/ts/types";
+import {
+  Size,
+  TAliens,
+  IAlienSet,
+  IVector,
+  IAlien,
+  Plan,
+  Coords,
+} from "@/ts/types";
 import Vector from "@/utils/common/Vector";
 import { alienTypesRegExp, alienTypes } from "../Alien/config";
 import Alien from "../Alien";

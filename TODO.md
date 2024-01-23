@@ -4,6 +4,8 @@
 - Refactor the code
 - commit & update README
 
+- Make background black
+
 - Read more about eslint, webpack and tsdoc
 
 - Remember to try using webpack to load assets such as css and images
