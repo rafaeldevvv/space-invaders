@@ -13,6 +13,7 @@ type ScoreShowcase = {
   pieces: IIterablePieces;
   score: number | null;
   iconSize: Size;
+  color?: string;
 };
 
 const scoreShowcases: ScoreShowcase[] = (
@@ -26,6 +27,7 @@ scoreShowcases.push({
   pieces: bossPieces,
   score: null,
   iconSize: { w: 6, h: 6.5 },
+  color: "#f77",
 });
 
 export default class InitialScreen extends BaseCanvasWrapper {
@@ -86,7 +88,7 @@ export default class InitialScreen extends BaseCanvasWrapper {
     });
   }
 
-  private drawTitle() {
+  protected drawTitle() {
     const fontSize = this.getFontSize("xl");
     this.ctx.font = `${fontSize}px ${this.fontFamily}`;
 
@@ -100,7 +102,7 @@ export default class InitialScreen extends BaseCanvasWrapper {
     this.ctx.fillText("INVADERS", xPixelPos, yPixelPos + this.verPixels(12));
   }
 
-  drawScores() {
+  protected drawScores() {
     const baseY = 43;
 
     const baseX = this.horPixels(43);
@@ -110,7 +112,7 @@ export default class InitialScreen extends BaseCanvasWrapper {
     this.ctx.textBaseline = "middle";
     this.ctx.textAlign = "start";
 
-    scoreShowcases.forEach(({ iconSize, pieces, score }, i) => {
+    scoreShowcases.forEach(({ iconSize, pieces, score, color }, i) => {
       const { w, h } = this.getPixelSize(iconSize);
       const y = this.verPixels(baseY + i * 7);
 
@@ -120,10 +122,14 @@ export default class InitialScreen extends BaseCanvasWrapper {
       this.ctx.save();
 
       this.ctx.translate(-w, 0);
-      this.drawPieces(pieces, {
-        w: w / pieces.numOfColumns,
-        h: h / pieces.numOfRows,
-      });
+      this.drawPieces(
+        pieces,
+        {
+          w: w / pieces.numOfColumns,
+          h: h / pieces.numOfRows,
+        },
+        color
+      );
 
       this.ctx.restore();
 
