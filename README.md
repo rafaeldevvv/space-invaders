@@ -1156,7 +1156,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Hash Symbol Secrets](https://www.pixartprinting.co.uk/blog/hash-symbol-secrets/)
 - [TypeScript - Iterators and Generators](https://www.typescriptlang.org/docs/handbook/iterators-and-generators.html)
 - [JavaScript modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#cyclic_imports)
-- [Quentin Trimble](https://blog.logrocket.com/when-how-use-interfaces-classes-typescript/#:~:text=When%20should%20we%20use%20classes%20and%20interfaces%3F,interface%20is%20best%20for%20you.)
+- [When and how to use interfaces and classes in TypeScript](https://blog.logrocket.com/when-how-use-interfaces-classes-typescript/#:~:text=When%20should%20we%20use%20classes%20and%20interfaces%3F,interface%20is%20best%20for%20you.)
 - [When use a interface or class in Typescript [duplicate]](https://stackoverflow.com/questions/51716808/when-use-a-interface-or-class-in-typescript)
 - [lowcode-engine](https://github.com/alibaba/lowcode-engine/) - I used it as a reference to organize files, structure interfaces and make commits.
 - [Refactoring](https://refactoring.com)
@@ -1165,7 +1165,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - ['File name differs from already included file name only in casing' on relative path with same casing](https://stackoverflow.com/questions/51197940/file-name-differs-from-already-included-file-name-only-in-casing-on-relative-p)
 - [Javascript - function with optional parameters as object?](https://stackoverflow.com/questions/27735855/javascript-function-with-optional-parameters-as-object)
 - [How to un-commit last un-pushed git commit without losing the changes](https://stackoverflow.com/questions/19859486/how-to-un-commit-last-un-pushed-git-commit-without-losing-the-changes)
-- [https://www.w3schools.com/jsref/canvas_measuretext.asp#:~:text=Description,writing%20it%20on%20the%20canvas.](https://www.w3schools.com/jsref/canvas_measuretext.asp#:~:text=Description,writing%20it%20on%20the%20canvas.)
+- [Canvas API - `measureText()` method on W3C Schools](https://www.w3schools.com/jsref/canvas_measuretext.asp#:~:text=Description,writing%20it%20on%20the%20canvas.)
 - [CanvasRenderingContext2D: measureText() method](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText)
 - [TextMetrics](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics)
 - [Fundamentals of data structures: Dictionaries](https://en.wikibooks.org/wiki/A-level_Computing/AQA/Paper_1/Fundamentals_of_data_structures/Dictionaries)
@@ -1186,6 +1186,8 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement#events)
 - [Codepen Space Invaders example](https://codepen.io/adelciotto/pen/WNzRYy)
 - [VT323](https://fonts.google.com/specimen/VT323?query=vt323)
+- [Intro to the TSConfig Reference](https://www.typescriptlang.org/tsconfig#noEmit)
+- [conventional-commit-types](https://github.com/pvdlg/conventional-commit-types)
 
 #### Comments
 

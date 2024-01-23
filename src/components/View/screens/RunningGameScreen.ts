@@ -12,15 +12,13 @@ import {
   IWall,
   IStateLastScore,
   RunningScreenActions,
-  IIterablePieces,
-  PixelSize,
+  Coords
 } from "@/ts/types";
 import BaseCanvasWrapper from "./BaseCanvasWrapper";
 import {
   colors,
   aliensPieces,
   bossPieces,
-  playerPieces,
   wigglyBulletPieces,
 } from "../config";
 import explosionPlan from "@/plans/explosions";

@@ -51,21 +51,6 @@ const ACTION_KEYS = {
   pauseGame: "Escape",
 } as const;
 
-const KEY_ACTIONS = {
-  ArrowRight: "moveRight",
-  ArrowLeft: "moveLeft",
-  [" "]: ["fire", "startGame", "retartGame"],
-  Escape: "pause",
-} as const;
-
-const START_GAME_KEY_ACTIONS = {
-  [" "]: "startGame",
-} as const;
-
-const LOST_GAME_KEY_ACTIONS = {
-  [" "]: "restartGame",
-} as const;
-
 const RUNNING_GAME_KEY_ACTIONS = {
   ArrowRight: "moveRight",
   ArrowLeft: "moveLeft",
@@ -76,8 +61,5 @@ export {
   ACTION_KEYS,
   LAYOUT,
   DIMENSIONS,
-  START_GAME_KEY_ACTIONS,
-  LOST_GAME_KEY_ACTIONS,
   RUNNING_GAME_KEY_ACTIONS,
-  KEY_ACTIONS,
 };

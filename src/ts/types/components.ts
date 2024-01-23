@@ -92,7 +92,19 @@ interface IBoss {
   timeSinceDeath: number;
   status: BossStatuses;
   pos: IVector;
-  score: number;
+  /**
+   * Returns a score based on how many bullets the player has fired.
+   * For every alien set, the 23rd bullet of the player that
+   * hits the boss is worth 300 points. From there, every
+   * 15th shot is also worth 300. So if I hit the player with shot 23rd,
+   * and then with shot 38th, and then with the 53th shot, I get 300 points
+   * those three times. If none of those conditions hold, then we get a number
+   * between 0 and 200 based on how many bullets the player needs to fire
+   * in order to get one of those 300-point shots.
+   *
+   * @see {@link https://www.classicgaming.cc/classics/space-invaders/play-guide Space Invaders Play Guide}
+   */
+  get score(): number;
   startPitch(): IBoss["stopPitch"];
   stopPitch(): void;
   update(state: IGameState, timeStep: number): void;
@@ -277,6 +289,11 @@ interface IIterablePieces {
   [Symbol.iterator](): Generator<IteratedPiece>;
 }
 
+interface Screen {
+  cleanUp(): void;
+  syncState(state?: IGameState, timeStep?: number): void;
+}
+
 export type {
   IView,
   GameStateConstructor,
@@ -297,4 +314,5 @@ export type {
   IExplosion,
   IStateLastScore,
   ViewHandlers,
+  Screen
 };

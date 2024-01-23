@@ -5,6 +5,7 @@ import {
   RunningScreenActions,
   TStateStatuses,
   ViewHandlers,
+  Screen
 } from "@/ts/types";
 import { getElementInnerDimensions } from "./utils";
 import { GAME_DISPLAY } from "./config";
@@ -14,11 +15,6 @@ import GameOverScreen from "./screens/GameOverScreen";
 import RunningGameScreen from "./screens/RunningGameScreen";
 
 import "./styles/buttons.css";
-
-interface Screen {
-  cleanUp(): void;
-  syncState(state?: IGameState, timeStep?: number): void;
-}
 
 /**
  * Class represeting a view component used to display the game state.

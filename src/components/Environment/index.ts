@@ -8,6 +8,7 @@ import {
   IWall,
   IBullet,
   IEnvironment,
+  Coords
 } from "@/ts/types";
 
 /**
