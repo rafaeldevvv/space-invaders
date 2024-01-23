@@ -1,20 +1,17 @@
-- Add alien scores and best score to start screen
+- Add best score to start screen
 - commit & update README
 
 - Refactor the code
 - commit & update README
 
-- Make background black
-
-- Read more about eslint, webpack and tsdoc
-
-- Remember to try using webpack to load assets such as css and images
-- commit & update README
-
-- Minify the code (look for an webpack plugin for that)
-- commit & update README
+- Modify layout and sizes
 
 - See more tags available for TSDoc comments.
+- commit & update README
+
+- Make background black
+
+- Minify the code (look for an webpack plugin for that)
 - commit & update README
 
 - Put the code on codepen.

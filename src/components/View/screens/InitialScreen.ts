@@ -1,7 +1,7 @@
 import { ACTION_KEYS } from "@/game-config";
 import { INITIAL_SCREEN_LAYOUT } from "../config";
 import { drawTwinkleMessage, elt } from "../utils";
-import BaseCanvasWrapper from "./BaseCanvasWrapper";
+import BaseScreen from "./BaseScreen";
 import { alienTypesConfig } from "@/components/Alien/config";
 import { aliensPieces, bossPieces } from "../config";
 import { alienTypes } from "@/components/Alien/config";
@@ -30,7 +30,7 @@ scoreShowcases.push({
   color: "#f77",
 });
 
-export default class InitialScreen extends BaseCanvasWrapper {
+export default class InitialScreen extends BaseScreen {
   protected buttons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-start",
   });

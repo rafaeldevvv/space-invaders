@@ -1,10 +1,10 @@
 import { drawTwinkleMessage, elt } from "../utils";
 import { IGameState } from "@/ts/types";
-import BaseCanvasWrapper from "./BaseCanvasWrapper";
+import BaseScreen from "./BaseScreen";
 import { GAMEOVER_SCREEN_LAYOUT } from "../config";
 import { ACTION_KEYS } from "@/game-config";
 
-export default class GameOverScreen extends BaseCanvasWrapper {
+export default class GameOverScreen extends BaseScreen {
   protected buttons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-restart",
   });

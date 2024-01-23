@@ -14,7 +14,7 @@ import {
   RunningScreenActions,
   Coords,
 } from "@/ts/types";
-import BaseCanvasWrapper from "./BaseCanvasWrapper";
+import BaseScreen from "./BaseScreen";
 import {
   colors,
   aliensPieces,
@@ -39,7 +39,7 @@ playerImage.src = PlayerImage;
 const explosion = new IterablePieces(explosionPlan);
 const lastScoreAppearanceDuration = 1;
 
-export default class RunningGameScreen extends BaseCanvasWrapper {
+export default class RunningGameScreen extends BaseScreen {
   /* i've decided to put the last score animation here because
   it is a matter of how the view will present it, the animation thus
   should not be part of the business logic */
