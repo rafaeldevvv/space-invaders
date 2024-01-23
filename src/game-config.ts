@@ -8,8 +8,8 @@ const LAYOUT = {
   },
   numWalls: 4,
   wallsSize: {
-    w: 12,
-    h: 10,
+    w: 10,
+    h: 8.3, // .83333333
   },
   wallYPos: 70,
   playerYPos: 86,
@@ -24,18 +24,18 @@ const LAYOUT = {
 const DIMENSIONS = {
   alien: {
     w: 3.5, // 3.5% of the display width
-    h: 5, // 5% of the display height
+    h: 4.5, // 4.5% of the display height
   },
   player: {
     w: 4,
     h: 6,
   },
   alienSetGap: {
-    w: 1,
-    h: 1.5,
+    w: 1.2,
+    h: 2,
   },
   boss: {
-    w: 7,
+    w: 9,
     h: 7.5,
   },
   floorHeight: 1,

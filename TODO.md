@@ -1,6 +1,3 @@
-- Refactor the code
-- commit & update README
-
 - Modify layout and sizes
 
 - See more tags available for TSDoc comments.
