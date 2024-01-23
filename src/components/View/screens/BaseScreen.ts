@@ -6,6 +6,8 @@ import {
   TAliens,
   MappedObjectFromUnion,
   IIterablePieces,
+  Screen,
+  IGameState
 } from "@/ts/types";
 
 export const colors: {
@@ -31,13 +33,14 @@ export const fontSizes: MappedObjectFromUnion<FontSizes, number> = {
 
 export type FontSizes = "sm" | "md" | "lg" | "xl";
 
-export default abstract class BaseCanvasWrapper {
+export default abstract class BaseCanvasWrapper implements Screen {
   protected unregisterFunctions: (() => void)[] = [];
 
   protected abstract buttons: HTMLDivElement;
 
   protected abstract setUpControlMethods(): void;
   protected abstract createMobileControls(): void;
+  public abstract syncState(state?: IGameState, timeStep?: number): void;
 
   protected fontFamily = "'VT323', monospace";
 

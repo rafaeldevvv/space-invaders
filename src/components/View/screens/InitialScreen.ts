@@ -5,7 +5,7 @@ import BaseScreen from "./BaseScreen";
 import { alienTypesConfig } from "@/components/Alien/config";
 import { aliensPieces, bossPieces } from "../config";
 import { alienTypes } from "@/components/Alien/config";
-import { IIterablePieces, Size } from "@/ts/types";
+import { IGameState, IIterablePieces, Size } from "@/ts/types";
 
 type TAlienTypes = (typeof alienTypes)[number];
 
@@ -73,10 +73,11 @@ export default class InitialScreen extends BaseScreen {
     this.buttons.appendChild(startBtn);
   }
 
-  syncState() {
+  syncState(state: IGameState) {
     this.clearScreen();
 
     this.drawTitle();
+    this.drawBestScore(state.player.bestScore);
     this.drawScores();
     const messagePos = this.getPixelPos({
       y: INITIAL_SCREEN_LAYOUT.pressMessageYPos,
@@ -93,13 +94,29 @@ export default class InitialScreen extends BaseScreen {
     this.ctx.font = `${fontSize}px ${this.fontFamily}`;
 
     const xPixelPos = this.horPixels(50),
-      yPixelPos = this.verPixels(18);
+      yPixelPos = this.verPixels(13);
 
     this.ctx.fillStyle = "white";
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
     this.ctx.fillText("SPACE", xPixelPos, yPixelPos);
     this.ctx.fillText("INVADERS", xPixelPos, yPixelPos + this.verPixels(12));
+  }
+
+  private drawBestScore(bestScore: number) {
+    if (bestScore === 0) return;
+
+    const { ctx } = this;
+    this.ctx.font = `${this.getFontSize("md")}px ${this.fontFamily}`;
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    ctx.fillText(
+      `Your Best Score is ${bestScore}`,
+      this.horPixels(50),
+      this.verPixels(34)
+    );
   }
 
   protected drawScores() {
