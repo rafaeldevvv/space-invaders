@@ -1195,7 +1195,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [How to import a sound file into react typescript component?](https://stackoverflow.com/questions/59247861/how-to-import-a-sound-file-into-react-typescript-component)
 - [Can I use](https://caniuse.com/?search=user-select)
 - [how to make user-select work for Safari browser](https://stackoverflow.com/questions/34372056/how-to-make-user-select-work-for-safari-browser)
-- []()
+- [Web Accessibility Tips: Don't Disable Zooming (Yes, Even On Mobile)](https://www.boia.org/blog/web-accessibility-tips-dont-disable-zooming-yes-even-on-mobile#:~:text=The%20HTML%20meta%20tag%20attribute,detract%20from%20the%20user%20experience.&text=In%20this%20example%2C%20“maximum-,also%20intended%20to%20disable%20scaling.)
 
 #### Comments
 
