@@ -1,14 +1,11 @@
 - test game
 
+- Make background black
+
 - sprites
 
 - full screen
   - Change pause key
-
-- See more tags available for TSDoc comments.
-- commit & update README
-
-- Make background black
 
 - Minify the code (look for an webpack plugin for that)
 - commit & update README

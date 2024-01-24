@@ -1,3 +1,6 @@
+/**
+ * @module string 
+ */
 declare module "*.wav" {
   const audioSrc: string;
   export default audioSrc;
