@@ -1,5 +1,10 @@
 - test game
 
+- sprites
+
+- full screen
+  - Change pause key
+
 - See more tags available for TSDoc comments.
 - commit & update README
 
