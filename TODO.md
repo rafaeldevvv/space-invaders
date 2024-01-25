@@ -1,5 +1,3 @@
-- test game
-
 - Make background black
 
 - sprites

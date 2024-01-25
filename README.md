@@ -1196,6 +1196,9 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Can I use](https://caniuse.com/?search=user-select)
 - [how to make user-select work for Safari browser](https://stackoverflow.com/questions/34372056/how-to-make-user-select-work-for-safari-browser)
 - [Web Accessibility Tips: Don't Disable Zooming (Yes, Even On Mobile)](https://www.boia.org/blog/web-accessibility-tips-dont-disable-zooming-yes-even-on-mobile#:~:text=The%20HTML%20meta%20tag%20attribute,detract%20from%20the%20user%20experience.&text=In%20this%20example%2C%20“maximum-,also%20intended%20to%20disable%20scaling.)
+- [Audio not playing on iPhone](https://github.com/alemangui/pizzicato/issues/81)
+- [How to auto-play audio in Safari with JavaScript](https://curtisrobinson.medium.com/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765)
+- [Why can't JavaScript .play() audio files on iPhone safari?](https://stackoverflow.com/questions/31776548/why-cant-javascript-play-audio-files-on-iphone-safari)
 
 #### Comments
 

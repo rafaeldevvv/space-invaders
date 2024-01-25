@@ -134,11 +134,12 @@ export default class AlienSet implements IAlienSet {
     around nine times, from 1 to 9, from 10 to 18, from 19 to 27 and 
     so on. */
     this.initialYPos =
-      baseYPos + ((AlienSet.instancesCreated - 1) % 9) * (this.yStep / 1.7);
+      baseYPos + ((AlienSet.instancesCreated - 1) % 9) * (this.yStep);
     /*          `((AlienSet.instancesCreated - 1) % 9)` is necessary,
     so that when 10 instances have been created it evaluates to 0 and
     we we're at one it evaluates to 0 as well, and the other numbers 
     for intances created have their expected results */
+    console.log("start at", this.initialYPos);
 
     this.aliens = rows.map((row, y) => {
       return row.map((ch, x) => {
