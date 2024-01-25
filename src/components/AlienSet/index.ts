@@ -139,7 +139,6 @@ export default class AlienSet implements IAlienSet {
     so that when 10 instances have been created it evaluates to 0 and
     we we're at one it evaluates to 0 as well, and the other numbers 
     for intances created have their expected results */
-    console.log("start at", this.initialYPos);
 
     this.aliens = rows.map((row, y) => {
       return row.map((ch, x) => {
