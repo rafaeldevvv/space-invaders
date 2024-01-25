@@ -1199,6 +1199,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Audio not playing on iPhone](https://github.com/alemangui/pizzicato/issues/81)
 - [How to auto-play audio in Safari with JavaScript](https://curtisrobinson.medium.com/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765)
 - [Why can't JavaScript .play() audio files on iPhone safari?](https://stackoverflow.com/questions/31776548/why-cant-javascript-play-audio-files-on-iphone-safari)
+- [CanvasRenderingContext2D: imageSmoothingEnabled property](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingEnabled) - Very important for two-dimensional pixel art games.
 
 #### Comments
 

@@ -3,29 +3,33 @@ import { INITIAL_SCREEN_LAYOUT } from "../config";
 import { drawTwinkleMessage, elt } from "../utils";
 import BaseScreen from "./BaseScreen";
 import { alienTypesConfig } from "@/components/Alien/config";
-import { aliensPieces, bossPieces } from "../config";
-import { IGameState, IIterablePieces, Size, TAliens } from "@/ts/types";
+import { IGameState, Size, TAliens } from "@/ts/types";
+
+import { aliensSprite, bossImage } from "../images";
 
 type InvaderScore = {
-  pieces: IIterablePieces;
   score: number | null;
   iconSize: Size;
-  color: string;
+  image: HTMLImageElement;
+  tiles: [x: number, y: number];
+  imageSize: [w: number, h: number];
 };
 
 const invadersScores: InvaderScore[] = (
   Object.keys(alienTypesConfig) as TAliens[]
-).map((c) => ({
-  pieces: aliensPieces[c][0],
+).map((c, i) => ({
+  image: aliensSprite,
   score: alienTypesConfig[c].score,
   iconSize: { w: 3.5, h: 5 },
-  color: "#fff",
+  tiles: [i * 200, 0],
+  imageSize: [100, 100],
 }));
 invadersScores.push({
-  pieces: bossPieces,
   score: null,
   iconSize: { w: 8, h: 6.5 },
-  color: "#f77",
+  image: bossImage,
+  tiles: [0, 0],
+  imageSize: [bossImage.naturalWidth, bossImage.naturalHeight],
 });
 
 export default class InitialScreen extends BaseScreen {
@@ -33,7 +37,7 @@ export default class InitialScreen extends BaseScreen {
     className: "btn-container btn-container--state-start",
   });
 
-  constructor(
+    constructor(
     canvas: HTMLCanvasElement,
     private readonly onStartGame: () => void
   ) {
@@ -132,34 +136,39 @@ export default class InitialScreen extends BaseScreen {
     ctx.textBaseline = "middle";
     ctx.textAlign = "start";
 
-    invadersScores.forEach(({ iconSize, pieces, score, color }, i) => {
-      const { w, h } = this.getPixelSize(iconSize);
-      const y = this.verPixels(baseYPos + i * 7);
+    invadersScores.forEach(
+      ({ iconSize, score, image, tiles, imageSize }, i) => {
+        const { w, h } = this.getPixelSize(iconSize);
+        const y = this.verPixels(baseYPos + i * 7);
 
-      ctx.save();
-      ctx.translate(baseXPos, y);
+        ctx.save();
+        ctx.translate(baseXPos, y);
 
-      ctx.save();
+        ctx.save();
 
-      ctx.translate(-w, 0);
-      this.drawPieces(
-        pieces,
-        {
-          w: w / pieces.numOfColumns,
-          h: h / pieces.numOfRows,
-        },
-        color
-      );
+        ctx.translate(-w, 0);
+        ctx.drawImage(
+          image,
+          tiles[0],
+          tiles[1],
+          imageSize[0],
+          imageSize[1],
+          0,
+          0,
+          w,
+          h
+        );
 
-      ctx.restore();
+        ctx.restore();
 
-      ctx.translate(gap, h / 2);
-      ctx.fillText("=", 0, 0);
-      const equalsSignMetrics = ctx.measureText("=");
-      ctx.translate(gap + equalsSignMetrics.width, 0);
-      ctx.fillText(score === null ? "????" : score + " points", 0, 0);
+        ctx.translate(gap, h / 2);
+        ctx.fillText("=", 0, 0);
+        const equalsSignMetrics = ctx.measureText("=");
+        ctx.translate(gap + equalsSignMetrics.width, 0);
+        ctx.fillText(score === null ? "????" : score + " points", 0, 0);
 
-      ctx.restore();
-    });
+        ctx.restore();
+      }
+    );
   }
 }

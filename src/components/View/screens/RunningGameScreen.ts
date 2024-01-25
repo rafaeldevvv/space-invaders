@@ -15,12 +15,7 @@ import {
   Coords,
 } from "@/ts/types";
 import BaseScreen from "./BaseScreen";
-import {
-  colors,
-  aliensPieces,
-  bossPieces,
-  wigglyBulletPieces,
-} from "../config";
+import { colors, wigglyBulletPieces } from "../config";
 import explosionPlan from "@/plans/explosions";
 import IterablePieces from "@/components/IterablePieces";
 import * as playerConfig from "@/components/Player/config";
@@ -32,9 +27,22 @@ import {
   findUntrackedTouch,
 } from "../utils";
 
-import PlayerImage from "../images/spaceship.png";
-const playerImage = new Image(100, 100);
-playerImage.src = PlayerImage;
+import { playerSpaceship, aliensSprite, bossImage } from "../images";
+
+/**
+ * An object that holds the tile position of each alien in the aliens sprite.
+ * Each property holds a tuple whose first element holds the horizontal
+ * position of the alien's first stage and whose second element represents the
+ * second stage.
+ */
+const aliensTileX = {
+  X: [0, 100],
+  Y: [200, 300],
+  Z: [400, 500],
+} as const;
+
+/** The size of each alien image in the sprite. */
+const alienImageSize = { w: 100, h: 100 };
 
 const explosion = new IterablePieces(explosionPlan);
 const lastScoreAppearanceDuration = 1;
@@ -278,14 +286,23 @@ export default class RunningGameScreen extends BaseScreen {
     const { w, h } = this.getPixelSize(DIMENSIONS.alien);
     const { x, y } = this.getPixelPos(pos);
 
-    const pieces = aliensPieces[alien.alienType][stage];
-    this.ctx.save();
-    this.ctx.translate(x, y);
-    this.drawPieces(pieces, {
-      w: w / pieces.numOfColumns,
-      h: h / pieces.numOfRows,
-    });
-    this.ctx.restore();
+    const { ctx } = this;
+
+    const tileX = aliensTileX[alien.alienType][stage];
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.drawImage(
+      aliensSprite,
+      tileX,
+      0,
+      alienImageSize.w,
+      alienImageSize.h,
+      0,
+      0,
+      w,
+      h
+    );
+    ctx.restore();
   }
 
   private drawExplosion(pos: Coords, size: Size, color = "#fff") {
@@ -361,7 +378,7 @@ export default class RunningGameScreen extends BaseScreen {
       this.ctx.translate(x, y);
 
       this.ctx.globalAlpha = progress;
-      this.ctx.drawImage(playerImage, 0, 0, w, h);
+      this.ctx.drawImage(playerSpaceship, 0, 0, w, h);
 
       this.ctx.restore();
     }
@@ -374,19 +391,12 @@ export default class RunningGameScreen extends BaseScreen {
       const { x, y } = this.getPixelPos(boss.pos);
       const { w, h } = this.getPixelSize(DIMENSIONS.boss);
 
-      this.ctx.save();
-      this.ctx.translate(x, y);
+      const { ctx } = this;
 
-      this.drawPieces(
-        bossPieces,
-        {
-          w: w / bossPieces.numOfColumns,
-          h: h / bossPieces.numOfRows,
-        },
-        colors.boss
-      );
-
-      this.ctx.restore();
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.drawImage(bossImage, 0, 0, w, h);
+      ctx.restore();
     }
   }
 

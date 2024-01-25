@@ -51,6 +51,7 @@ export default abstract class BaseCanvasWrapper implements Screen {
   protected ctx: CanvasRenderingContext2D;
   constructor(protected canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext("2d")!;
+    this.ctx.imageSmoothingEnabled = false;
   }
 
   // readonly, cuz there's no setter

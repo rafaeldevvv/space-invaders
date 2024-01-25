@@ -1,5 +1,3 @@
-- Make background black
-
 - sprites
 
 - full screen
