@@ -15,7 +15,7 @@ import {
   Coords,
 } from "@/ts/types";
 import BaseScreen from "./BaseScreen";
-import { colors, wigglyBulletPieces } from "../config";
+import { colors } from "../config";
 import explosionPlan from "@/plans/explosions";
 import IterablePieces from "@/components/IterablePieces";
 import * as playerConfig from "@/components/Player/config";
@@ -25,9 +25,15 @@ import {
   elt,
   findTouch,
   findUntrackedTouch,
+  flipHorizontally,
 } from "../utils";
 
-import { playerSpaceship, aliensSprite, bossImage } from "../images";
+import {
+  playerSpaceship,
+  aliensSprite,
+  bossImage,
+  wigglyBulletImage,
+} from "../images";
 
 /**
  * An object that holds the tile position of each alien in the aliens sprite.
@@ -330,19 +336,17 @@ export default class RunningGameScreen extends BaseScreen {
     const { x, y } = this.getPixelPos(bullet.pos);
     const { w, h } = this.getPixelSize(bullet.size);
 
+    const { ctx } = this;
     if (bullet.wiggly) {
       const stage = Math.round(performance.now() / 200) % 2 === 1 ? 1 : 0;
-      const stagePieces = wigglyBulletPieces[stage];
-      this.ctx.save();
-      this.ctx.translate(x, y);
-      this.drawPieces(stagePieces, {
-        w: w / stagePieces.numOfColumns,
-        h: h / stagePieces.numOfRows,
-      });
-      this.ctx.restore();
+      ctx.save();
+      ctx.translate(x, y);
+      if (stage === 1) flipHorizontally(ctx, w / 2);
+      ctx.drawImage(wigglyBulletImage, 0, 0, w, h);
+      ctx.restore();
     } else {
-      this.ctx.fillStyle = "#fff";
-      this.ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(x, y, w, h);
     }
   }
 

@@ -192,3 +192,9 @@ export function findUntrackedTouch(touches: TouchList, ids: number[]) {
   }
   return null;
 }
+
+export function flipHorizontally(context: CanvasRenderingContext2D, around: number) {
+  context.translate(around, 0);
+  context.scale(-1, 1);
+  context.translate(-around, 0);
+}

@@ -1200,6 +1200,9 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [How to auto-play audio in Safari with JavaScript](https://curtisrobinson.medium.com/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765)
 - [Why can't JavaScript .play() audio files on iPhone safari?](https://stackoverflow.com/questions/31776548/why-cant-javascript-play-audio-files-on-iphone-safari)
 - [CanvasRenderingContext2D: imageSmoothingEnabled property](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingEnabled) - Very important for two-dimensional pixel art games.
+- [Pixilart](https://www.pixilart.com) - I drew everything here.
+- [tailwind play](https://play.tailwindcss.com) - I did some size tests here.
+- [Chapter 17 - Drawing on Canvas](https://eloquentjavascript.net/17_canvas.html) - got `flipHorizontally()` utility function from here.
 
 #### Comments
 
