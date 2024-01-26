@@ -1203,7 +1203,8 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Pixilart](https://www.pixilart.com) - I drew everything here.
 - [tailwind play](https://play.tailwindcss.com) - I did some size tests here.
 - [Chapter 17 - Drawing on Canvas](https://eloquentjavascript.net/17_canvas.html) - got `flipHorizontally()` utility function from here.
-- [](https://cloudconvert.com/wav-to-mp3)
+- [WAV to MP3 Converter](https://cloudconvert.com/wav-to-mp3)
+- [How to Play WAV on iPhone Easily and Free](https://videoconverter.wondershare.com/convert-audio/wav-to-iphone.html#:~:text=The%20WAV%20file%20format%20is,are%20Apple%20compatible%20audio%20formats.)
 
 #### Comments
 
