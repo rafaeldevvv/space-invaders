@@ -1,6 +1,3 @@
-- full screen
-  - Change pause key
-
 - Minify the code (look for an webpack plugin for that)
 - commit & update README
 

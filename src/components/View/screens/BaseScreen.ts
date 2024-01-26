@@ -46,7 +46,7 @@ export default abstract class BaseCanvasWrapper implements Screen {
   /** Synchronizes the screen with the current state. */
   public abstract syncState(state?: IGameState, timeStep?: number): void;
 
-  protected fontFamily = "'VT323', monospace";
+  protected readonly fontFamily = "'VT323', monospace";
 
   protected ctx: CanvasRenderingContext2D;
   constructor(protected canvas: HTMLCanvasElement) {
@@ -117,7 +117,32 @@ export default abstract class BaseCanvasWrapper implements Screen {
   protected clearScreen() {
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.ctx.fillStyle = "#000";
-    this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+    this.drawBackground();
+  }
+
+  protected drawBackground() {
+    const { ctx } = this;
+    ctx.save();
+
+    const size = this.horPixels(1);
+    const radius = size / 2;
+
+    const center = size / 2;
+    const gradient = this.ctx.createRadialGradient(
+      center,
+      center,
+      radius / 3,
+      center,
+      center,
+      radius
+    );
+    gradient.addColorStop(0, "#222");
+    gradient.addColorStop(0.8, "#000");
+
+    ctx.scale(this.canvasWidth / size, this.canvasHeight / size);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    ctx.restore();
   }
 
   /** Cleans screen's side effects such as event handlers, dom nodes and so on. */
