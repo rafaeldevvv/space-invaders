@@ -27,7 +27,7 @@ export default class Player implements IPlayer {
 
   public pos: IVector = new Vector(this.baseXPos, LAYOUT.playerYPos);
 
-  public readonly gun: IGun = new Gun("player", 70, { w: 0.5, h: 3 }, 0);
+  public readonly gun: IGun = new Gun("player", 75, { w: 0.5, h: 3 }, 0);
 
   public lives = 3;
   public score = 0;
