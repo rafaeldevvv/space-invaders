@@ -1,5 +1,3 @@
-- sprites
-
 - full screen
   - Change pause key
 

@@ -116,7 +116,7 @@ eval("\n\n/* istanbul ignore next  */\nfunction styleTagTransform(css, styleElem
   \*****************************/
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst explosion_wav_1 = __importDefault(__webpack_require__(/*! ./explosion.wav */ \"./src/audios/explosion.wav\"));\nconst fastinvader1_wav_1 = __importDefault(__webpack_require__(/*! ./fastinvader1.wav */ \"./src/audios/fastinvader1.wav\"));\nconst fastinvader2_wav_1 = __importDefault(__webpack_require__(/*! ./fastinvader2.wav */ \"./src/audios/fastinvader2.wav\"));\nconst fastinvader3_wav_1 = __importDefault(__webpack_require__(/*! ./fastinvader3.wav */ \"./src/audios/fastinvader3.wav\"));\nconst fastinvader4_wav_1 = __importDefault(__webpack_require__(/*! ./fastinvader4.wav */ \"./src/audios/fastinvader4.wav\"));\nconst invaderkilled_wav_1 = __importDefault(__webpack_require__(/*! ./invaderkilled.wav */ \"./src/audios/invaderkilled.wav\"));\nconst shoot_wav_1 = __importDefault(__webpack_require__(/*! ./shoot.wav */ \"./src/audios/shoot.wav\"));\nconst ufo_highpitch_wav_1 = __importDefault(__webpack_require__(/*! ./ufo_highpitch.wav */ \"./src/audios/ufo_highpitch.wav\"));\nconst ufo_lowpitch_wav_1 = __importDefault(__webpack_require__(/*! ./ufo_lowpitch.wav */ \"./src/audios/ufo_lowpitch.wav\"));\nconst explosion = new Audio(explosion_wav_1.default), fastInvader1 = new Audio(fastinvader1_wav_1.default), fastInvader2 = new Audio(fastinvader2_wav_1.default), fastInvader3 = new Audio(fastinvader3_wav_1.default), fastInvader4 = new Audio(fastinvader4_wav_1.default), alienKilled = new Audio(invaderkilled_wav_1.default), shoot = new Audio(shoot_wav_1.default), boss_highpitch = new Audio(ufo_highpitch_wav_1.default), boss_lowpitch = new Audio(ufo_lowpitch_wav_1.default);\nfunction checkAndPlay(media) {\n    if (media.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {\n        media.currentTime = 0;\n        media.play();\n    }\n}\nfunction repeat(media) {\n    checkAndPlay(media);\n    const onEnd = () => {\n        media.currentTime = 0;\n        media.play();\n    };\n    media.addEventListener(\"ended\", onEnd);\n    return () => {\n        media.currentTime = 0;\n        media.pause();\n        media.removeEventListener(\"ended\", onEnd);\n    };\n}\nconst audios = {\n    explosion() {\n        checkAndPlay(explosion);\n    },\n    fastInvader(number) {\n        switch (number) {\n            case 1: {\n                checkAndPlay(fastInvader1);\n                break;\n            }\n            case 2: {\n                checkAndPlay(fastInvader2);\n                break;\n            }\n            case 3: {\n                checkAndPlay(fastInvader3);\n                break;\n            }\n            case 4: {\n                checkAndPlay(fastInvader4);\n                break;\n            }\n        }\n    },\n    alienKilled() {\n        checkAndPlay(alienKilled);\n    },\n    shoot() {\n        checkAndPlay(shoot);\n    },\n    boss_highpitch() {\n        return repeat(boss_highpitch);\n    },\n    boss_lowpitch() {\n        return repeat(boss_lowpitch);\n    },\n};\nexports[\"default\"] = audios;\n\n\n//# sourceURL=webpack://space-invaders/./src/audios/index.ts?");
+eval("\nvar __importDefault = (this && this.__importDefault) || function (mod) {\n    return (mod && mod.__esModule) ? mod : { \"default\": mod };\n};\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nconst explosion_mp3_1 = __importDefault(__webpack_require__(/*! ./explosion.mp3 */ \"./src/audios/explosion.mp3\"));\nconst fastinvader1_mp3_1 = __importDefault(__webpack_require__(/*! ./fastinvader1.mp3 */ \"./src/audios/fastinvader1.mp3\"));\nconst fastinvader2_mp3_1 = __importDefault(__webpack_require__(/*! ./fastinvader2.mp3 */ \"./src/audios/fastinvader2.mp3\"));\nconst fastinvader3_mp3_1 = __importDefault(__webpack_require__(/*! ./fastinvader3.mp3 */ \"./src/audios/fastinvader3.mp3\"));\nconst fastinvader4_mp3_1 = __importDefault(__webpack_require__(/*! ./fastinvader4.mp3 */ \"./src/audios/fastinvader4.mp3\"));\nconst invaderkilled_mp3_1 = __importDefault(__webpack_require__(/*! ./invaderkilled.mp3 */ \"./src/audios/invaderkilled.mp3\"));\nconst shoot_mp3_1 = __importDefault(__webpack_require__(/*! ./shoot.mp3 */ \"./src/audios/shoot.mp3\"));\nconst ufo_highpitch_mp3_1 = __importDefault(__webpack_require__(/*! ./ufo_highpitch.mp3 */ \"./src/audios/ufo_highpitch.mp3\"));\nconst ufo_lowpitch_mp3_1 = __importDefault(__webpack_require__(/*! ./ufo_lowpitch.mp3 */ \"./src/audios/ufo_lowpitch.mp3\"));\nconst explosion = new Audio(explosion_mp3_1.default), fastInvader1 = new Audio(fastinvader1_mp3_1.default), fastInvader2 = new Audio(fastinvader2_mp3_1.default), fastInvader3 = new Audio(fastinvader3_mp3_1.default), fastInvader4 = new Audio(fastinvader4_mp3_1.default), alienKilled = new Audio(invaderkilled_mp3_1.default), shoot = new Audio(shoot_mp3_1.default), boss_highpitch = new Audio(ufo_highpitch_mp3_1.default), boss_lowpitch = new Audio(ufo_lowpitch_mp3_1.default);\nfunction checkAndPlay(media) {\n    if (media.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {\n        media.currentTime = 0;\n        media.play();\n    }\n}\nfunction repeat(media) {\n    checkAndPlay(media);\n    const onEnd = () => {\n        media.currentTime = 0;\n        media.play();\n    };\n    media.addEventListener(\"ended\", onEnd);\n    return () => {\n        media.currentTime = 0;\n        media.pause();\n        media.removeEventListener(\"ended\", onEnd);\n    };\n}\nconst audios = {\n    explosion() {\n        checkAndPlay(explosion);\n    },\n    fastInvader(number) {\n        switch (number) {\n            case 1: {\n                checkAndPlay(fastInvader1);\n                break;\n            }\n            case 2: {\n                checkAndPlay(fastInvader2);\n                break;\n            }\n            case 3: {\n                checkAndPlay(fastInvader3);\n                break;\n            }\n            case 4: {\n                checkAndPlay(fastInvader4);\n                break;\n            }\n        }\n    },\n    alienKilled() {\n        checkAndPlay(alienKilled);\n    },\n    shoot() {\n        checkAndPlay(shoot);\n    },\n    boss_highpitch() {\n        return repeat(boss_highpitch);\n    },\n    boss_lowpitch() {\n        return repeat(boss_lowpitch);\n    },\n};\nexports[\"default\"] = audios;\n\n\n//# sourceURL=webpack://space-invaders/./src/audios/index.ts?");
 
 /***/ }),
 
@@ -490,93 +490,93 @@ eval("\nObject.defineProperty(exports, \"__esModule\", ({ value: true }));\nfunc
 
 /***/ }),
 
-/***/ "./src/audios/explosion.wav":
+/***/ "./src/audios/explosion.mp3":
 /*!**********************************!*\
-  !*** ./src/audios/explosion.wav ***!
+  !*** ./src/audios/explosion.mp3 ***!
   \**********************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"27066382fce4cf104226.wav\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/explosion.wav?");
+eval("module.exports = __webpack_require__.p + \"ceac09b1b3aa6c85662b.mp3\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/explosion.mp3?");
 
 /***/ }),
 
-/***/ "./src/audios/fastinvader1.wav":
+/***/ "./src/audios/fastinvader1.mp3":
 /*!*************************************!*\
-  !*** ./src/audios/fastinvader1.wav ***!
+  !*** ./src/audios/fastinvader1.mp3 ***!
   \*************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"5ee68cd31984306e4899.wav\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/fastinvader1.wav?");
+eval("module.exports = __webpack_require__.p + \"02e070370e4a27a64ae8.mp3\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/fastinvader1.mp3?");
 
 /***/ }),
 
-/***/ "./src/audios/fastinvader2.wav":
+/***/ "./src/audios/fastinvader2.mp3":
 /*!*************************************!*\
-  !*** ./src/audios/fastinvader2.wav ***!
+  !*** ./src/audios/fastinvader2.mp3 ***!
   \*************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"b6cb62efa888c1a367e0.wav\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/fastinvader2.wav?");
+eval("module.exports = __webpack_require__.p + \"0c80a6637cceb2d5356e.mp3\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/fastinvader2.mp3?");
 
 /***/ }),
 
-/***/ "./src/audios/fastinvader3.wav":
+/***/ "./src/audios/fastinvader3.mp3":
 /*!*************************************!*\
-  !*** ./src/audios/fastinvader3.wav ***!
+  !*** ./src/audios/fastinvader3.mp3 ***!
   \*************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"384c34c42fd2ee6a5d24.wav\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/fastinvader3.wav?");
+eval("module.exports = __webpack_require__.p + \"5a6c4895e87bf42c0c2f.mp3\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/fastinvader3.mp3?");
 
 /***/ }),
 
-/***/ "./src/audios/fastinvader4.wav":
+/***/ "./src/audios/fastinvader4.mp3":
 /*!*************************************!*\
-  !*** ./src/audios/fastinvader4.wav ***!
+  !*** ./src/audios/fastinvader4.mp3 ***!
   \*************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"74b01f591e7c2632bc48.wav\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/fastinvader4.wav?");
+eval("module.exports = __webpack_require__.p + \"48768c54b5dfba947f20.mp3\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/fastinvader4.mp3?");
 
 /***/ }),
 
-/***/ "./src/audios/invaderkilled.wav":
+/***/ "./src/audios/invaderkilled.mp3":
 /*!**************************************!*\
-  !*** ./src/audios/invaderkilled.wav ***!
+  !*** ./src/audios/invaderkilled.mp3 ***!
   \**************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"c4e8d37372f891d23004.wav\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/invaderkilled.wav?");
+eval("module.exports = __webpack_require__.p + \"fca20ddfa9fa20ba0556.mp3\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/invaderkilled.mp3?");
 
 /***/ }),
 
-/***/ "./src/audios/shoot.wav":
+/***/ "./src/audios/shoot.mp3":
 /*!******************************!*\
-  !*** ./src/audios/shoot.wav ***!
+  !*** ./src/audios/shoot.mp3 ***!
   \******************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"6b7d3b88ce0253459a43.wav\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/shoot.wav?");
+eval("module.exports = __webpack_require__.p + \"aab5218dece3ea59a0d0.mp3\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/shoot.mp3?");
 
 /***/ }),
 
-/***/ "./src/audios/ufo_highpitch.wav":
+/***/ "./src/audios/ufo_highpitch.mp3":
 /*!**************************************!*\
-  !*** ./src/audios/ufo_highpitch.wav ***!
+  !*** ./src/audios/ufo_highpitch.mp3 ***!
   \**************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"c1b3f9408e3380b79d9c.wav\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/ufo_highpitch.wav?");
+eval("module.exports = __webpack_require__.p + \"de09425c7429b939bc24.mp3\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/ufo_highpitch.mp3?");
 
 /***/ }),
 
-/***/ "./src/audios/ufo_lowpitch.wav":
+/***/ "./src/audios/ufo_lowpitch.mp3":
 /*!*************************************!*\
-  !*** ./src/audios/ufo_lowpitch.wav ***!
+  !*** ./src/audios/ufo_lowpitch.mp3 ***!
   \*************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"5c011f660d2dada16de2.wav\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/ufo_lowpitch.wav?");
+eval("module.exports = __webpack_require__.p + \"4ec9957d4df5fa2e8531.mp3\";\n\n//# sourceURL=webpack://space-invaders/./src/audios/ufo_lowpitch.mp3?");
 
 /***/ }),
 

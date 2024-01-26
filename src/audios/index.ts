@@ -1,12 +1,12 @@
-import ExplosionAudio from "./explosion.wav";
-import FastInvader1 from "./fastinvader1.wav";
-import FastInvader2 from "./fastinvader2.wav";
-import FastInvader3 from "./fastinvader3.wav";
-import FastInvader4 from "./fastinvader4.wav";
-import InvaderKilled from "./invaderkilled.wav";
-import Shoot from "./shoot.wav";
-import Boss_Highpitch from "./ufo_highpitch.wav";
-import Boss_Lowpitch from "./ufo_lowpitch.wav";
+import ExplosionAudio from "./explosion.mp3";
+import FastInvader1 from "./fastinvader1.mp3";
+import FastInvader2 from "./fastinvader2.mp3";
+import FastInvader3 from "./fastinvader3.mp3";
+import FastInvader4 from "./fastinvader4.mp3";
+import InvaderKilled from "./invaderkilled.mp3";
+import Shoot from "./shoot.mp3";
+import Boss_Highpitch from "./ufo_highpitch.mp3";
+import Boss_Lowpitch from "./ufo_lowpitch.mp3";
 
 const explosion = new Audio(ExplosionAudio),
   fastInvader1 = new Audio(FastInvader1),
