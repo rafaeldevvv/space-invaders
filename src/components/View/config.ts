@@ -13,7 +13,7 @@ export const GAMEOVER_SCREEN_LAYOUT = {
 } as const;
 
 export const GAME_DISPLAY = {
-  maxWidth: 920,
+  maxWidth: 1024,
   aspectRatio: 4 / 3,
 };
 
