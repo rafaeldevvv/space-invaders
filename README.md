@@ -1206,6 +1206,11 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [WAV to MP3 Converter](https://cloudconvert.com/wav-to-mp3)
 - [How to Play WAV on iPhone Easily and Free](https://videoconverter.wondershare.com/convert-audio/wav-to-iphone.html#:~:text=The%20WAV%20file%20format%20is,are%20Apple%20compatible%20audio%20formats.)
 - [WAV vs. MP3: Key Differences Between WAV and MP3](https://www.gumlet.com/learn/wav-vs-mp3/)
+- [Elliptical gradients in HTML5 canvas](http://rectangleworld.com/blog/archives/169)
+- [Radians](https://www.mathsisfun.com/geometry/radians.html)
+- [CanvasRenderingContext2D: `stroke()` method](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/stroke)
+- [Drawing shapes with canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes)
+- [CanvasRenderingContext2D: ellipse() method](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/ellipse)
 
 #### Comments
 

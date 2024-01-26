@@ -26,7 +26,7 @@ const invadersScores: InvaderScore[] = (
 }));
 invadersScores.push({
   score: null,
-  iconSize: { w: 8, h: 6.5 },
+  iconSize: { w: 10, h: 6.5 },
   image: bossImage,
   tiles: [0, 0],
   imageSize: [bossImage.naturalWidth, bossImage.naturalHeight],

@@ -14,7 +14,7 @@ const LAYOUT = {
   wallYPos: 70,
   playerYPos: 86,
   floorYPos: 97,
-  bossYPos: 6,
+  bossYPos: 8,
 } as const;
 
 /**
@@ -35,8 +35,8 @@ const DIMENSIONS = {
     h: 2,
   },
   boss: {
-    w: 9,
-    h: 7.5,
+    w: 8,
+    h: 5.5,
   },
   floorHeight: 1,
   bulletCollision: { w: 2, h: 1.5 },
