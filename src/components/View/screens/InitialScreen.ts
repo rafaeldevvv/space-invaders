@@ -5,7 +5,7 @@ import BaseScreen from "./BaseScreen";
 import { alienTypesConfig } from "@/components/Alien/config";
 import { IGameState, Size, TAliens } from "@/ts/types";
 
-import { aliensSprite, bossImage } from "../images";
+import { aliensSprite, bossImage, arrowKeys, spaceKey } from "../images";
 
 type InvaderScore = {
   score: number | null;
@@ -32,12 +32,22 @@ invadersScores.push({
   imageSize: [bossImage.naturalWidth, bossImage.naturalHeight],
 });
 
+const keysTiles = {
+  left: 0,
+  right: 150,
+  up: 300,
+  down: 450,
+} as const;
+
+const squareKeySize = [5, 6.5] as const,
+  rectangleKeySize = [26, 6.5] as const;
+
 export default class InitialScreen extends BaseScreen {
   protected mobileButtons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-start",
   });
 
-    constructor(
+  constructor(
     canvas: HTMLCanvasElement,
     private readonly onStartGame: () => void
   ) {
@@ -83,26 +93,31 @@ export default class InitialScreen extends BaseScreen {
     this.drawScores();
     const messagePos = this.getPixelPos({
       y: INITIAL_SCREEN_LAYOUT.pressMessageYPos,
-      x: 50,
+      x: 5,
     });
     drawTwinkleMessage(this.ctx, "Press space to start", messagePos, {
       fontSize: this.getFontSize("md"),
       fontFamily: this.fontFamily,
+      align: "start",
     });
+    this.drawKeysGuide();
   }
 
   protected drawTitle() {
     const fontSize = this.getFontSize("xl");
-    this.ctx.font = `${fontSize}px ${this.fontFamily}`;
+    const { ctx } = this;
+    ctx.font = `${fontSize}px ${this.fontFamily}`;
 
-    const xPixelPos = this.horPixels(50),
-      yPixelPos = this.verPixels(13);
+    const xPixelPos = this.horPixels(5),
+      yPixelPos = this.verPixels(8);
 
-    this.ctx.fillStyle = "white";
-    this.ctx.textAlign = "center";
-    this.ctx.textBaseline = "middle";
-    this.ctx.fillText("SPACE", xPixelPos, yPixelPos);
-    this.ctx.fillText("INVADERS", xPixelPos, yPixelPos + this.verPixels(12));
+    ctx.fillStyle = "white";
+    ctx.textAlign = "start";
+    ctx.textBaseline = "hanging";
+    ctx.fillText("SPACE", xPixelPos, yPixelPos);
+    const spaceMetrics = ctx.measureText("SPACE");
+    const { actualBoundingBoxDescent: h } = spaceMetrics;
+    ctx.fillText("INVADERS", xPixelPos, yPixelPos + h + this.verPixels(1));
   }
 
   private drawBestScore(bestScore: number) {
@@ -111,21 +126,83 @@ export default class InitialScreen extends BaseScreen {
     const { ctx } = this;
     this.ctx.font = `${this.getFontSize("md")}px ${this.fontFamily}`;
     ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
+    ctx.textAlign = "start";
     ctx.textBaseline = "top";
 
     ctx.fillText(
       `Your Best Score is ${bestScore}`,
-      this.horPixels(50),
+      this.horPixels(5),
       this.verPixels(34)
     );
   }
 
+  private drawKeysGuide() {
+    const titleFontSize = this.getFontSize("lg"), // For "CONTROLS"
+      bodyFontSize = this.getFontSize("md"); // For text following keys
+
+    const { ctx } = this;
+    ctx.font = `${titleFontSize}px ${this.fontFamily}`;
+    ctx.textAlign = "start";
+    ctx.textBaseline = "hanging"; // only for the title
+
+    let y = this.verPixels(45);
+    const x = this.horPixels(5);
+
+    ctx.fillText("CONTROLS", x, y);
+    const controlsMetrics = ctx.measureText("CONTROLS");
+    y += this.verPixels(4) + controlsMetrics.actualBoundingBoxDescent;
+
+    ctx.font = `${bodyFontSize}px ${this.fontFamily}`;
+
+    const [keyW, keyH] = squareKeySize,
+      keyPixelW = this.horPixels(keyW),
+      keyPixelH = this.verPixels(keyH),
+      horGap = this.horPixels(1);
+
+    ctx.drawImage(
+      arrowKeys,
+      keysTiles.left,
+      0,
+      150,
+      150,
+      x,
+      y,
+      keyPixelW,
+      keyPixelH
+    );
+    ctx.drawImage(
+      arrowKeys,
+      keysTiles.right,
+      0,
+      150,
+      150,
+      x + keyPixelW + horGap,
+      y,
+      keyPixelW,
+      keyPixelH
+    );
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+      "-> MOVEMENT",
+      x + keyPixelW * 2 + horGap * 2,
+      y + keyPixelH / 2
+    );
+
+    y += keyPixelH + this.verPixels(2);
+
+    const [spaceW, spaceH] = rectangleKeySize,
+      spacePixelW = this.horPixels(spaceW),
+      spacePixelH = this.verPixels(spaceH);
+
+    ctx.drawImage(spaceKey, x, y, spacePixelW, spacePixelH);
+    ctx.fillText("-> FIRE", x + spacePixelW + horGap, y + spacePixelH / 2);
+  }
+
   protected drawScores() {
-    const baseYPos = 43;
+    const baseYPos = 10;
 
     /* the position of the right edge of the icon */
-    const baseXPos = this.horPixels(43);
+    const baseXPos = this.horPixels(73);
     /* the space between the icon, the equals sign and the score */
     const gap = this.horPixels(1.5);
 

@@ -1,10 +1,9 @@
-import { TAliens } from "@/ts/types";
 import IterablePieces from "@/components/IterablePieces";
 import wigglyBullet from "@/plans/wiggly-bullet";
 
 export const INITIAL_SCREEN_LAYOUT = {
   titleYPos: 30,
-  pressMessageYPos: 80,
+  pressMessageYPos: 85,
 } as const;
 
 export const GAMEOVER_SCREEN_LAYOUT = {
