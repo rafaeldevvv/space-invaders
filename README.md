@@ -1211,6 +1211,8 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [CanvasRenderingContext2D: `stroke()` method](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/stroke)
 - [Drawing shapes with canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes)
 - [CanvasRenderingContext2D: ellipse() method](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/ellipse)
+- [Offset (computer science)](https://en.wikipedia.org/wiki/Offset_%28computer_science%29)
+- [What does "offset" mean in the context of programming?](https://stackoverflow.com/questions/3971598/what-does-offset-mean-in-the-context-of-programming)
 
 #### Comments
 

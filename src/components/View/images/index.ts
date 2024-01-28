@@ -13,16 +13,16 @@ const bossImage = new Image(100, 100);
 bossImage.src = Boss;
 const wigglyBulletImage = new Image(100, 100);
 wigglyBulletImage.src = WigglyBullet;
-const arrowKeys = new Image(600, 100);
-arrowKeys.src = ArrowKeys;
-const spaceKey = new Image(600, 100);
-spaceKey.src = SpaceKey;
+const arrowKeysSprite = new Image(600, 100);
+arrowKeysSprite.src = ArrowKeys;
+const spaceKeyImage = new Image(600, 100);
+spaceKeyImage.src = SpaceKey;
 
 export {
   aliensSprite,
   playerSpaceship,
   bossImage,
   wigglyBulletImage,
-  arrowKeys,
-  spaceKey
+  arrowKeysSprite,
+  spaceKeyImage
 };
