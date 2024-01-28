@@ -1,7 +1,3 @@
-- Refactor the code to draw the controls in initial screen
-  - `setFontSize()`
-  - improve config and var names
-
 - coded by rafael maia at the bottom
 
 - Iphone responsiveness

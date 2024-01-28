@@ -1,5 +1,5 @@
-import { ACTION_KEYS } from "@/game-config";
-import { INITIAL_SCREEN_LAYOUT } from "../config";
+import { ACTION_KEYS, LAYOUT } from "@/game-config";
+import { GAME_DISPLAY, INITIAL_SCREEN_LAYOUT } from "../config";
 import { drawTwinkleMessage, elt } from "../utils";
 import BaseScreen from "./BaseScreen";
 import { alienTypesConfig } from "@/components/Alien/config";
@@ -108,6 +108,7 @@ export default class InitialScreen extends BaseScreen {
       align: "start",
     });
     this.drawControlsGuide();
+    this.drawAuthorAttribution();
   }
 
   protected drawTitle() {
@@ -184,7 +185,7 @@ export default class InitialScreen extends BaseScreen {
 
     ctx.save(); // save for horizontal translation
     // move to the right side of the images and down the middle of it
-    ctx.translate(sequenceWidth + horGap, arrowKeyPixelH / 2); 
+    ctx.translate(sequenceWidth + horGap, arrowKeyPixelH / 2);
     ctx.fillText("-> MOVEMENT", 0, 0);
     ctx.restore();
 
@@ -198,7 +199,7 @@ export default class InitialScreen extends BaseScreen {
     ctx.drawImage(spaceKeyImage, 0, 0, spacePixelW, spacePixelH);
 
     // move to the right side of the image and down the middle of it
-    ctx.translate(spacePixelW + horGap, spacePixelH / 2); 
+    ctx.translate(spacePixelW + horGap, spacePixelH / 2);
 
     ctx.fillText("-> FIRE", 0, 0);
 
@@ -296,5 +297,17 @@ export default class InitialScreen extends BaseScreen {
         ctx.restore();
       }
     );
+  }
+
+  private drawAuthorAttribution() {
+    const pos = this.getPixelPos({
+      x: 100 - LAYOUT.padding.hor,
+      y: 100 - LAYOUT.padding.ver,
+    });
+    const { ctx } = this;
+    this.setFontSize("sm");
+    ctx.textAlign = "end";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("Coded by Rafael Maia", pos.x, pos.y);
   }
 }
