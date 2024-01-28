@@ -439,11 +439,10 @@ export default class RunningGameScreen extends BaseScreen {
    * @param state
    */
   private drawMetadata(state: IGameState, timeStep: number) {
-    const fontSize = this.getFontSize("md");
     const yPixelsPadding = this.verPixels(LAYOUT.padding.ver);
 
+    this.setFontSize("md");
     this.ctx.textBaseline = "top";
-    this.ctx.font = `${fontSize}px ${this.fontFamily}`;
 
     this.drawScore(
       state.player.score,
@@ -571,21 +570,18 @@ export default class RunningGameScreen extends BaseScreen {
       hintHeight
     );
 
-    const fontSize = this.getFontSize("lg");
     this.ctx.fillStyle = "#000";
-    this.ctx.font = `${fontSize}px ${this.fontFamily}`;
+    this.setFontSize("lg");
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
     this.ctx.fillText("PAUSED", this.horPixels(50), this.verPixels(50));
   }
 
   private drawPressEscMessage() {
-    const fontSize = this.getFontSize("sm");
-
     const xPixelPos = this.horPixels(LAYOUT.padding.hor),
       yPixelPos = this.verPixels(8);
 
-    this.ctx.font = `${fontSize}px ${this.fontFamily}`;
+    this.setFontSize("sm");
     this.ctx.fillStyle = "#fff";
     this.ctx.textAlign = "left";
     this.ctx.textBaseline = "top";

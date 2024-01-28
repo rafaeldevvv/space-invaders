@@ -1,3 +1,11 @@
+- Refactor the code to draw the controls in initial screen
+  - `setFontSize()`
+  - improve config and var names
+
+- coded by rafael maia at the bottom
+
+- Iphone responsiveness
+
 - volume slider
 
 - sound control keys warning in start screen
@@ -6,8 +14,6 @@
   - [WAV vs. MP3: Key Differences Between WAV and MP3](https://www.gumlet.com/learn/wav-vs-mp3/)
   - Listen to both types of files and if there isn't a noticeable difference, use mp3 because they're
   smaller.
-
-- coded by rafael maia
 
 - Minify the code (look for an webpack plugin for that)
 - commit & update README

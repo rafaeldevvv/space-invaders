@@ -114,6 +114,10 @@ export default abstract class BaseCanvasWrapper implements Screen {
     return this.horPixels(fontSizes[size]);
   }
 
+  protected setFontSize(size: FontSizes) {
+    this.ctx.font = `${this.getFontSize(size)}px ${this.fontFamily}`;
+  }
+
   protected clearScreen() {
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.ctx.fillStyle = "#000";

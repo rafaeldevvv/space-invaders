@@ -104,9 +104,9 @@ export default class InitialScreen extends BaseScreen {
   }
 
   protected drawTitle() {
-    const fontSize = this.getFontSize("xl");
+    this.setFontSize("xl");
+
     const { ctx } = this;
-    ctx.font = `${fontSize}px ${this.fontFamily}`;
 
     const xPixelPos = this.horPixels(5),
       yPixelPos = this.verPixels(8);
@@ -124,7 +124,7 @@ export default class InitialScreen extends BaseScreen {
     if (bestScore === 0) return;
 
     const { ctx } = this;
-    this.ctx.font = `${this.getFontSize("md")}px ${this.fontFamily}`;
+    this.setFontSize("md");
     ctx.fillStyle = "#fff";
     ctx.textAlign = "start";
     ctx.textBaseline = "top";
@@ -137,11 +137,9 @@ export default class InitialScreen extends BaseScreen {
   }
 
   private drawKeysGuide() {
-    const titleFontSize = this.getFontSize("lg"), // For "CONTROLS"
-      bodyFontSize = this.getFontSize("md"); // For text following keys
+    this.setFontSize("lg"); // for `CONTROLS`
 
     const { ctx } = this;
-    ctx.font = `${titleFontSize}px ${this.fontFamily}`;
     ctx.textAlign = "start";
     ctx.textBaseline = "hanging"; // only for the title
 
@@ -152,7 +150,7 @@ export default class InitialScreen extends BaseScreen {
     const controlsMetrics = ctx.measureText("CONTROLS");
     y += this.verPixels(4) + controlsMetrics.actualBoundingBoxDescent;
 
-    ctx.font = `${bodyFontSize}px ${this.fontFamily}`;
+    this.setFontSize("md");
 
     const [keyW, keyH] = squareKeySize,
       keyPixelW = this.horPixels(keyW),
@@ -208,7 +206,7 @@ export default class InitialScreen extends BaseScreen {
 
     const { ctx } = this;
 
-    ctx.font = `${this.getFontSize("md")}px ${this.fontFamily}`;
+    this.setFontSize("md");
     ctx.fillStyle = "#fff";
     ctx.textBaseline = "middle";
     ctx.textAlign = "start";

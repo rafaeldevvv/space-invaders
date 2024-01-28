@@ -66,12 +66,10 @@ export default class GameOverScreen extends BaseScreen {
   }
 
   private drawTitle() {
-    const titleFontSize = this.getFontSize("xl");
-
     const xPixelPos = this.horPixels(50),
       yPixelPos = this.verPixels(11);
 
-    this.ctx.font = `${titleFontSize}px ${this.fontFamily}`;
+    this.setFontSize("xl");
     this.ctx.fillStyle = "#f77";
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "top";
@@ -87,9 +85,7 @@ export default class GameOverScreen extends BaseScreen {
       player: { score, bestScore },
     } = state;
 
-    const subtitleFontSize = this.getFontSize("md");
-
-    this.ctx.font = `${subtitleFontSize}px ${this.fontFamily}`;
+    this.setFontSize("md");
     this.ctx.fillStyle = "#fff";
 
     const aliens = aliensKilled === 1 ? "alien" : "aliens";
