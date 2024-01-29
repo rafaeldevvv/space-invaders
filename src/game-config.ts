@@ -24,7 +24,7 @@ const LAYOUT = {
 const DIMENSIONS = {
   alien: {
     w: 3.5, // 3.5% of the display width
-    h: 4.5, // 4.5% of the display height
+    h: 4, // 4% of the display height
   },
   player: {
     w: 4,
