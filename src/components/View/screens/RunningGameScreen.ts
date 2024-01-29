@@ -579,7 +579,7 @@ export default class RunningGameScreen extends BaseScreen {
 
   private drawPressEscMessage() {
     const xPixelPos = this.horPixels(LAYOUT.padding.hor),
-      yPixelPos = this.verPixels(8);
+      yPixelPos = this.verPixels(6.5);
 
     this.setFontSize("sm");
     this.ctx.fillStyle = "#fff";

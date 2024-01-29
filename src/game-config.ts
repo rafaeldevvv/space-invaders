@@ -4,7 +4,7 @@
 const LAYOUT = {
   padding: {
     hor: 3,
-    ver: 3,
+    ver: 1.5,
   },
   numWalls: 4,
   wallsSize: {

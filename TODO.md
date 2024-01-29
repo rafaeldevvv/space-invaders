@@ -1,7 +1,3 @@
-- coded by rafael maia at the bottom
-
-- Iphone responsiveness
-
 - volume slider
 
 - sound control keys warning in start screen
