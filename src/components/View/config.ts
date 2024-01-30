@@ -4,13 +4,13 @@ import { LAYOUT } from "@/game-config";
 
 export const INITIAL_SCREEN_LAYOUT = {
   titlePos: { x: 5, y: 8 },
-  soundHintPos: { x: 89, y: 2 },
+  soundHintPos: { x: 5, y: LAYOUT.padding.ver },
   controlsGuidePos: { x: 5, y: 45 },
   // the x pos in this one is the position of the right edge of each image in the scores showcase
   scoresPos: { x: 73, y: 10 },
   twinkleMessagePos: { x: 65, y: 80 },
   /**
-   * This one represents the position of the right and bottom edges, not 
+   * This one represents the position of the right and bottom edges, not
    * top and left as the other ones.
    */
   authorAttributionPos: {
@@ -22,7 +22,7 @@ export const INITIAL_SCREEN_LAYOUT = {
 export const GAMEOVER_SCREEN_LAYOUT = {
   titleYPos: 16,
   pressMessageYPos: 80,
-  soundHintPos: { x: 89, y: 2 },
+  soundHintPos: { x: LAYOUT.padding.hor, y: LAYOUT.padding.ver },
 } as const;
 
 export const GAME_DISPLAY = {
