@@ -590,28 +590,6 @@ export default class RunningGameScreen extends BaseScreen {
     this.ctx.textBaseline = "middle";
     this.ctx.fillText("PAUSED", this.horPixels(50), this.verPixels(50));
   }
-  /* 
-  private drawVolumeHintt(v: number) {
-    const { ctx } = this;
-    this.setFontSize("sm");
-    ctx.textAlign = "start";
-    ctx.textBaseline = "top";
-
-    const iconW = this.horPixels(3),
-      vText = `| ${Math.round(v * 100)}`,
-      { width, fontBoundingBoxDescent } = ctx.measureText(vText),
-      rightEdge = this.horPixels(100 - LAYOUT.padding.hor),
-      topEdge = this.verPixels(6.5);
-
-    ctx.fillText(vText, rightEdge - width, topEdge);
-    ctx.drawImage(
-      soundIcon,
-      rightEdge - width - this.horPixels(1) - iconW,
-      topEdge,
-      iconW,
-      fontBoundingBoxDescent
-    );
-  } */
 
   private drawCollisions(collisions: IGameState["bulletCollisions"]) {
     for (const c of collisions) {
