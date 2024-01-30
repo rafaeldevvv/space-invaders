@@ -9,21 +9,26 @@ button {
    inset: auto auto 2.5% 50%;
    transform: translate(-50%);
    display: grid;
-   gap: .8rem;
+   gap: 1.2rem .8rem;
 }
 
 .btn-container--state-start {
-   grid-template-areas: "start";
+   grid-template-areas:
+      "slider"
+      "start";
 }
 
 .btn-container--state-running {
    grid-template-areas:
-      'fire left right'
-      'pause pause pause';
+      "slider slider slider"
+      "fire   left   right"
+      "pause  pause  pause";
 }
 
 .btn-container--state-lost {
-   grid-template-areas: "restart";
+   grid-template-areas:
+      "slider"
+      "restart";
 }
 
 .btn-container__btn {
@@ -44,7 +49,7 @@ button {
 
    box-shadow: 0 7px var(--shadow-color);
    background-color: var(--bg);
-   
+
    grid-area: var(--area);
 }
 
@@ -92,6 +97,33 @@ button {
 .restart-btn {
    --bg: hsl(60 100% 55%);
    --shadow-color: hsl(60 100% 15%);
+}
+
+.slider-container {
+   font-size: 1.5rem;
+   color: white;
+   display: block;
+   grid-area: slider;
+   display: flex;
+   align-items: center;
+   gap: 1rem;
+   background-color: #222;
+   padding: .5rem;
+}
+
+.slider-container__icon {
+   width: 25px;
+   height: 23px;
+}
+
+.slider-container__slider {
+   display: block;
+   width: 100%;
+   min-width: 200px;
+}
+
+.slider-container__slider::-webkit-slider-runnable-track {
+   background-color: #fff;
 }
 
 @media (pointer: fine) {

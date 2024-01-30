@@ -22,7 +22,7 @@ import {
 } from "@/ts/types";
 import shieldLikeWall from "@/plans/walls";
 import * as BOSS_CONFIG from "../Boss/config";
-import audios from "@/audios";
+import audios, { volume } from "@/audios";
 
 import aliensPlan from "@/plans/alien-set";
 
@@ -60,7 +60,7 @@ export default class GameState implements IGameState {
   public bulletCollisions: IExplosion[] = [];
   public lastScore: IStateLastScore = { value: null, id: null };
   /**
-   * How many times the player fired since the 
+   * How many times the player fired since the
    * current alien set appeared.
    */
   public numOfPlayerFires: number = 0;
@@ -380,5 +380,15 @@ export default class GameState implements IGameState {
     const env = new GameEnv(alienSet, player, walls);
 
     return new GameState(alienSet, player, env);
+  }
+
+  /** 
+   * The volume of the game, from 0 to 1. 
+   * It is a getter because the state isn't supposed
+   * to control it. It gotten from the live binding named volume in
+   * the audios/index.ts module.
+   */
+  get volume() {
+    return volume;
   }
 }

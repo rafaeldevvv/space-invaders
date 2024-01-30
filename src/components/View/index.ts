@@ -5,7 +5,8 @@ import {
   RunningScreenActions,
   TStateStatuses,
   ViewHandlers,
-  Screen
+  Screen,
+  KeyboardEventHandler,
 } from "@/ts/types";
 import { getElementInnerDimensions } from "./utils";
 import { GAME_DISPLAY } from "./config";
@@ -30,6 +31,8 @@ export default class CanvasView implements IView {
   /** The actions the player is currently performing. */
   public actions = {} as RunningActionsTracker;
 
+  public keyDownHandlers = new Map<string, KeyboardEventHandler>();
+
   /**
    * Creates a view component for the game that uses the Canvas API.
    *
@@ -48,7 +51,12 @@ export default class CanvasView implements IView {
 
     parent.appendChild(this.canvas);
 
-    this.currentScreen = new InitialScreen(this.canvas, handlers.onStartGame);
+    this.currentScreen = new InitialScreen(
+      this.canvas,
+      state,
+      handlers.onStartGame,
+      handlers.onChangeVolume
+    );
 
     this.defineEventListeners();
     this.adaptDisplaySize();
@@ -94,8 +102,10 @@ export default class CanvasView implements IView {
         this.currentScreen.cleanUp();
         this.currentScreen = new RunningGameScreen(
           this.canvas,
+          this.state,
           this.syncAction.bind(this),
-          this.handlers.onPauseGame
+          this.handlers.onPauseGame,
+          this.handlers.onChangeVolume
         );
         break;
       }
@@ -103,7 +113,9 @@ export default class CanvasView implements IView {
         this.currentScreen.cleanUp();
         this.currentScreen = new GameOverScreen(
           this.canvas,
-          this.handlers.onRestartGame
+          this.state,
+          this.handlers.onRestartGame,
+          this.handlers.onChangeVolume
         );
         break;
       }
@@ -130,6 +142,13 @@ export default class CanvasView implements IView {
 
   private defineEventListeners() {
     window.addEventListener("resize", () => this.adaptDisplaySize());
+    window.addEventListener("keydown", (e) => {
+      const { key } = e;
+      if (this.keyDownHandlers.has(key)) {
+        const h = this.keyDownHandlers.get(key);
+        h!(e);
+      }
+    });
   }
 
   private syncAction(action: RunningScreenActions, pressed: boolean) {

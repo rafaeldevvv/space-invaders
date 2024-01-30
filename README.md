@@ -1213,6 +1213,13 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [CanvasRenderingContext2D: ellipse() method](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/ellipse)
 - [Offset (computer science)](https://en.wikipedia.org/wiki/Offset_%28computer_science%29)
 - [What does "offset" mean in the context of programming?](https://stackoverflow.com/questions/3971598/what-does-offset-mean-in-the-context-of-programming)
+- [MDN Docs | `import`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import)
+- [Why is using a wild card with a Java import statement bad?](https://stackoverflow.com/questions/147454/why-is-using-a-wild-card-with-a-java-import-statement-bad)
+- [Object.entries()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries)
+- [<input type="range">](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range)
+- [HTMLElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement)
+- [Styling Cross-Browser Compatible Range Inputs with CSS](https://css-tricks.com/styling-cross-browser-compatible-range-inputs-css/)
+- [](https://webaim.org/techniques/css/invisiblecontent/)
 
 #### Comments
 

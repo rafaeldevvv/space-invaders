@@ -2,7 +2,7 @@ import {
   PixelSize,
   MappedObjectFromUnion,
   PixelCoords,
-  Size,
+  HTMLAttributes,
 } from "@/ts/types";
 
 /**
@@ -151,18 +151,17 @@ export function drawProgressBar(
   ctx.fillRect(pos.x + positiveWidth, pos.y, negativeWidth, size.h);
 }
 
-type ShallowHTMLAttributes = {
+/* type ShallowHTMLAttributes = {
   className: string;
 } & {
   [Event in keyof GlobalEventHandlersEventMap as `on${Event & string}`]+?: (
     event: GlobalEventHandlersEventMap[Event]
   ) => void;
-};
+}; */
 
-type a = keyof EventListenerObject;
 export function elt<Type extends keyof HTMLElementTagNameMap>(
   type: Type,
-  attrs: ShallowHTMLAttributes | null,
+  attrs: HTMLAttributes | null,
   ...children: (Node | string)[]
 ): HTMLElementTagNameMap[Type] {
   const element = document.createElement(type);

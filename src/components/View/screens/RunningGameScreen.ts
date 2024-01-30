@@ -33,7 +33,9 @@ import {
   aliensSprite,
   bossImage,
   wigglyBulletImage,
+  soundIcon,
 } from "../images";
+import MobileVolumeSlider from "../dom-components/mobile-volume-slider";
 
 /**
  * An object that holds the tile position of each alien in the aliens sprite.
@@ -63,17 +65,20 @@ export default class RunningGameScreen extends BaseScreen {
   protected mobileButtons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-running",
   });
+  protected mobileVolumeSlider!: MobileVolumeSlider;
   private pauseBtn: HTMLButtonElement | null = null;
 
   private trackedTouchIds: number[] = [];
 
   constructor(
     canvas: HTMLCanvasElement,
+    public state: IGameState,
     private readonly syncAction: (
       action: RunningScreenActions,
       isHappening: boolean
     ) => void,
-    private onPauseGame: () => void
+    private readonly onPauseGame: () => void,
+    private readonly onChangeVolume: (newVolume: number) => void
   ) {
     super(canvas);
     this.setUpControlMethods();
@@ -208,6 +213,11 @@ export default class RunningGameScreen extends BaseScreen {
       );
 
     this.pauseBtn = pauseBtn;
+    const volumeSlider = new MobileVolumeSlider(
+      this.state.volume,
+      this.onChangeVolume
+    );
+    this.mobileVolumeSlider = volumeSlider;
 
     this.manageMobileButtonTouchEvents(moveLeftBtn, "moveLeft");
     this.manageMobileButtonTouchEvents(moveRightBtn, "moveRight");
@@ -217,6 +227,7 @@ export default class RunningGameScreen extends BaseScreen {
     this.mobileButtons.appendChild(moveLeftBtn);
     this.mobileButtons.appendChild(moveRightBtn);
     this.mobileButtons.appendChild(pauseBtn);
+    this.mobileButtons.appendChild(volumeSlider.container);
   }
 
   public cleanUp() {
@@ -246,11 +257,11 @@ export default class RunningGameScreen extends BaseScreen {
     this.drawCollisions(state.bulletCollisions);
     this.drawWalls(state.env.walls);
     this.drawMetadata(state, timeStep);
-    this.drawPressEscMessage();
     if (state.boss !== null) this.drawBoss(state.boss);
     if (state.status === "paused") this.drawPauseHint();
     this.pauseBtn!.textContent =
       state.status === "paused" ? "unpause" : "pause";
+    this.mobileVolumeSlider.update(state.volume);
   }
 
   private drawFloor() {
@@ -459,6 +470,9 @@ export default class RunningGameScreen extends BaseScreen {
       this.horPixels(100 - LAYOUT.padding.hor),
       yPixelsPadding
     );
+
+    const {hor, ver} = LAYOUT.padding;
+    this.drawVolumeHint(state.volume, { x: hor, y: ver + 5.5 });
   }
 
   private drawScore(score: number, x: number, y: number) {
@@ -576,18 +590,28 @@ export default class RunningGameScreen extends BaseScreen {
     this.ctx.textBaseline = "middle";
     this.ctx.fillText("PAUSED", this.horPixels(50), this.verPixels(50));
   }
-
-  private drawPressEscMessage() {
-    const xPixelPos = this.horPixels(LAYOUT.padding.hor),
-      yPixelPos = this.verPixels(6.5);
-
+  /* 
+  private drawVolumeHintt(v: number) {
+    const { ctx } = this;
     this.setFontSize("sm");
-    this.ctx.fillStyle = "#fff";
-    this.ctx.textAlign = "left";
-    this.ctx.textBaseline = "top";
+    ctx.textAlign = "start";
+    ctx.textBaseline = "top";
 
-    this.ctx.fillText('Press "Esc" to pause/unpause', xPixelPos, yPixelPos);
-  }
+    const iconW = this.horPixels(3),
+      vText = `| ${Math.round(v * 100)}`,
+      { width, fontBoundingBoxDescent } = ctx.measureText(vText),
+      rightEdge = this.horPixels(100 - LAYOUT.padding.hor),
+      topEdge = this.verPixels(6.5);
+
+    ctx.fillText(vText, rightEdge - width, topEdge);
+    ctx.drawImage(
+      soundIcon,
+      rightEdge - width - this.horPixels(1) - iconW,
+      topEdge,
+      iconW,
+      fontBoundingBoxDescent
+    );
+  } */
 
   private drawCollisions(collisions: IGameState["bulletCollisions"]) {
     for (const c of collisions) {

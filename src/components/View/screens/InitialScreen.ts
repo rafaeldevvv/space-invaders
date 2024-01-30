@@ -1,14 +1,24 @@
-import { ACTION_KEYS, LAYOUT } from "@/game-config";
-import { GAME_DISPLAY, INITIAL_SCREEN_LAYOUT } from "../config";
+import { ACTION_KEYS } from "@/game-config";
+import { INITIAL_SCREEN_LAYOUT } from "../config";
 import { drawTwinkleMessage, elt } from "../utils";
 import BaseScreen from "./BaseScreen";
 import { alienTypesConfig } from "@/components/Alien/config";
 import { IGameState, PixelSize, Size, TAliens } from "@/ts/types";
+import MobileVolumeSlider from "../dom-components/mobile-volume-slider";
+
+const {
+  scoresPos,
+  soundHintPos,
+  titlePos,
+  controlsGuidePos,
+  twinkleMessagePos,
+  authorAttributionPos,
+} = INITIAL_SCREEN_LAYOUT;
 
 import {
   aliensSprite,
   bossImage,
-  arrowKeysSprite,
+  squareKeysSprite,
   spaceKeyImage,
 } from "../images";
 
@@ -37,26 +47,30 @@ invadersScores.push({
   imageSize: [bossImage.naturalWidth, bossImage.naturalHeight],
 });
 
-const arrowKeysSpriteHorOffset = {
+const squareKeysSpriteHorOffset = {
   left: 0,
   right: 150,
   up: 300,
   down: 450,
+  esc: 600,
 } as const;
 
-const arrowKeySize = [5, 6.5] as const,
+const squareKeySize = [5, 6.5] as const,
   rectangleKeySize = [26, 6.5] as const;
 
-const arrowKeySourceImageSize = 150;
+const squareKeySourceImageSize = 150;
 
 export default class InitialScreen extends BaseScreen {
   protected mobileButtons: HTMLDivElement = elt("div", {
     className: "btn-container btn-container--state-start",
   });
+  protected mobileVolumeSlider!: MobileVolumeSlider;
 
   constructor(
     canvas: HTMLCanvasElement,
-    private readonly onStartGame: () => void
+    public state: IGameState,
+    private readonly onStartGame: () => void,
+    private readonly onChangeVolume: (newVolume: number) => void
   ) {
     super(canvas);
     this.setUpControlMethods();
@@ -89,7 +103,14 @@ export default class InitialScreen extends BaseScreen {
       "start"
     );
 
+    const slider = new MobileVolumeSlider(
+      this.state.volume,
+      this.onChangeVolume
+    );
+    this.mobileVolumeSlider = slider;
+
     this.mobileButtons.appendChild(startBtn);
+    this.mobileButtons.append(slider.container);
   }
 
   syncState(state: IGameState) {
@@ -98,10 +119,7 @@ export default class InitialScreen extends BaseScreen {
     this.drawTitle();
     this.drawBestScore(state.player.bestScore);
     this.drawScores();
-    const messagePos = this.getPixelPos({
-      y: INITIAL_SCREEN_LAYOUT.pressMessageYPos,
-      x: 5,
-    });
+    const messagePos = this.getPixelPos(twinkleMessagePos);
     drawTwinkleMessage(this.ctx, "Press space to start", messagePos, {
       fontSize: this.getFontSize("md"),
       fontFamily: this.fontFamily,
@@ -109,6 +127,8 @@ export default class InitialScreen extends BaseScreen {
     });
     this.drawControlsGuide();
     this.drawAuthorAttribution();
+    this.drawVolumeHint(state.volume, soundHintPos);
+    this.mobileVolumeSlider.update(state.volume);
   }
 
   protected drawTitle() {
@@ -116,16 +136,15 @@ export default class InitialScreen extends BaseScreen {
 
     const { ctx } = this;
 
-    const xPixelPos = this.horPixels(5),
-      yPixelPos = this.verPixels(8);
+    const { x, y } = this.getPixelPos(titlePos);
 
     ctx.fillStyle = "white";
     ctx.textAlign = "start";
     ctx.textBaseline = "hanging";
-    ctx.fillText("SPACE", xPixelPos, yPixelPos);
+    ctx.fillText("SPACE", x, y);
     const spaceMetrics = ctx.measureText("SPACE");
     const { actualBoundingBoxDescent: h } = spaceMetrics;
-    ctx.fillText("INVADERS", xPixelPos, yPixelPos + h + this.verPixels(1));
+    ctx.fillText("INVADERS", x, y + h + this.verPixels(1));
   }
 
   private drawBestScore(bestScore: number) {
@@ -152,8 +171,7 @@ export default class InitialScreen extends BaseScreen {
     ctx.textBaseline = "hanging"; // only for the title
 
     ctx.save();
-    const y = this.verPixels(45),
-      x = this.horPixels(5);
+    const { x, y } = this.getPixelPos(controlsGuidePos);
 
     ctx.translate(x, y);
 
@@ -166,17 +184,18 @@ export default class InitialScreen extends BaseScreen {
 
     this.setFontSize("md");
 
-    const [arrowW, arrowH] = arrowKeySize,
-      arrrowKeyPixelW = this.horPixels(arrowW),
-      arrowKeyPixelH = this.verPixels(arrowH),
+    const [squareW, squareH] = squareKeySize,
+      squareKeyPixelW = this.horPixels(squareW),
+      squareKeyPixelH = this.verPixels(squareH),
       horGap = this.horPixels(1),
       verGap = this.verPixels(2);
 
-    const { left, right } = arrowKeysSpriteHorOffset;
+    const { left, right, up, down } = squareKeysSpriteHorOffset;
+    const arrowKeyPixelSize = { w: squareKeyPixelW, h: squareKeyPixelH };
     const sequenceWidth = this.drawSpriteSequence(
-      arrowKeysSprite,
-      arrowKeySourceImageSize,
-      { w: arrrowKeyPixelW, h: arrowKeyPixelH },
+      squareKeysSprite,
+      squareKeySourceImageSize,
+      arrowKeyPixelSize,
       horGap,
       [left, right]
     );
@@ -185,12 +204,12 @@ export default class InitialScreen extends BaseScreen {
 
     ctx.save(); // save for horizontal translation
     // move to the right side of the images and down the middle of it
-    ctx.translate(sequenceWidth + horGap, arrowKeyPixelH / 2);
+    ctx.translate(sequenceWidth + horGap, squareKeyPixelH / 2);
     ctx.fillText("-> MOVEMENT", 0, 0);
     ctx.restore();
 
     // move down below the sequence above with a gap
-    ctx.translate(0, arrowKeyPixelH + verGap);
+    ctx.translate(0, squareKeyPixelH + verGap);
 
     const [spaceW, spaceH] = rectangleKeySize,
       spacePixelW = this.horPixels(spaceW),
@@ -198,10 +217,40 @@ export default class InitialScreen extends BaseScreen {
 
     ctx.drawImage(spaceKeyImage, 0, 0, spacePixelW, spacePixelH);
 
+    ctx.save();
     // move to the right side of the image and down the middle of it
     ctx.translate(spacePixelW + horGap, spacePixelH / 2);
 
     ctx.fillText("-> FIRE", 0, 0);
+    ctx.restore();
+
+    ctx.translate(0, spacePixelH + verGap);
+    const sequence2Width = this.drawSpriteSequence(
+      squareKeysSprite,
+      squareKeySourceImageSize,
+      arrowKeyPixelSize,
+      horGap,
+      [up, down]
+    );
+    ctx.save();
+    ctx.translate(sequence2Width + horGap, squareKeyPixelH / 2);
+    ctx.fillText("-> SOUND", 0, 0);
+    ctx.restore();
+
+    ctx.translate(0, squareKeyPixelH + verGap);
+    ctx.drawImage(
+      squareKeysSprite,
+      squareKeysSpriteHorOffset.esc,
+      0,
+      squareKeySourceImageSize,
+      squareKeySourceImageSize,
+      0,
+      0,
+      squareKeyPixelW,
+      squareKeyPixelH
+    );
+    ctx.translate(squareKeyPixelW + horGap, squareKeyPixelH / 2);
+    ctx.fillText("-> PAUSE/UNPAUSE", 0, 0);
 
     ctx.restore();
   }
@@ -249,10 +298,10 @@ export default class InitialScreen extends BaseScreen {
   }
 
   protected drawScores() {
-    const baseYPos = 10;
+    const baseYPos = scoresPos.y;
 
-    /* the position of the right edge of the icon */
-    const baseXPos = this.horPixels(73);
+    /* the position of the right edges of the images themselves */
+    const baseXPos = this.horPixels(scoresPos.x);
     /* the space between the icon, the equals sign and the score */
     const gap = this.horPixels(1.5);
 
@@ -300,10 +349,7 @@ export default class InitialScreen extends BaseScreen {
   }
 
   private drawAuthorAttribution() {
-    const pos = this.getPixelPos({
-      x: 100 - LAYOUT.padding.hor,
-      y: 100 - LAYOUT.padding.ver,
-    });
+    const pos = this.getPixelPos(authorAttributionPos);
     const { ctx } = this;
     this.setFontSize("sm");
     ctx.textAlign = "end";

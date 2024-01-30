@@ -14,7 +14,7 @@ const LAYOUT = {
   wallYPos: 70,
   playerYPos: 86,
   floorYPos: 97,
-  bossYPos: 8,
+  bossYPos: 10,
 } as const;
 
 /**
@@ -49,6 +49,8 @@ const ACTION_KEYS = {
   startGame: " ",
   restartGame: " ",
   pauseGame: "Escape",
+  turnUpVolume: "ArrowUp",
+  turnDownVolume: "ArrowDown",
 } as const;
 
 const RUNNING_GAME_KEY_ACTIONS = {
@@ -57,9 +59,4 @@ const RUNNING_GAME_KEY_ACTIONS = {
   [" "]: "fire",
 } as const;
 
-export {
-  ACTION_KEYS,
-  LAYOUT,
-  DIMENSIONS,
-  RUNNING_GAME_KEY_ACTIONS,
-};
+export { ACTION_KEYS, LAYOUT, DIMENSIONS, RUNNING_GAME_KEY_ACTIONS };

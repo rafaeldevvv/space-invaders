@@ -10,7 +10,7 @@ import {
   AlienSetAlienStates,
   BossStatuses,
 } from "./status";
-import { RunningActionsTracker } from "./events";
+import { KeyboardEventHandler, RunningActionsTracker } from "./events";
 
 /**
  * A wrapper for a set of {@link Alien}s
@@ -310,6 +310,14 @@ interface IGameState {
   boss: IBoss | null;
 
   /**
+   * The volume of the game, from 0 to 1.
+   * It is a getter because the state isn't supposed
+   * to control it. It gotten from the live binding named volume in
+   * the audios/index.ts module.
+   */
+  get volume(): number;
+
+  /**
    * When bullets collide they leave behind a little explosion.
    * This array tracks all those collisions to render them.
    */
@@ -366,6 +374,7 @@ interface ViewHandlers {
   onPauseGame: () => void;
   onStartGame: () => void;
   onRestartGame: () => void;
+  onChangeVolume: (newVolume: number) => void;
 }
 
 /**
@@ -407,6 +416,8 @@ interface IView {
 
   /** The actions the player is currently performing. */
   actions: RunningActionsTracker;
+
+  keyDownHandlers: Map<string, KeyboardEventHandler>;
 }
 
 /**
@@ -436,9 +447,9 @@ interface IIterablePieces {
   numOfRows: number;
   /**
    * Turns the piece in the specified row and column into a non-solid piece (`false`).
-   * 
-   * @param column 
-   * @param row 
+   *
+   * @param column
+   * @param row
    */
   breakPiece(column: number, row: number): void;
   /**

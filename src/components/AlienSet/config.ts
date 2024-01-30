@@ -10,4 +10,4 @@ export const stepToEdgeAdjustment = 1.33;
 export const timeDecreaseFactor = 0.96;
 export const entranceSpeed = 30;
 export const stepsToReachPlayer = 11;
-export const baseYPos = LAYOUT.padding.ver + 12;
+export const baseYPos = LAYOUT.padding.ver + 14;

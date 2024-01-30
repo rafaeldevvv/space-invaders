@@ -10,6 +10,9 @@ import {
   IGameState,
 } from "@/ts/types";
 
+import { soundIcon } from "../images";
+import type MobileVolumeSlider from "../dom-components/mobile-volume-slider";
+
 export const colors: {
   [Key in TAliens]: string;
 } & { boss: string } = {
@@ -39,6 +42,8 @@ export default abstract class BaseCanvasWrapper implements Screen {
 
   /** The container of the buttons. */
   protected abstract mobileButtons: HTMLDivElement;
+  /** it is created inside the `createMobileControls()` method */
+  protected abstract mobileVolumeSlider: MobileVolumeSlider;
 
   /** Sets up event handlers to handle user input. */
   protected abstract setUpControlMethods(): void;
@@ -168,5 +173,31 @@ export default abstract class BaseCanvasWrapper implements Screen {
       if (!piece) continue;
       this.ctx.fillRect(column * w, row * h, w, h);
     }
+  }
+
+  /**
+   * @param volume - The current volume.
+   * @param pos - The position of the hint, left and top edges.
+   */
+  protected drawVolumeHint(volume: number, pos: Coords) {
+    const { x, y } = this.getPixelPos(pos);
+
+    const { ctx } = this;
+    ctx.save();
+    this.setFontSize("sm");
+    ctx.textAlign = "start";
+    ctx.textBaseline = "top";
+
+    ctx.translate(x, y);
+
+    const iconW = this.horPixels(3),
+      volumeText = `| ${Math.round(volume * 100)}`,
+      { fontBoundingBoxDescent } = ctx.measureText(volumeText),
+      gap = this.horPixels(1);
+
+    ctx.drawImage(soundIcon, 0, 0, iconW, fontBoundingBoxDescent);
+    ctx.translate(iconW + gap, 0);
+    ctx.fillText(volumeText, 0, 0);
+    ctx.restore();
   }
 }

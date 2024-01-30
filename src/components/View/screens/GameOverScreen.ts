@@ -3,15 +3,20 @@ import { IGameState } from "@/ts/types";
 import BaseScreen from "./BaseScreen";
 import { GAMEOVER_SCREEN_LAYOUT } from "../config";
 import { ACTION_KEYS } from "@/game-config";
+import MobileVolumeSlider from "../dom-components/mobile-volume-slider";
 
 export default class GameOverScreen extends BaseScreen {
   protected mobileButtons: HTMLDivElement = elt("div", {
-    className: "btn-container btn-container--state-restart",
+    className: "btn-container btn-container--state-lost",
   });
+
+  protected mobileVolumeSlider!: MobileVolumeSlider;
 
   constructor(
     canvas: HTMLCanvasElement,
-    private readonly onRestartGame: () => void
+    public state: IGameState,
+    private readonly onRestartGame: () => void,
+    private readonly onChangeVolume: (newVolume: number) => void
   ) {
     super(canvas);
     this.setUpControlMethods();
@@ -46,7 +51,14 @@ export default class GameOverScreen extends BaseScreen {
       "restart"
     );
 
+    const volumeSlider = new MobileVolumeSlider(
+      this.state.volume,
+      this.onChangeVolume
+    );
+    this.mobileVolumeSlider = volumeSlider;
+
     this.mobileButtons.appendChild(restartBtn);
+    this.mobileButtons.appendChild(volumeSlider.container);
   }
 
   public syncState(state: IGameState) {
@@ -63,6 +75,8 @@ export default class GameOverScreen extends BaseScreen {
       fontSize: this.getFontSize("md"),
       fontFamily: this.fontFamily,
     });
+    this.drawVolumeHint(state.volume, GAMEOVER_SCREEN_LAYOUT.soundHintPos);
+    this.mobileVolumeSlider.update(state.volume);
   }
 
   private drawTitle() {

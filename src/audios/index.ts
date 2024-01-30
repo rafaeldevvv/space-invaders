@@ -8,6 +8,8 @@ import Shoot from "./shoot.mp3";
 import Boss_Highpitch from "./ufo_highpitch.mp3";
 import Boss_Lowpitch from "./ufo_lowpitch.mp3";
 
+export let volume = 1;
+
 const explosion = new Audio(ExplosionAudio),
   fastInvader1 = new Audio(FastInvader1),
   fastInvader2 = new Audio(FastInvader2),
@@ -17,6 +19,18 @@ const explosion = new Audio(ExplosionAudio),
   shoot = new Audio(Shoot),
   boss_highpitch = new Audio(Boss_Highpitch),
   boss_lowpitch = new Audio(Boss_Lowpitch);
+
+const audiosArr = [
+  explosion,
+  fastInvader1,
+  fastInvader2,
+  fastInvader3,
+  fastInvader4,
+  alienKilled,
+  shoot,
+  boss_highpitch,
+  boss_lowpitch,
+];
 
 /**
  * Checks if media is loaded and plays it if it is.
@@ -107,3 +121,22 @@ const audios = {
 } as const;
 
 export default audios;
+
+export function setVolume(newVolume: number) {
+  volume = newVolume;
+  audiosArr.forEach((a) => (a.volume = newVolume));
+}
+
+setVolume(volume);
+
+export const volumeFactor = 0.05;
+
+export function turnUpVolume() {
+  const v = Math.min(1, volume + volumeFactor);
+  setVolume(v);
+}
+
+export function turnDownVolume() {
+  const v = Math.max(0, volume - volumeFactor);
+  setVolume(v);
+}

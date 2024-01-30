@@ -7,6 +7,8 @@ import {
 import aliensPlan from "@/plans/alien-set";
 import { runAnimation } from "./utils";
 import { TStateStatuses } from "@/ts/types";
+import { ACTION_KEYS } from "@/game-config";
+import * as audiosWrapper from "@/audios";
 
 /**
  * A class responsible for managing the flow of information
@@ -31,10 +33,25 @@ export default class GamePresenter {
         onPauseGame: this.handlePause.bind(this),
         onStartGame: this.handleStartGame.bind(this),
         onRestartGame: this.handleRestartGame.bind(this),
+        onChangeVolume: (newVolume) => {
+          this.view.syncState(this.state, 1 / 60);
+          audiosWrapper.setVolume(newVolume);
+        },
       },
       parent
     );
     this.view.syncState(this.state, 0);
+
+    this.view.keyDownHandlers.set(ACTION_KEYS.turnDownVolume, () => {
+      audiosWrapper.turnDownVolume();
+      if (this.state.status === "paused")
+        this.view.syncState(this.state, 1 / 60);
+    });
+    this.view.keyDownHandlers.set(ACTION_KEYS.turnUpVolume, () => {
+      audiosWrapper.turnUpVolume();
+      if (this.state.status === "paused")
+        this.view.syncState(this.state, 1 / 60);
+    });
 
     this.runGame();
   }

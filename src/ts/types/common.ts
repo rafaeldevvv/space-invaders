@@ -12,10 +12,9 @@ interface Coords {
 }
 
 /**
- * This interface is meant to be used by the CanvasDisplay just
- * to make it clear what the method expects.
- *
- * @extends - Interface representing percentage coordinates.
+ * This interface is same as {@link Coords}, it only exists
+ * for the meaning it is given, i.e. it is measured in pixels
+ * within the display.
  */
 interface PixelCoords extends Coords {}
 
@@ -28,9 +27,9 @@ interface Size {
 }
 
 /**
- * Just like {@link PixelCoords}, it is meant to improve clarity.
- *
- * @extends - Interface representing percentage sizes.
+ * This interface is same as {@link Size}, it only exists
+ * for the meaning it is given, i.e. it is measured in pixels
+ * within the display.
  */
 interface PixelSize extends Size {}
 
@@ -82,6 +81,14 @@ type NumOrNull = number | null;
  */
 type Plan = string;
 
+type MakeOptional<Type> = {
+  [Key in keyof Type]+?: Type[Key];
+};
+
+type HTMLAttributes = MakeOptional<HTMLElement> &
+  MakeOptional<HTMLInputElement> &
+  MakeOptional<HTMLLabelElement>;
+
 export type {
   PixelCoords,
   PixelSize,
@@ -93,5 +100,6 @@ export type {
   NumOrNull,
   MappedObjectFromUnion,
   RemoveFirstElement,
-  Plan
+  Plan,
+  HTMLAttributes
 };
