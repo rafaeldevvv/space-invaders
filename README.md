@@ -1298,6 +1298,9 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [Asset Management](https://webpack.js.org/guides/asset-management)
 - [postcss-loader](https://webpack.js.org/loaders/postcss-loader/)
 - [Autoprefixer](https://github.com/postcss/autoprefixer)
+- [UglifyJS](https://github.com/mishoo/UglifyJS?tab=readme-ov-file)
+- [TerserWebpackPlugin](https://webpack.js.org/plugins/terser-webpack-plugin/)
+- [UglifyJS demo](https://lisperator.net/uglifyjs/)
 
 ## Author
 
