@@ -427,19 +427,9 @@ export default class RunningGameScreen extends BaseScreen {
     this.ctx.save();
     this.ctx.translate(x, y);
 
-    const { w, h } = wall.pieceSize;
-    const piecePixelWidth = this.horPixels(w),
-      piecePixelHeight = this.verPixels(h);
+    const piecePixelSize = this.getPixelSize(wall.pieceSize);
 
-    for (const { row, column, piece } of wall.pieces) {
-      if (piece) {
-        const xPixels = this.horPixels(column * w),
-          yPixels = this.verPixels(row * h);
-
-        this.ctx.fillStyle = "#fff";
-        this.ctx.fillRect(xPixels, yPixels, piecePixelWidth, piecePixelHeight);
-      }
-    }
+    this.drawPieces(wall.pieces, piecePixelSize, "#fff");
 
     this.ctx.restore();
   }

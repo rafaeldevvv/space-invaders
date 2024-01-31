@@ -1219,7 +1219,7 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [<input type="range">](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range)
 - [HTMLElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement)
 - [Styling Cross-Browser Compatible Range Inputs with CSS](https://css-tricks.com/styling-cross-browser-compatible-range-inputs-css/)
-- [](https://webaim.org/techniques/css/invisiblecontent/)
+- [WebAIM | Invisible Content](https://webaim.org/techniques/css/invisiblecontent/)
 
 #### Comments
 
