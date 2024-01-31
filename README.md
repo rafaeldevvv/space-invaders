@@ -23,7 +23,13 @@ This is an implementation of the classic Space Invaders game using [TypeScript](
   - [Stagnant values](#stagnant-values)
   - [Silly error](#silly-error)
   - [The miracle of separation of concerns](#the-miracle-of-separation-of-concerns)
+  - [Cyclic imports](#cyclic-imports)
+  - [Webpack config problem](#webpack-config-problem)
   - [Useful Resources](#useful-resources)
+    - [General](#general)
+    - [Comments](#comments)
+    - [eslint](#eslint)
+    - [webpack](#webpack)
 - [Author](#author)
 
 ## Overview
@@ -57,32 +63,29 @@ This approach worked very well and the game can easily be adapted to work with t
 
 ### Sizes
 
-All the sizes can be found in the global variable called `DIMENSIONS`, except for the walls' size, which i wanted to make more customizable:
+All the sizes can be found in the global variable called `DIMENSIONS`, except for the walls' and bullets' size, which i wanted to make more customizable:
 
 ```ts
-const DIMENSIONS: {
-  readonly alien: Size;
-  readonly player: Size;
-  readonly bullet: Size;
-  readonly alienSetGap: Size;
-} = {
+const DIMENSIONS = {
   alien: {
-    w: 5, // 5% of the display width
-    h: 7, // 5% of the display height
+    w: 3.5, // 3.5% of the display width
+    h: 4, // 4% of the display height
   },
   player: {
-    w: 5, // 5% of the display width
-    h: 7, // 5% of the display height
-  },
-  bullet: {
-    w: 1, // 2% of the display width
-    h: 3, // 4% of the display height
+    w: 4,
+    h: 6,
   },
   alienSetGap: {
-    w: 1, // 1% of the display width
-    h: 1, // 1% of the display height
+    w: 1.2,
+    h: 2,
   },
-};
+  boss: {
+    w: 8,
+    h: 5.5,
+  },
+  floorHeight: 1,
+  bulletCollision: { w: 2, h: 1.5 },
+} as const;
 ```
 
 ```ts
@@ -128,7 +131,12 @@ function displayObjectPercentageHeight(unit: DisplayUnit | DisplaySize) {
 I've made a class to manage collisions and sizes to separate the concerns of the game. It makes use of the `overlap` function to detect collision.
 
 ```ts
-function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
+export default function overlap(
+  pos1: Coords,
+  size1: Size,
+  pos2: Coords,
+  size2: Size
+) {
   return (
     pos1.x + size1.w > pos2.x &&
     pos1.x < pos2.x + size2.w &&
@@ -139,154 +147,187 @@ function overlap(pos1: Coords, size1: Size, pos2: Coords, size2: Size) {
 ```
 
 ```ts
-/* 
-Game Environment
-
-this class is supposed to manage the position and sizes
-of the objects and check things like colision */
-class GameEnv {
-  /* these are all percentages within the display */
-  public alienSize: number;
-  public alienSetWidth: number;
-  public alienSetHeight: number;
-  public alienSetGap: number;
-
+/**
+ * Class representing the Game Environment responsible
+ * for managing collision.
+ * @implements {IEnvironment}
+ */
+export default class GameEnv implements IEnvironment {
+  /**
+   * Initializes the game environment.
+   *
+   * @param alienSet - The alien set.
+   * @param player - The player.
+   * @param walls - The walls.
+   */
   constructor(
-    public alienSet: AlienSet,
-    public player: Player,
-    public walls: Wall[]
+    public alienSet: IAlienSet,
+    public player: IPlayer,
+    public walls: IWall[]
   ) {}
 
-  getAlienPos({ gridPos: { x, y } }: Alien): Vector {}
+  /**
+   * Checks whether the alien set has reached the player.
+   *
+   * @returns - A boolean value that says whether the alien set has reached the player.
+   */
+  public alienSetTouchesPlayer() {
+    return this.alienSet.pos.y + this.alienSet.size.h >= this.player.pos.y;
+  }
 
-  bulletTouchesWall(bullet: Bullet) {}
+  /**
+   * Checks whether an object in the game has been shot.
+   *
+   * @param bullet - A bullet that may hit the object.
+   * @param objPos - The position of the object.
+   * @param objSize - The size of the object.
+   * @returns - A boolean value that says whether the object is shot.
+   */
+  public bulletTouchesObject(bullet: IBullet, objPos: Coords, objSize: Size) {
+    return overlap(bullet.pos, bullet.size, objPos, objSize);
+  }
 
-  bulletShouldBeRemoved(bullet: Bullet) {}
+  /**
+   * Handles what happens when the alien set touches a wall.
+   */
+  public handleAlienSetContactWithWall() {
+    for (const wall of this.walls) {
+      for (const { alien } of this.alienSet) {
+        if (!(alien instanceof Alien)) continue;
 
-  isActorShot(bullets: Bullet[], actorPos: Coords, actorSize: Size) {}
+        const alienPos = this.alienSet.getAlienPos(alien.gridPos);
+        wall.collide(alienPos, DIMENSIONS.alien);
+      }
+    }
+    return false;
+  }
+
+  public bulletTouchesOtherBullet(bullet1: IBullet, bullet2: IBullet) {
+    return this.bulletTouchesObject(bullet1, bullet2.pos, bullet2.size);
+  }
 }
 ```
 
 ### Aliens
 
-I made a convenient class to read a set of aliens:
+I made a convenient inetrface to read and manage a set of aliens:
 
 ```ts
-class AlienSet {
-  public pos: Vector | null = null;
-  public numColumns: number;
-  public numRows: number;
-  public aliens: (Alien | null)[][];
-  public direction: 1 | -1 = 1;
+/**
+ * A wrapper for a set of {@link IAlien}s
+ */
+interface IAlienSet {
+  pos: IVector;
+  size: Size;
+  numColumns: number;
+  numRows: number;
 
-  constructor(plan: string) {
-    const rows = plan
-      .trim()
-      .split("\n")
-      .map((l) => [...l]);
+  /**
+   * The aliens in the set. Each item is an instance of {@link IAlien},
+   * "exploding" (it has just been killed by the player) or null (not
+   * exploding and not alive).
+   */
+  aliens: AlienSetAlienStates[][];
 
-    this.numColumns = rows[0].length;
-    this.numRows = rows.length;
+  /**
+   * Tracks how the aliens should be rendered.
+   * This is useful to render the aliens differently
+   * when the alien set moves.
+   */
+  aliensStage: 0 | 1;
 
-    this.aliens = rows.map((row, y) => {
-      return row.map((ch, x) => {
-        return Alien.create(ch, { x, y });
-      });
-    });
-  }
+  /**
+   * The number of aliens that are currently alive.
+   */
+  alive: number;
 
-  update(state: GameState, timeStep: number) {
-    let ySpeed = 0;
+  /**
+   * Tracks the alien set entrance animation.
+   */
+  entering: boolean;
 
-    if (this.pos!.x + state.env.alienSetWidth >= 100 - displayPadding.hor) {
-      this.direction = -1;
-      ySpeed = alienSetYSpeed;
-    } else if (this.pos!.x <= displayPadding.hor) {
-      this.direction = 1;
-      ySpeed = alienSetYSpeed;
-    }
+  /**
+   * Updates the AlienSet instance.
+   *
+   * @param timeStep - The time that has passed since the last update.
+   */
+  update(timeStep: number): void;
 
-    let xSpeed = alienSetXSpeed * this.direction;
+  /**
+   * Adapts the alien set, so that it has a correct size and position.
+   */
+  adapt(): void;
 
-    this.pos = this.pos!.plus(new Vector(xSpeed * timeStep, ySpeed));
-  }
+  /**
+   * Gets the position of an alien within the whole game screen.
+   *
+   * @param param0 - The grid position of the alien within the alien set.
+   * @returns - The position of the alien.
+   */
+  getAlienPos({ x, y }: Coords): IVector;
 
-  removeAlien(x: number, y: number) {
-    this.aliens[y][x] = null;
-  }
+  /**
+   * Removes an alien from the set.
+   *
+   * @param alien
+   */
+  removeAlien(alien: IAlien): void;
 
-  get length() {
-    return this.aliens.reduce((allAliensCount, row) => {
-      const rowCount = row.reduce((count, alien) => {
-        if (alien !== null) return count + 1;
-        else return count;
-      }, 0);
-      return allAliensCount + rowCount;
-    }, 0);
-  }
-
-  *[Symbol.iterator]() {
-    for (let y = 0; y < this.numRows; y++) {
-      for (let x = 0; x < this.numColumns; x++) {
-        yield { x, y, alien: this.aliens[y][x] };
-      }
-    }
-  }
+  /**
+   * Iterates through the AlienSet, yielding every alien in the set,
+   * and also the alien's row and column.
+   */
+  [Symbol.iterator](): Iterator<{
+    alien: IAlien | null | "exploding";
+    row: number;
+    column: number;
+  }>;
 }
 ```
 
-As you can see, I built my own iterator for this class because at some points of the code I need to have access to all aliens as well as their positions within the set. And there's also a `length` property to check how many aliens are alive.
+As you can see, I built my own iterator for this type because at some points of the code I need to have access to all aliens as well as their positions within the set.
 
 ### Display
 
-I've made the game state agnostic to the display method used. You can adapt it to DOM, SVG or canvas because I used percentages for everything. You just need a system to convert the percentage units relative to your chosen rendering method.
+I've made the game state agnostic to the rendering method used. You can adapt it to DOM, SVG or canvas because I used percentages for everything. You just need a system to convert the percentage units relative to your chosen rendering method.
 
 I chose the canvas API because it is a little bit more challenging than using the DOM and it is also very interesting and fun to mess with.
 
-This is the class I wrote (not the complete version neither the final version):
+The View component, responsible for displaying stuff, is summarized by the following interface:
 
 ```ts
-class CanvasDisplay {
-  canvas: HTMLCanvasElement;
-  canvasContext: CanvasRenderingContext2D;
+/**
+ * A view for {@link IGameState}.
+ */
+interface IView {
+  /**
+   * Synchonizes the view with a new model (state).
+   * Even though the game is using a mutable approach,
+   * this handles new states because maybe i can change
+   * my mind later.
+   *
+   * @param state - A new game state.
+   */
+  syncState(state: IGameState, timeStep: number): void;
+  /**
+   * Adapts the size of the canvas based on the size of the its parent element.
+   */
+  adaptDisplaySize(): void;
+  /**
+   * Cleans up the current screen for the next screen
+   * by removing event listeners, dom elements and so on.
+   * It doesn't handle clean up from "running" to "pause"
+   * or vice-versa, though, because both statuses happen in
+   * the same screen.
+   *
+   * @param newStateStatus - The status represeting the new screen.
+   */
+  cleanUpFor(newStateStatus: TStateStatuses): void;
 
-  constructor(
-    public state: GameState,
-    public controller: GameController,
-    public parent: HTMLElement
-  ) {}
+  /** The actions the player is currently performing. */
+  actions: RunningActionsTracker;
 
-  get canvasWidth() {}
-
-  get canvasHeight() {}
-
-  horPixels(percentage: number) {}
-
-  verPixels(percentage: number) {}
-
-  getPixelPos(percentagePos: Coords): PixelCoords {}
-
-  getPixelSize(percentageSize: Size): PixelSize {}
-
-  setCanvasSize() {}
-
-  syncState(state: CanvasDisplay["state"]) {}
-
-  drawAlienSet(alienSet: AlienSet) {}
-
-  drawAlien(alien: Alien, pos: Coords) {}
-
-  drawBullets(bullets: Bullet[]) {}
-
-  drawBullet(bullet: Bullet) {}
-
-  drawPlayer(player: Player) {}
-
-  drawWalls(walls: Wall[]) {}
-
-  drawMetadata(state: CanvasDisplay["state"]) {}
-
-  drawGameOverScreen() {}
+  keyDownHandlers: Map<string, KeyboardEventHandler>;
 }
 ```
 
@@ -543,7 +584,7 @@ class GameState {
 }
 ```
 
-The problem with the first implementation was that, because I was adapting the alien set every time an alien was removed, the `for... of...` loop was still iterating over the previous version of the alien set, which had a different number of columns and rows. Thus, the iterator was throwing and error like `TypeError: Cannot read properties of undefined (reading '4')`. This was an error that not even TypeScript was able to catch.
+The problem with the first implementation was that I was adapting the alien set every time an alien was removed and the `for... of...` loop was still iterating over the previous version of the alien set, which had a different number of columns and rows. Thus, the iterator was throwing and error like `TypeError: Cannot read properties of undefined (reading '4')`. This was an error that not even TypeScript was able to catch.
 
 ### Silly error
 
