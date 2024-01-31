@@ -27,7 +27,7 @@ export function isRowDead(row: IAlienSet["aliens"][number]) {
  * Gets the first or last column in a set of aliens if either is dead.
  * The first column takes precedence over the last column.
  *
- * @param rows - The same thing that the {@link AlienSet.aliens} property holds.
+ * @param rows - The same thing that the {@link IAlienSet.aliens} property holds.
  * @returns - The first or last column or null if neither of them is dead.
  */
 export function getFirstOrLastColumnIfDead(

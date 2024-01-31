@@ -1,5 +1,5 @@
 /**
-* The horizontal directions that {@link AlienSet} can move.
+* Horizontal directions factors used to help change an object's direction.
 */
 export enum HorizontalDirection {
  Right = 1,

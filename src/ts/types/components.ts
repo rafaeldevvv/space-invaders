@@ -13,7 +13,7 @@ import {
 import { KeyboardEventHandler, RunningActionsTracker } from "./events";
 
 /**
- * A wrapper for a set of {@link Alien}s
+ * A wrapper for a set of {@link IAlien}s
  */
 interface IAlienSet {
   pos: IVector;
@@ -22,7 +22,7 @@ interface IAlienSet {
   numRows: number;
 
   /**
-   * The aliens in the set. Each item is an instance of {@link Alien},
+   * The aliens in the set. Each item is an instance of {@link IAlien},
    * "exploding" (it has just been killed by the player) or null (not
    * exploding and not alive).
    */

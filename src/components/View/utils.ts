@@ -3,6 +3,7 @@ import {
   MappedObjectFromUnion,
   PixelCoords,
   HTMLAttributes,
+  Unregisterable
 } from "@/ts/types";
 
 /**
@@ -29,13 +30,6 @@ export function getElementInnerDimensions(element: HTMLElement): PixelSize {
     h: element.offsetHeight - paddingY - marginY,
   };
 }
-
-/**
- * An object that can unregister events.
- */
-type Unregisterable = {
-  unregister: () => void;
-};
 
 /**
  * Keeps track of which keyboard keys are currently held down.
@@ -159,6 +153,14 @@ export function drawProgressBar(
   ) => void;
 }; */
 
+/**
+ * Creates an HTML element.
+ * 
+ * @param type - The type of the element
+ * @param attrs - The attributes of the element.
+ * @param children - The children of the element.
+ * @returns - A specific HTML element for the type passed in.
+ */
 export function elt<Type extends keyof HTMLElementTagNameMap>(
   type: Type,
   attrs: HTMLAttributes | null,
@@ -178,6 +180,14 @@ export function elt<Type extends keyof HTMLElementTagNameMap>(
   return element;
 }
 
+/**
+ * Finds a touch in a `TouchList`.
+ * 
+ * @param touches
+ * @param id - The id of the touch to find.
+ * @returns - The `Touch` whose id is the same as the value passed in 
+ * for the if parameter or null if a `Touch` could not be found.
+ */
 export function findTouch(touches: TouchList, id: number) {
   for (let i = 0; i < touches.length; i++) {
     if (touches[i].identifier === id) return touches[i];
@@ -185,6 +195,13 @@ export function findTouch(touches: TouchList, id: number) {
   return null;
 }
 
+/**
+ * Finds the first `Touch` in a `TouchList` that is not included in `ids`.
+ * 
+ * @param touches
+ * @param ids - An array of Touch ids.
+ * @returns - The untracked touch or null.
+ */
 export function findUntrackedTouch(touches: TouchList, ids: number[]) {
   for (let i = 0; i < touches.length; i++) {
     if (!ids.some((id) => id === touches[i].identifier)) return touches[i];
@@ -192,6 +209,12 @@ export function findUntrackedTouch(touches: TouchList, ids: number[]) {
   return null;
 }
 
+/**
+ * Flips the 2d context of a {@link HTMLCanvasElement} horizontally.
+ * 
+ * @param context
+ * @param around - The position to flip the context around.
+ */
 export function flipHorizontally(context: CanvasRenderingContext2D, around: number) {
   context.translate(around, 0);
   context.scale(-1, 1);

@@ -46,6 +46,7 @@ type TShooters = "player" | "alien";
  * `Z` represents the highest level alien.
  */
 const alienTypes = ["X", "Y", "Z"] as const;
+
 /**
  * String characters represeting aliens.
  */
@@ -81,13 +82,22 @@ type NumOrNull = number | null;
  */
 type Plan = string;
 
+/** Makes all properties of an object type optional. */
 type MakeOptional<Type> = {
   [Key in keyof Type]+?: Type[Key];
 };
 
+/** All the HTMLElement properties, but all of them are optional. */
 type HTMLAttributes = MakeOptional<HTMLElement> &
   MakeOptional<HTMLInputElement> &
   MakeOptional<HTMLLabelElement>;
+
+/**
+ * A function that can unregister events.
+ */
+type Unregisterable = {
+  unregister: () => void;
+};
 
 export type {
   PixelCoords,
@@ -101,5 +111,7 @@ export type {
   MappedObjectFromUnion,
   RemoveFirstElement,
   Plan,
-  HTMLAttributes
+  HTMLAttributes,
+  MakeOptional,
+  Unregisterable
 };

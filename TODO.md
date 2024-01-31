@@ -1,8 +1,3 @@
-- Minify the code (look for an webpack plugin for that)
-- commit & update README
-
-- Put the code on codepen.
-
 - Generate TSDoc docs
   - npx typedoc _path_
 - commit & update README
