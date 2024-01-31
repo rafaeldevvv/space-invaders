@@ -8,7 +8,7 @@ This is an implementation of the classic Space Invaders game using [TypeScript](
 ## Table of Contents
 
 - [Overview](#overview)
-  - [Screenshot](#screenshot)
+  - [Screenshots](#screenshots)
   - [Built with](#built-with)
 - [Process](#process)
   - [Objects Positions Problem](#objects-positions-problem)
@@ -38,7 +38,10 @@ This is an implementation of the classic Space Invaders game using [TypeScript](
 
 [Live site](https://rafaeldevvv.github.io/space-invaders/)
 
-### Screenshot
+### Screenshots
+![Screenshot of space invaders game initial screen](./assets/screenshots/initial-screen.png)
+![Screenshot of space invaders game running screen](./assets/screenshots/running-screen.png)
+![Screenshot of space invaders game gameover screen](./assets/screenshots/game-over-screen.png)
 
 ### Built with
 
@@ -1261,6 +1264,8 @@ I raised [a question on stack overflow about it](https://stackoverflow.com/quest
 - [HTMLElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement)
 - [Styling Cross-Browser Compatible Range Inputs with CSS](https://css-tricks.com/styling-cross-browser-compatible-range-inputs-css/)
 - [WebAIM | Invisible Content](https://webaim.org/techniques/css/invisiblecontent/)
+- [Basic writing and formatting syntax](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#images)
+- [How do you put Images on the README.md file?](https://github.com/orgs/community/discussions/22833)
 
 #### Comments
 
