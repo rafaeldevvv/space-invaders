@@ -1,5 +1,3 @@
-import IterablePieces from "@/components/IterablePieces";
-import wigglyBullet from "@/plans/wiggly-bullet";
 import { LAYOUT } from "@/game-config";
 
 export const INITIAL_SCREEN_LAYOUT = {
@@ -36,8 +34,3 @@ export const GAME_DISPLAY = {
 export const colors = {
   boss: "#ff4242",
 } as const;
-
-export const wigglyBulletPieces = [
-  new IterablePieces(wigglyBullet[0]),
-  new IterablePieces(wigglyBullet[1]),
-];
